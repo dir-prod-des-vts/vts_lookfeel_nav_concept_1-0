@@ -1,1 +1,0 @@
-import{B as e,W as t,p as n,q as r}from"./button-BQ_vGzlQ.js";var i=r(t(),1);function a(t,r){let a=i.useRef(t),o=n(r);e(()=>{a.current!==t&&o(a.current)},[t,o]),e(()=>{a.current=t},[t])}export{a as t};
