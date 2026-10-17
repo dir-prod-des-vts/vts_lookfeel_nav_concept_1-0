@@ -113,7 +113,7 @@ function App() {
   return (
     <TooltipProvider>
       <Toaster />
-      <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
+      <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-12">
