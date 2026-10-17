@@ -1,0 +1,1 @@
+import{B as e,V as t}from"./button-BQ_vGzlQ.js";function n(n){let i=t(r,n).current;return i.next=n,e(i.effect),i}function r(e){let t={current:e,next:e,effect:()=>{t.current=t.next}};return t}export{n as t};
