@@ -56,8 +56,13 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
     <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(
-        `relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md px-1.5 py-0.5 text-sm font-medium whitespace-nowrap ${TOGGLE_INACTIVE} transition-[color,opacity] group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start ${TOGGLE_HOVER} focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+        `relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md px-1.5 py-0.5 text-sm font-medium whitespace-nowrap ${TOGGLE_INACTIVE} transition-[color,opacity] group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 has-data-[icon=inline-end]:pr-1 has-data-[icon=inline-start]:pl-1 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4`,
+        // Default (pill) variant — filled background on active
+        TOGGLE_HOVER,
         TOGGLE_ACTIVE_TAB,
+        // Line variant overrides (scoped via parent data-variant=line)
+        "[div[data-variant=line]_&]:rounded-none [div[data-variant=line]_&]:hover:bg-transparent [div[data-variant=line]_&]:hover:text-primary",
+        "[div[data-variant=line]_&[data-active]]:bg-transparent [div[data-variant=line]_&[data-active]]:text-primary [div[data-variant=line]_&[data-active]]:shadow-[inset_0_-2px_0_0_var(--color-primary)] [div[data-variant=line]_&[data-active]]:hover:bg-transparent",
         className
       )}
       {...props}
