@@ -1565,10 +1565,7 @@ function RunRow({ run, defaultOpen = false }: { run: AgentRun; defaultOpen?: boo
           <p className="text-sm font-medium text-foreground leading-snug">{run.title}</p>
           <p className="text-[11px] text-muted-foreground mt-0.5">
             {run.dealId ? (
-              <button
-                className="hover:text-primary hover:underline transition-colors"
-                onClick={e => { e.stopPropagation(); window.location.hash = `#/deals?deal=${run.dealId}` }}
-              >{run.asset}</button>
+              <Button variant="link" size="sm" className="h-auto p-0 text-sm" onClick={e => { e.stopPropagation(); window.location.hash = `#/deals?deal=${run.dealId}` }}>{run.asset}</Button>
             ) : run.asset}
             {" · "}{run.time}
           </p>

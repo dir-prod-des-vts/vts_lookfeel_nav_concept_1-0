@@ -262,9 +262,9 @@ function ColumnManager({
               >
                 <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
                 <span className="flex-1 text-sm text-foreground">{col.label}</span>
-                <button onClick={() => onToggle(id)} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+                <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => onToggle(id)}>
                   {visible.has(id) ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                </button>
+                </Button>
               </div>
             )
           })}

@@ -43,7 +43,7 @@ function generateResponse(text: string): string {
 export const SIDE_PUSH_WIDTH = 380
 
 export function ChatSidePush() {
-  const { sidePushOpen, closeSidePush, pending, clearPending, openChat } = useChatPattern()
+  const { sidePushOpen, closeSidePush, pending, clearPending, openChat, onInsightTrigger } = useChatPattern()
   const [messages, setMessages] = React.useState<Message[]>([])
   const [input, setInput] = React.useState("")
   const [suggestionsVisible, setSuggestionsVisible] = React.useState(false)
@@ -119,11 +119,20 @@ export function ChatSidePush() {
       { id, role: "user", content: text },
       { id: thinkId, role: "assistant", content: "Thinking…" },
     ])
+    const isInsightPrompt = text.toLowerCase().includes("asset performance") && text.toLowerCase().includes("leasing")
     setTimeout(() => {
-      setMessages(prev => {
-        const filtered = prev.filter(m => m.id !== thinkId)
-        return [...filtered, { id: `r${Date.now()}`, role: "assistant", content: generateResponse(text) }]
-      })
+      if (isInsightPrompt && onInsightTrigger) {
+        onInsightTrigger()
+        setMessages(prev => {
+          const filtered = prev.filter(m => m.id !== thinkId)
+          return [...filtered, { id: `r${Date.now()}`, role: "assistant", content: "I've added **Asset performance & valuation** and **Leasing pipeline & negotiation** cards to your overview. They show current occupancy outlook, NER vs budget, pipeline by stage, and deals that need attention." }]
+        })
+      } else {
+        setMessages(prev => {
+          const filtered = prev.filter(m => m.id !== thinkId)
+          return [...filtered, { id: `r${Date.now()}`, role: "assistant", content: generateResponse(text) }]
+        })
+      }
       setSuggestionsVisible(true)
     }, 1000)
   }

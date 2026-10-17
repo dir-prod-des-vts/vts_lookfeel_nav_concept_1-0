@@ -151,7 +151,7 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
       <div className="flex items-center justify-between gap-3 flex-wrap">
         {view === "cards" && (
           <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 font-normal whitespace-nowrap text-primary border-primary/30 hover:bg-primary/5" />}>
+            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 font-normal whitespace-nowrap" />}>
               Sort: {SORT_OPTIONS.find(o => o.key === sortKey)?.label ?? "Name"}
               <ChevronDownIcon data-icon="inline-end" />
             </DropdownMenuTrigger>
@@ -169,15 +169,15 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
           </DropdownMenu>
         )}
         {view === "table" && (
-          <FilterBar filters={TABLE_FILTERS} active={activeFilters} onToggle={onToggle} onClear={onClear} onClearAll={onClearAll} chipClassName="h-8 text-primary border-primary/30 hover:bg-primary/5" />
+          <FilterBar filters={TABLE_FILTERS} active={activeFilters} onToggle={onToggle} onClear={onClear} onClearAll={onClearAll} chipClassName="h-8" />
         )}
         <div className="flex items-center gap-1">
           <Button variant="outline" size="icon" onClick={() => setView("cards")}
-            className={cn("h-8 w-8 text-primary border-primary/30 hover:bg-primary/5", view === "cards" && "bg-primary/10")}>
+            className={cn("h-8 w-8", view === "cards" && "bg-muted")}>
             <LayoutGrid className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="icon" onClick={() => setView("table")}
-            className={cn("h-8 w-8 text-primary border-primary/30 hover:bg-primary/5", view === "table" && "bg-primary/10")}>
+            className={cn("h-8 w-8", view === "table" && "bg-muted")}>
             <Table2 className="h-4 w-4" />
           </Button>
         </div>

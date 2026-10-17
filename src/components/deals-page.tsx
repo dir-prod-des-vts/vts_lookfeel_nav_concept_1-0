@@ -320,7 +320,7 @@ function ColumnManager({
 
   return (
     <Popover>
-      <PopoverTrigger className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-primary text-primary text-xs font-medium bg-transparent hover:bg-primary/10 transition-colors">
+      <PopoverTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1 font-normal whitespace-nowrap" />}>
         <Settings2 className="h-3.5 w-3.5" />
         Columns
       </PopoverTrigger>
@@ -346,12 +346,9 @@ function ColumnManager({
               >
                 <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
                 <span className="flex-1 text-sm text-foreground">{col.label}</span>
-                <button
-                  onClick={() => onToggle(id)}
-                  className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                >
+                <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => onToggle(id)}>
                   {isVisible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                </button>
+                </Button>
               </div>
             )
           })}
@@ -370,13 +367,14 @@ const CARD_DEFS: { id: string; label: string }[] = [
   { id: "pipeline",  label: "Deal pipeline"  },
 ]
 
-function CardManager({
-  visible, order, onToggle, onReorder,
+export function CardManager({
+  visible, order, onToggle, onReorder, defs = CARD_DEFS,
 }: {
   visible: Set<string>
   order: string[]
   onToggle: (id: string) => void
   onReorder: (newOrder: string[]) => void
+  defs?: { id: string; label: string }[]
 }) {
   const [dragging, setDragging] = React.useState<string | null>(null)
   const [dragOver, setDragOver] = React.useState<string | null>(null)
@@ -394,11 +392,11 @@ function CardManager({
     setDragging(null); setDragOver(null)
   }
 
-  const cardMap = Object.fromEntries(CARD_DEFS.map(c => [c.id, c]))
+  const cardMap = Object.fromEntries(defs.map(c => [c.id, c]))
 
   return (
     <Popover>
-      <PopoverTrigger className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full border border-primary text-primary text-xs font-medium bg-transparent hover:bg-primary/10 transition-colors">
+      <PopoverTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1 font-normal whitespace-nowrap" />}>
         <Settings2 className="h-3.5 w-3.5" />
         Cards
       </PopoverTrigger>
@@ -424,9 +422,9 @@ function CardManager({
               >
                 <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
                 <span className="flex-1 text-sm text-foreground">{card.label}</span>
-                <button onClick={() => onToggle(id)} className="shrink-0 text-muted-foreground hover:text-foreground transition-colors">
+                <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => onToggle(id)}>
                   {isVisible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                </button>
+                </Button>
               </div>
             )
           })}
@@ -568,21 +566,13 @@ function ActionQueue({ deals, onDealClick }: { deals: Deal[]; onDealClick?: (dea
       </div>
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-2 border-t border-border/40">
-          <button
-            onClick={() => setPage(p => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="h-6 w-6 flex items-center justify-center rounded hover:bg-muted/60 text-muted-foreground disabled:opacity-30 transition-colors"
-          >
+          <Button variant="ghost" size="icon" className="h-6 w-6" disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))}>
             <ChevronLeft className="h-3.5 w-3.5" />
-          </button>
+          </Button>
           <span className="text-xs text-muted-foreground">{page + 1} / {totalPages}</span>
-          <button
-            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-            disabled={page === totalPages - 1}
-            className="h-6 w-6 flex items-center justify-center rounded hover:bg-muted/60 text-muted-foreground disabled:opacity-30 transition-colors"
-          >
+          <Button variant="ghost" size="icon" className="h-6 w-6" disabled={page === totalPages - 1} onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}>
             <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -657,21 +647,13 @@ function NerBoard({ deals, onDealClick }: { deals: Deal[]; onDealClick?: (deal: 
       </div>
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-4 py-2 border-t border-border/40">
-          <button
-            onClick={() => setPage(p => Math.max(0, p - 1))}
-            disabled={page === 0}
-            className="h-6 w-6 flex items-center justify-center rounded hover:bg-muted/60 text-muted-foreground disabled:opacity-30 transition-colors"
-          >
+          <Button variant="ghost" size="icon" className="h-6 w-6" disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))}>
             <ChevronLeft className="h-3.5 w-3.5" />
-          </button>
+          </Button>
           <span className="text-xs text-muted-foreground">{page + 1} / {totalPages}</span>
-          <button
-            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-            disabled={page === totalPages - 1}
-            className="h-6 w-6 flex items-center justify-center rounded hover:bg-muted/60 text-muted-foreground disabled:opacity-30 transition-colors"
-          >
+          <Button variant="ghost" size="icon" className="h-6 w-6" disabled={page === totalPages - 1} onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}>
             <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+          </Button>
         </div>
       )}
     </div>
@@ -985,10 +967,10 @@ export function DealsPage({ onDealClick, assetContext, allowedAssets }: { onDeal
         {/* Selection bar */}
         {selected.size > 0 && (
           <div className="flex items-center gap-3 mb-4">
-            <button onClick={() => setSelected(new Set())} className="flex items-center gap-1.5 text-sm font-medium text-foreground hover:text-muted-foreground transition-colors">
+            <Button variant="ghost" size="sm" className="flex items-center gap-1.5 text-sm font-medium" onClick={() => setSelected(new Set())}>
               <span>{selected.size} selected</span>
               <X className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
+            </Button>
             <Button size="sm" variant="outline" className="h-8 text-xs">Change stage</Button>
             <Button size="sm" variant="outline" className="h-8 text-xs">Comment</Button>
             <Button size="sm" variant="outline" className="h-8 text-xs">Add requirement</Button>
@@ -1150,13 +1132,13 @@ export function DealsPage({ onDealClick, assetContext, allowedAssets }: { onDeal
                                     className="w-full resize-none rounded border border-border bg-background px-2 py-1 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                                   />
                                   <div className="flex items-center gap-1.5">
-                                    <button className="text-xs text-primary hover:underline font-medium" onClick={() => postComment(deal.id)}>Post</button>
-                                    <button className="text-xs text-muted-foreground hover:underline" onClick={() => { setComposerOpenId(null); setComposerDraft("") }}>Cancel</button>
+                                    <Button variant="link" size="sm" className="text-xs h-auto p-0" onClick={() => postComment(deal.id)}>Post</Button>
+                                    <Button variant="ghost" size="sm" className="text-xs h-auto p-0 text-muted-foreground" onClick={() => { setComposerOpenId(null); setComposerDraft("") }}>Cancel</Button>
                                   </div>
                                 </div>
                               )
                               if (!u) return (
-                                <button className="text-xs text-primary hover:underline" onClick={() => { setComposerOpenId(deal.id); setComposerDraft("") }}>Leave an update</button>
+                                <Button variant="link" size="sm" className="text-xs h-auto p-0" onClick={() => { setComposerOpenId(deal.id); setComposerDraft("") }}>Leave an update</Button>
                               )
                               return (
                                 <div className="flex flex-col gap-0.5 max-w-[164px]">
@@ -1165,7 +1147,7 @@ export function DealsPage({ onDealClick, assetContext, allowedAssets }: { onDeal
                                     <span className="text-[10px] text-muted-foreground shrink-0">{u.timestamp}</span>
                                   </div>
                                   <span className="text-xs text-muted-foreground line-clamp-2 leading-snug whitespace-normal">{u.message}</span>
-                                  <button className="text-xs text-primary hover:underline text-left mt-0.5" onClick={() => { setComposerOpenId(deal.id); setComposerDraft("") }}>Leave an update</button>
+                                  <Button variant="link" size="sm" className="text-xs h-auto p-0" onClick={() => { setComposerOpenId(deal.id); setComposerDraft("") }}>Leave an update</Button>
                                 </div>
                               )
                             })()}
@@ -1249,10 +1231,10 @@ export function DealsPage({ onDealClick, assetContext, allowedAssets }: { onDeal
             })}
             <TableRow className="border-t border-border/40 hover:bg-muted/30 transition-colors cursor-pointer group">
               <td colSpan={orderedCols.length + 2} className="py-2.5 px-3">
-                <button className="flex items-center gap-2 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+                <Button variant="ghost" size="sm" className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Plus className="h-3.5 w-3.5" />
                   Add deal
-                </button>
+                </Button>
               </td>
             </TableRow>
           </TableBody>

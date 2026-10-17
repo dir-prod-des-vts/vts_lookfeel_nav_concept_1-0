@@ -39,7 +39,7 @@ export function FilterChip({ filter, selected, onToggle, onClear, triggerClassNa
         variant="outline"
         size="sm"
         className={cn(
-          "gap-1 font-normal whitespace-nowrap",
+          "h-8 gap-1 font-normal whitespace-nowrap",
           isActive && "border-primary bg-primary/10 text-primary font-medium",
           triggerClassName
         )}
@@ -130,29 +130,20 @@ export function FilterBar({
       ))}
 
       {!showAll && hidden > 0 && (
-        <button
-          onClick={() => setShowAll(true)}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
+        <Button variant="ghost" size="sm" className="text-sm text-muted-foreground" onClick={() => setShowAll(true)}>
           +{hidden} more
-        </button>
+        </Button>
       )}
       {showAll && (
-        <button
-          onClick={() => setShowAll(false)}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
+        <Button variant="ghost" size="sm" className="text-sm text-muted-foreground" onClick={() => setShowAll(false)}>
           Show less
-        </button>
+        </Button>
       )}
 
       {hasAny && (
-        <button
-          onClick={onClearAll}
-          className="ml-auto text-sm text-primary hover:text-primary/80 font-medium transition-colors"
-        >
+        <Button variant="ghost" size="sm" className="ml-auto text-sm font-medium" onClick={onClearAll}>
           Clear all
-        </button>
+        </Button>
       )}
     </div>
   )

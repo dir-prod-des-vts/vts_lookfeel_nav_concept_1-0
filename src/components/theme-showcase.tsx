@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Sun, Moon, Check, ArrowRight, ChevronRight, CheckCircle2, Loader2, Clock, Sparkle, LayoutGrid, FileText, Handshake, Calculator, UserCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
@@ -118,6 +119,24 @@ function Swatch({ name, role, cssVar, description }: { name: string; role: strin
         <p className="text-[10px] font-medium uppercase tracking-wide text-primary">{role}</p>
         <p className="font-mono text-[11px] text-muted-foreground bg-muted rounded px-1.5 py-0.5 inline-block">{cssVar}</p>
         <p className="text-xs text-muted-foreground leading-relaxed pt-0.5">{description}</p>
+      </div>
+    </div>
+  )
+}
+
+function TokenSwatch({ token, label, cls }: { token: string; label: string; cls: string }) {
+  const [value, setValue] = React.useState("")
+  React.useEffect(() => {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(token).trim()
+    setValue(v)
+  }, [token])
+  return (
+    <div className="rounded-xl overflow-hidden border border-border bg-card">
+      <div className={cn("h-10", cls)} />
+      <div className="px-3 py-2 space-y-0.5">
+        <p className="text-xs font-medium text-foreground leading-none">{label}</p>
+        <p className="font-mono text-[10px] text-muted-foreground">{token}</p>
+        {value && <p className="font-mono text-[9px] text-muted-foreground/70 truncate">{value}</p>}
       </div>
     </div>
   )
@@ -450,6 +469,34 @@ export function ThemeShowcase({ isDark, onToggleDark }: ThemeShowcaseProps) {
             </div>
           </div>
 
+          {/* Button group */}
+          <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+              <p className="text-sm font-semibold text-foreground">Button group</p>
+              <p className="text-xs text-muted-foreground font-mono">horizontal · vertical · split</p>
+            </div>
+            <div className="p-5 flex flex-wrap gap-3 items-center">
+              <ButtonGroup>
+                <Button variant="outline">Archive</Button>
+                <Button variant="outline">Report</Button>
+                <Button variant="outline">Snooze</Button>
+              </ButtonGroup>
+              <ButtonGroup>
+                <Button variant="secondary">Save</Button>
+                <ButtonGroupSeparator />
+                <Button variant="secondary" size="icon"><ArrowRight className="h-4 w-4" /></Button>
+              </ButtonGroup>
+              <ButtonGroup orientation="vertical">
+                <Button variant="outline" size="sm">Top</Button>
+                <Button variant="outline" size="sm">Middle</Button>
+                <Button variant="outline" size="sm">Bottom</Button>
+              </ButtonGroup>
+            </div>
+            <div className="px-5 pb-4 text-xs text-muted-foreground leading-relaxed border-t border-border pt-3">
+              Groups related actions into a single connected control. Use <code className="font-mono">ButtonGroupSeparator</code> to create split buttons.
+            </div>
+          </div>
+
           {/* Badges */}
           <div className="rounded-2xl border border-border bg-card overflow-hidden">
             <div className="flex items-center justify-between px-5 py-3 border-b border-border">
@@ -575,144 +622,37 @@ export function ThemeShowcase({ isDark, onToggleDark }: ThemeShowcaseProps) {
         </div>
       </section>
 
+      <Separator />
+
+      {/* ── 09 Component library ─────────────────────────────────────────── */}
       <section>
         <SectionHeader
-          kicker="09 · AI + Agents"
-          title="Intelligence belongs in the workflow."
-          description="AI is part of the system, not a separate visual layer. Agents use the same components, surface ramps, states, and interaction patterns as everything else in VTS."
+          kicker="09 · Component library"
+          title="shadcn/ui"
+          description="Built on Base UI primitives. Every component is installed directly into the project and styled with VTS tokens."
         />
-
-        {/* System Principles — full width */}
-        <div className="rounded-2xl border border-border bg-card overflow-hidden mb-10">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-border">
-            <p className="text-sm font-semibold text-foreground">How Agents Behave</p>
-            <p className="text-xs text-muted-foreground font-mono">context · output · control · auditability</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 divide-y sm:divide-y-0 sm:divide-x divide-border">
-            {[
-              { icon: Sparkle,      title: "Context is pre-loaded.",      body: "Agents receive the full row, card, or asset context on dispatch. No re-prompting. No copy-paste. The user taps and the agent knows." },
-              { icon: ArrowRight,   title: "Output lives in the flow.",    body: "Findings render in cards, rows, and sidebar panels. Not modals. The visual weight of an agent result matches a human-authored one." },
-              { icon: CheckCircle2, title: "Actions are recommended, not automatic.", body: "Agents surface next steps and draft actions. The user approves. Control stays with the team, speed comes from the AI." },
-              { icon: Clock,        title: "Runs are tracked and auditable.", body: "Every agent run has a timestamp, an asset, a category, and a result. Nothing is a black box. History is always one click away." },
-            ].map(({ icon: Icon, title, body }) => (
-              <div key={title} className="flex flex-col gap-2 p-5">
-                <Icon className="h-4 w-4 shrink-0 text-primary" />
-                <p className="text-sm font-semibold text-foreground leading-snug">{title}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">{body}</p>
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {[
+            { label: "Button",      href: "/vts_lookfeel_nav_concept_1-0/button-showcase.html" },
+            { label: "Date picker", href: "/vts_lookfeel_nav_concept_1-0/datepicker-showcase.html" },
+            { label: "All components", href: "/vts_lookfeel_nav_concept_1-0/components-showcase.html" },
+          ].map(({ label, href }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground hover:bg-muted hover:border-primary/30 hover:text-primary transition-colors flex items-center justify-between gap-2"
+            >
+              {label}
+              <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            </a>
+          ))}
         </div>
-
-        {/* Row 1: Entry point + Deal Intelligence panel */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
-          {/* Left: sparkle entry point */}
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm font-semibold text-foreground mb-3">Entry Point: Every Row</p>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-4">Every data row in VTS carries a contextual agent trigger. One tap dispatches an agent with full row context pre-loaded. No copy-paste, no prompt engineering.</p>
-              {/* Simulated table row with sparkle */}
-              <div className={cn(cardBase, "p-0 overflow-hidden")}>
-                <div className="px-4 py-2 border-b border-border/40 flex items-center gap-4 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                  <span className="flex-1">Tenant</span><span className="w-24 text-right">Space</span><span className="w-20 text-right">Time</span><span className="w-8" />
-                </div>
-                {[
-                  { tenant: "Pfizer", space: "Suite 1200", time: "2 mo", urgent: true },
-                  { tenant: "Morgan Stanley", space: "Floors 8–11", time: "4 mo", urgent: false },
-                  { tenant: "Deloitte", space: "Suite 3400", time: "6 mo", urgent: false },
-                  { tenant: "KPMG", space: "Floor 22", time: "1 mo", urgent: true },
-                  { tenant: "WeWork", space: "Floors 14–16", time: "3 mo", urgent: true },
-                ].map((row, i) => (
-                  <div key={i} className="flex items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors border-b border-border/30 last:border-0">
-                    <span className="flex-1 text-sm font-medium text-foreground">{row.tenant}</span>
-                    <span className="w-24 text-right text-xs text-muted-foreground">{row.space}</span>
-                    <span className="w-20 flex justify-end">
-                      <span className={cn(
-                        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium tabular-nums",
-                        row.urgent ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"
-                      )}>{row.time}</span>
-                    </span>
-                    <span className="w-8 flex justify-end">
-                      <AgentBtn label={`Analyze ${row.tenant} expiration and recommend next steps`} />
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Deal Intelligence panel */}
-          <div className="space-y-4">
-            <p className="text-sm font-semibold text-foreground">Proactive Intelligence Panel</p>
-            <p className="text-sm text-muted-foreground leading-relaxed">Agents don't wait to be asked. They run continuously and surface findings in the sidebar, prioritized by revenue impact rather than recency.</p>
-            <div className={cn(cardBase, "bg-sidebar border-transparent space-y-2")}>
-              <div className="flex items-start justify-between gap-2 mb-4">
-                <div>
-                  <p className="text-[10px] font-medium uppercase tracking-widest text-sidebar-foreground/50 mb-1">VTS Agents</p>
-                  <h3 className="text-xl font-semibold text-sidebar-foreground">Deal Intelligence</h3>
-                </div>
-                <Button variant="outline" size="sm" className="shrink-0 text-sidebar-foreground border-current bg-transparent hover:bg-sidebar-accent/60 text-xs">View Active Agents</Button>
-              </div>
-              <div className="rounded-lg bg-primary/15 border border-primary/25 px-3 py-2.5 flex items-center gap-2.5">
-                <Sparkle className="h-4 w-4 shrink-0 text-sidebar-primary" />
-                <p className="text-sm text-sidebar-foreground">3 deal risks identified: <span className="text-sidebar-primary font-medium">$1.8M NER at risk</span></p>
-              </div>
-              {[
-                { label: "4 deals stalling 20+ days", value: "276K sf" },
-                { label: "3 at-risk deals need review", value: "3 at-risk" },
-                { label: "LOI+ pipeline upside", value: "+$89K/mo" },
-              ].map(({ label, value }) => (
-                <div key={label} className="rounded-lg bg-primary/10 border border-primary/20 px-3 py-2.5 flex items-center gap-2.5">
-                  <Sparkle className="h-3.5 w-3.5 shrink-0 text-sidebar-primary" />
-                  <p className="flex-1 text-sm text-sidebar-foreground">{label}</p>
-                  <p className="text-sm font-medium text-sidebar-primary tabular-nums">{value}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Live Status + Recent Runs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6 mt-10">
-          <div className="space-y-3">
-            <p className="text-sm font-semibold text-foreground">Live Status</p>
-            <div className={cn(cardBase, "bg-sidebar border-transparent flex items-center gap-4")}>
-              <Loader2 className="h-5 w-5 text-primary animate-spin shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-sidebar-foreground">1 agent running</p>
-                <p className="text-xs text-sidebar-foreground/60 truncate">Northeast Corridor Portfolio · Q3 NER improvement</p>
-              </div>
-              <Button variant="outline" size="sm" className="shrink-0 text-sidebar-foreground border-current bg-transparent hover:bg-sidebar-accent/60 text-xs">View</Button>
-            </div>
-            <div className={cn(cardBase, "space-y-1.5")}>
-              <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">Recent Runs</p>
-              {[
-                { icon: CheckCircle2, color: "text-success", title: "12-month lease expiry risk analysis", meta: "VTS Tower · Lease risk · 2 min ago", summary: "3 leases totaling $234K/mo expire before Oct 2026." },
-                { icon: CheckCircle2, color: "text-success", title: "Vacancy outreach plan for Suite 2100", meta: "VTS Tower · Leasing · 14 min ago", summary: "12 prospects identified. Draft outreach ready." },
-                { icon: Clock,        color: "text-muted-foreground", title: "KPMG Suite 3400 renewal strategy", meta: "VTS Tower · Lease strategy · Queued", summary: null },
-              ].map(({ icon: Icon, color, title, meta, summary }) => (
-                <div key={title} className="flex items-start gap-3 rounded-xl border border-border/60 px-4 py-3.5 hover:bg-muted/50 hover:border-border cursor-pointer transition-all group">
-                  <Icon className={cn("h-4 w-4 mt-0.5 shrink-0", color)} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-medium text-foreground leading-snug group-hover:text-primary transition-colors">{title}</p>
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">{meta}</p>
-                    {summary && <p className="text-xs text-muted-foreground mt-1 leading-snug">{summary}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-
       </section>
 
-
       {/* Footer */}
-      <div className="pb-8 border-t border-border pt-8 text-xs text-muted-foreground">
+      <div className="pb-8 border-t border-border pt-8 mt-16 text-xs text-muted-foreground">
         VTS Design System foundations reference. Built to be retokenized and extended as the product surface grows.
       </div>
 
@@ -720,3 +660,4 @@ export function ThemeShowcase({ isDark, onToggleDark }: ThemeShowcaseProps) {
     </>
   )
 }
+

@@ -739,12 +739,9 @@ function ProposalsTab({ deal, stageIdx, onAddProposal }: { deal: Deal; stageIdx:
             <div className="flex items-center justify-between mb-1.5 px-1">
               <span className="text-xs font-semibold text-foreground">Add reference cards</span>
               {selectedRefs.size > 0 && (
-                <button
-                  onClick={() => setSelectedRefs(new Set())}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
+                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground" onClick={() => setSelectedRefs(new Set())}>
                   Clear all
-                </button>
+                </Button>
               )}
             </div>
             {REF_GROUPS.map(group => (
@@ -1377,11 +1374,11 @@ function UpdateCard({ entry }: { entry: FeedEntry }) {
       <p className="text-sm text-foreground leading-relaxed">{entry.message}</p>
       <div className="flex items-center gap-3 pt-1 border-t border-border/50">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <button className="hover:text-foreground transition-colors">Share</button>
+          <Button variant="ghost" size="sm" className="text-xs">Share</Button>
           <span className="opacity-40">·</span>
-          <button className="hover:text-foreground transition-colors">Edit</button>
+          <Button variant="ghost" size="sm" className="text-xs">Edit</Button>
           <span className="opacity-40">·</span>
-          <button className="hover:text-destructive transition-colors">Delete</button>
+          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive">Delete</Button>
           <span className="opacity-40">·</span>
         </div>
         <div className="flex items-center gap-1.5">

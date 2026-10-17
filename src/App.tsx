@@ -12,7 +12,7 @@ import { DealActions } from "@/components/deal-actions"
 import { PortfolioGrid } from "@/components/portfolio-grid"
 import { KpiBar } from "@/components/kpi-bar"
 import { AgentsPage } from "@/components/agents-page"
-import { DealsPage, DEALS } from "@/components/deals-page"
+import { DealsPage, DEALS, CardManager } from "@/components/deals-page"
 import type { Deal as DealsPageDeal } from "@/components/deals-page"
 import { DealProfile, TenantLogoImage, getDealHealth, type DealStatus } from "@/components/deal-profile"
 import { ThemeShowcase } from "@/components/theme-showcase"
@@ -85,9 +85,480 @@ function SidePushMain({ children, navCollapsed }: { children: React.ReactNode; n
     </main>
   )
 }
-import { cn } from "@/lib/utils"
-import { type LucideIcon, UserCircle, BellRing, Activity } from "lucide-react"
+import { cn, cardBase } from "@/lib/utils"
+import { type LucideIcon, UserCircle, BellRing, Activity, Plus, Pencil, Trash2, Bookmark, ChevronDownIcon, Sparkles, AlertTriangle, Clock } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import buildingImg from "@/assets/building.jpg"
+
+// ── Overview view switcher ─────────────────────────────────────────────────────
+
+type OverviewCardId = "kpis" | "availability" | "financial" | "leasing" | "deal-actions" | "critical-dates" | "action-levers" | "asset-valuation" | "leasing-strategy"
+
+interface OverviewView {
+  id: string
+  name: string
+  cards: OverviewCardId[]
+  isDefault: boolean
+  builtIn?: boolean
+}
+
+const OVERVIEW_CARD_DEFS: { id: OverviewCardId; label: string; span: 1 | 2 | 3 }[] = [
+  { id: "kpis",            label: "KPIs",                span: 3 },
+  { id: "availability",    label: "Availability",        span: 1 },
+  { id: "financial",       label: "Financial performance", span: 2 },
+  { id: "leasing",         label: "Leasing activity",    span: 2 },
+  { id: "deal-actions",    label: "Deal actions",         span: 1 },
+  { id: "critical-dates",  label: "Critical dates",       span: 2 },
+  { id: "action-levers",   label: "Action levers",        span: 1 },
+]
+
+const BUILT_IN_VIEWS: OverviewView[] = [
+  { id: "view-full",      name: "Full overview",    cards: ["kpis","availability","financial","leasing","deal-actions","critical-dates","action-levers"], isDefault: true,  builtIn: true },
+  { id: "view-leasing",   name: "Leasing focus",    cards: ["kpis","availability","leasing","deal-actions"],                                             isDefault: false, builtIn: true },
+  { id: "view-financial", name: "Financial focus",  cards: ["kpis","financial","critical-dates","action-levers"],                                        isDefault: false, builtIn: true },
+]
+
+function AssetValuationCard({ deals, dates, assetId, className, onNavigate }: {
+  deals: DealsPageDeal[]
+  dates: CriticalDate[]
+  assetId: string
+  className?: string
+  onNavigate?: (page: string) => void
+}) {
+  const kpis = ASSET_KPIS[assetId] ?? ASSET_KPIS["vts-tower"]
+  const lateStage = deals.filter(d => ["LOI", "Legal", "Lease Out"].includes(d.stage) && d.status !== "executed")
+  const lateStageNewSf = lateStage.reduce((a, d) => a + d.sf, 0)
+  const totalSf = 1368054
+  const occupiedSf = Math.round(totalSf * kpis.occupancy / 100)
+  const projectedOccupancy = Math.min(100, Math.round((occupiedSf + lateStageNewSf) / totalSf * 100))
+  const monthlyNer = lateStage.filter(d => d.ner > 0).reduce((a, d) => a + (d.ner * d.sf) / 12, 0)
+  const expiringDates = dates.filter(d => d.category === "expiring")
+  const netAbsorption = lateStageNewSf - _expiringSf
+
+  const statTiles = [
+    { label: "Avg NER",        value: kpis.avgNer,             sub: "Per sf / yr",         colorCls: "" },
+    { label: "NER vs budget",  value: kpis.nerBudgetDelta,     sub: "Year to date",        colorCls: kpis.nerBudgetUp ? "text-success" : "text-destructive" },
+    { label: "Net absorption", value: `${netAbsorption >= 0 ? "+" : ""}${(netAbsorption / 1000).toFixed(0)}K sf`, sub: "Pipeline vs expiring", colorCls: netAbsorption >= 0 ? "text-success" : "text-destructive" },
+  ]
+
+  return (
+    <div className={cn(cardBase, "!p-0 overflow-hidden", className)}>
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 pt-5 pb-4">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Asset overview</p>
+          <h2 className="text-xl font-semibold text-foreground">Asset performance & valuation</h2>
+        </div>
+      </div>
+
+      {/* KPI tiles row — flush with card edges, border-separated */}
+      <div className="flex divide-x divide-border/60 border-y border-border/60">
+        {statTiles.map(t => (
+          <div key={t.label} className="flex-1 px-5 py-3 min-w-0">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">{t.label}</p>
+            <p className={cn("text-xl font-medium", t.colorCls || "text-foreground")}>{t.value}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Content area */}
+      <div className="flex flex-col gap-5 px-5 py-5">
+        {/* Occupancy outlook */}
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">Occupancy outlook</p>
+          <div className="space-y-3">
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs text-muted-foreground">Current</span>
+                <span className="text-xs font-medium tabular-nums text-foreground">{kpis.occupancy}%</span>
+              </div>
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div className="h-full rounded-full bg-primary/40" style={{ width: `${kpis.occupancy}%` }} />
+              </div>
+            </div>
+            {lateStage.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs text-muted-foreground">Projected ({lateStage.length} late-stage)</span>
+                  <span className="text-xs font-medium tabular-nums text-foreground">{projectedOccupancy}%</span>
+                </div>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${projectedOccupancy}%` }} />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Insight + alert items */}
+        <div className="flex flex-col gap-2">
+          {lateStage.length > 0 && (
+            <button onClick={() => onNavigate?.("deals")} className="w-full text-left rounded-lg border border-primary/25 bg-primary/15 p-3 hover:bg-primary/20 transition-colors cursor-pointer">
+              <div className="flex items-start gap-2.5">
+                <Sparkles className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium leading-snug text-foreground">Occupancy upside from late-stage deals</p>
+                  <p className="text-sm text-muted-foreground mt-0.5 leading-snug">
+                    {lateStage.length} deal{lateStage.length !== 1 ? "s" : ""} totaling{" "}
+                    <span className="font-medium text-foreground">{(lateStageNewSf / 1000).toFixed(0)}K sf</span> could add{" "}
+                    <span className="font-medium text-foreground">${(monthlyNer / 1000).toFixed(0)}K/mo</span> NER and lift occupancy to{" "}
+                    <span className="font-medium text-foreground">{projectedOccupancy}%</span>.
+                  </p>
+                </div>
+              </div>
+            </button>
+          )}
+          {expiringDates.length > 0 && (
+            <button onClick={() => onNavigate?.("critical-dates")} className="w-full text-left rounded-lg border border-primary/25 bg-primary/15 p-3 hover:bg-primary/20 transition-colors cursor-pointer">
+              <div className="flex items-start gap-2.5">
+                <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium leading-snug text-foreground">Leases expiring within 12 months</p>
+                  <p className="text-sm text-muted-foreground mt-0.5 leading-snug truncate">
+                    {expiringDates.map(d => d.tenant).join(", ")}
+                  </p>
+                </div>
+              </div>
+            </button>
+          )}
+        </div>
+      </div>
+      {/* Added by Ask VTS footer */}
+      <div className="flex items-center gap-1.5 px-5 py-3 border-t border-border/60">
+        <Sparkles className="h-3 w-3 text-primary/60" />
+        <span className="text-[10px] font-medium uppercase tracking-widest text-primary/60">Added by Ask VTS</span>
+      </div>
+    </div>
+  )
+}
+
+function LeasingStrategyCard({ deals, dates, className, onNavigate }: {
+  deals: DealsPageDeal[]
+  dates: CriticalDate[]
+  className?: string
+  onNavigate?: (page: string) => void
+}) {
+  const PIPELINE_STAGES = ["Inquiry", "Touring", "Proposal", "LOI", "Legal", "Lease Out"] as const
+  const activeDeals = deals.filter(d => d.status !== "executed")
+  const stageCounts = PIPELINE_STAGES.map(s => ({
+    stage: s,
+    count: activeDeals.filter(d => d.stage === s).length,
+    isLate: ["LOI", "Legal", "Lease Out"].includes(s),
+  })).filter(s => s.count > 0)
+
+  const lateStage = activeDeals.filter(d => ["LOI", "Legal", "Lease Out"].includes(d.stage))
+  const atRisk = activeDeals.filter(d => getDealHealth(d.id, d.stage as any).score === "at-risk")
+  const stalled = activeDeals.filter(d => d.status === "stalled")
+  const belowBudget = activeDeals.filter(d => d.ner > 0 && d.ner < d.budgetNer)
+  const renewalWindows = dates.filter(d => d.category === "renewal")
+  const maxCount = Math.max(...stageCounts.map(s => s.count), 1)
+
+  const statTiles = [
+    { label: "Active deals", value: String(activeDeals.length), sub: "In pipeline",   colorCls: "" },
+    { label: "Late stage",   value: String(lateStage.length),   sub: "LOI, legal & out", colorCls: "" },
+    { label: "At risk",      value: String(atRisk.length),      sub: "Need attention", colorCls: atRisk.length > 0 ? "text-destructive" : "" },
+    { label: "Renewals",     value: String(renewalWindows.length), sub: "Windows open", colorCls: renewalWindows.length > 0 ? "text-warning" : "" },
+  ]
+
+  const alertItems = [
+    belowBudget.length > 0 && {
+      icon: AlertTriangle,
+      title: `${belowBudget.length} deal${belowBudget.length !== 1 ? "s" : ""} below budget NER`,
+      desc: `${belowBudget.map(d => d.tenant).slice(0, 3).join(", ")}${belowBudget.length > 3 ? ` +${belowBudget.length - 3} more` : ""}`,
+      navTo: "deals",
+    },
+    stalled.length > 0 && {
+      icon: Clock,
+      title: `${stalled.length} stalled deal${stalled.length !== 1 ? "s" : ""} need follow-up`,
+      desc: `${stalled.map(d => d.tenant).slice(0, 3).join(", ")}${stalled.length > 3 ? ` +${stalled.length - 3} more` : ""}`,
+      navTo: "deals",
+    },
+    renewalWindows.length > 0 && {
+      icon: Sparkles,
+      title: `${renewalWindows.length} renewal window${renewalWindows.length !== 1 ? "s" : ""} opening`,
+      desc: renewalWindows.map(d => d.tenant).join(", "),
+      navTo: "critical-dates",
+    },
+  ].filter(Boolean) as { icon: React.ElementType; title: string; desc: string; navTo: string }[]
+
+  return (
+    <div className={cn(cardBase, "!p-0 overflow-hidden", className)}>
+      {/* Header */}
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-5 pt-5 pb-4">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Pipeline</p>
+          <h2 className="text-xl font-semibold text-foreground">Leasing pipeline & negotiation</h2>
+        </div>
+      </div>
+
+      {/* KPI tiles row */}
+      <div className="flex divide-x divide-border/60 border-y border-border/60">
+        {statTiles.map(t => (
+          <div key={t.label} className="flex-1 px-5 py-3 min-w-0">
+            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">{t.label}</p>
+            <p className={cn("text-xl font-medium", t.colorCls || "text-foreground")}>{t.value}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Content area */}
+      <div className="flex flex-col gap-5 px-5 py-5">
+        {/* Pipeline by stage chart */}
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">Pipeline by stage</p>
+          <div className="flex items-end gap-3 h-16">
+            {stageCounts.map(({ stage, count, isLate }) => (
+              <div key={stage} className="flex-1 flex flex-col items-center gap-1">
+                <span className="text-xs font-medium tabular-nums text-foreground">{count}</span>
+                <div className="w-full flex flex-col justify-end" style={{ height: "40px" }}>
+                  <div
+                    className={cn("w-full rounded-sm", isLate ? "bg-primary" : "bg-primary/30")}
+                    style={{ height: `${Math.max((count / maxCount) * 32 + 6, 6)}px` }}
+                  />
+                </div>
+                <span className="text-[10px] text-muted-foreground text-center leading-tight whitespace-nowrap">{stage}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Alert items */}
+        <div className="flex flex-col gap-2">
+          {alertItems.map((item, i) => (
+            <button key={i} onClick={() => onNavigate?.(item.navTo)} className="w-full text-left rounded-lg border border-primary/25 bg-primary/15 p-3 hover:bg-primary/20 transition-colors cursor-pointer">
+              <div className="flex items-start gap-2.5">
+                <item.icon className="h-4 w-4 mt-0.5 shrink-0 text-primary" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium leading-snug text-foreground">{item.title}</p>
+                  <p className="text-xs mt-0.5 text-muted-foreground truncate">{item.desc}</p>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* Added by Ask VTS footer */}
+      <div className="flex items-center gap-1.5 px-5 py-3 border-t border-border/60">
+        <Sparkles className="h-3 w-3 text-primary/60" />
+        <span className="text-[10px] font-medium uppercase tracking-widest text-primary/60">Added by Ask VTS</span>
+      </div>
+    </div>
+  )
+}
+
+function migrateViews(saved: OverviewView[]): OverviewView[] {
+  // Keep built-in views in sync with BUILT_IN_VIEWS definition (handles new cards added to built-ins)
+  return saved.map(v => {
+    const builtIn = BUILT_IN_VIEWS.find(b => b.id === v.id)
+    return builtIn ? { ...builtIn, isDefault: v.isDefault } : v
+  })
+}
+
+function initialViewId(storageViewsKey: string, storageActiveKey: string, builtIns: OverviewView[], migrate: (v: OverviewView[]) => OverviewView[] = x => x): string {
+  try {
+    const s = localStorage.getItem(storageViewsKey)
+    const views = s ? migrate(JSON.parse(s)) : builtIns
+    return localStorage.getItem(storageActiveKey) ?? views.find(v => v.isDefault)?.id ?? builtIns[0].id
+  } catch { return builtIns[0].id }
+}
+
+function initialLiveCards(storageViewsKey: string, storageActiveKey: string, builtIns: OverviewView[], migrate: (v: OverviewView[]) => OverviewView[] = x => x): OverviewCardId[] {
+  try {
+    const s = localStorage.getItem(storageViewsKey)
+    const views = s ? migrate(JSON.parse(s)) : builtIns
+    const id = localStorage.getItem(storageActiveKey) ?? views.find(v => v.isDefault)?.id ?? builtIns[0].id
+    return views.find(v => v.id === id)?.cards ?? builtIns[0].cards
+  } catch { return builtIns[0].cards }
+}
+
+function useOverviewViews() {
+  const [views, setViews] = React.useState<OverviewView[]>(() => {
+    try {
+      const saved = localStorage.getItem("overview:views")
+      return saved ? migrateViews(JSON.parse(saved)) : BUILT_IN_VIEWS
+    } catch { return BUILT_IN_VIEWS }
+  })
+  const [activeViewId, setActiveViewId] = React.useState<string>(() => initialViewId("overview:views", "overview:activeViewId", BUILT_IN_VIEWS, migrateViews))
+  const [liveCards, setLiveCards] = React.useState<OverviewCardId[]>(() => initialLiveCards("overview:views", "overview:activeViewId", BUILT_IN_VIEWS, migrateViews))
+
+  function persistViews(next: OverviewView[]) {
+    setViews(next)
+    localStorage.setItem("overview:views", JSON.stringify(next))
+  }
+  function selectView(id: string) {
+    setActiveViewId(id)
+    localStorage.setItem("overview:activeViewId", id)
+    const v = views.find(v => v.id === id)
+    if (v) setLiveCards(v.cards)
+  }
+  function saveView(name: string) {
+    const id = `view-${Date.now()}`
+    const newView: OverviewView = { id, name, cards: liveCards, isDefault: false }
+    persistViews([...views, newView])
+    selectView(id)
+  }
+  function renameView(id: string, name: string) {
+    persistViews(views.map(v => v.id === id ? { ...v, name } : v))
+  }
+  function deleteView(id: string) {
+    const next = views.filter(v => v.id !== id)
+    persistViews(next)
+    if (activeViewId === id) selectView(next[0]?.id ?? BUILT_IN_VIEWS[0].id)
+  }
+  function setDefault(id: string) {
+    persistViews(views.map(v => ({ ...v, isDefault: v.id === id })))
+  }
+  function toggleCard(cardId: OverviewCardId) {
+    setLiveCards(prev => prev.includes(cardId) ? prev.filter(c => c !== cardId) : [...prev, cardId])
+  }
+  function reorderCards(next: OverviewCardId[]) { setLiveCards(next) }
+
+  const activeView = views.find(v => v.id === activeViewId) ?? views[0]
+  return { views, activeView, liveCards, selectView, saveView, renameView, deleteView, setDefault, toggleCard, reorderCards }
+}
+
+// Portfolio card views use the same OverviewCardId set but exclude "kpis" (portfolio has its own KPI bar)
+type PortfolioCardId = Exclude<OverviewCardId, "kpis" | "asset-valuation" | "leasing-strategy">
+const PORTFOLIO_CARD_DEFS = OVERVIEW_CARD_DEFS.filter(c => c.id !== "kpis") as { id: PortfolioCardId; label: string; span: 1 | 2 | 3 }[]
+
+const BUILT_IN_PORTFOLIO_VIEWS: OverviewView[] = [
+  { id: "pv-assets",    name: "Assets",           cards: [],                                                                              isDefault: true,  builtIn: true },
+  { id: "pv-full",      name: "Full overview",     cards: ["availability","financial","leasing","deal-actions","critical-dates","action-levers"] as OverviewCardId[], isDefault: false, builtIn: true },
+  { id: "pv-leasing",   name: "Leasing focus",     cards: ["availability","leasing","deal-actions"] as OverviewCardId[],                  isDefault: false, builtIn: true },
+  { id: "pv-financial", name: "Financial focus",   cards: ["financial","critical-dates","action-levers"] as OverviewCardId[],             isDefault: false, builtIn: true },
+]
+
+function usePortfolioViews() {
+  const [views, setViews] = React.useState<OverviewView[]>(() => {
+    try { const s = localStorage.getItem("portfolio:views"); return s ? JSON.parse(s) : BUILT_IN_PORTFOLIO_VIEWS } catch { return BUILT_IN_PORTFOLIO_VIEWS }
+  })
+  const [activeViewId, setActiveViewId] = React.useState<string>(() => initialViewId("portfolio:views", "portfolio:activeViewId", BUILT_IN_PORTFOLIO_VIEWS))
+  const [liveCards, setLiveCards] = React.useState<OverviewCardId[]>(() => initialLiveCards("portfolio:views", "portfolio:activeViewId", BUILT_IN_PORTFOLIO_VIEWS))
+
+  function persist(next: OverviewView[]) { setViews(next); localStorage.setItem("portfolio:views", JSON.stringify(next)) }
+  function selectView(id: string) {
+    setActiveViewId(id); localStorage.setItem("portfolio:activeViewId", id)
+    const v = views.find(v => v.id === id)
+    if (v) setLiveCards(v.cards)
+  }
+  function saveView(name: string) {
+    const id = `pv-${Date.now()}`
+    const newView: OverviewView = { id, name, cards: liveCards, isDefault: false }
+    persist([...views, newView]); selectView(id)
+  }
+  function renameView(id: string, name: string) { persist(views.map(v => v.id === id ? { ...v, name } : v)) }
+  function deleteView(id: string) {
+    const next = views.filter(v => v.id !== id); persist(next)
+    if (activeViewId === id) selectView(next[0]?.id ?? BUILT_IN_PORTFOLIO_VIEWS[0].id)
+  }
+  function setDefault(id: string) { persist(views.map(v => ({ ...v, isDefault: v.id === id }))) }
+  function toggleCard(cardId: OverviewCardId) {
+    setLiveCards(prev => prev.includes(cardId) ? prev.filter(c => c !== cardId) : [...prev, cardId])
+  }
+  function reorderCards(next: OverviewCardId[]) { setLiveCards(next) }
+
+  const activeView = views.find(v => v.id === activeViewId) ?? views[0]
+  return { views, activeView, liveCards, selectView, saveView, renameView, deleteView, setDefault, toggleCard, reorderCards }
+}
+
+function ViewSwitcher({ views, activeView, onSelect, onSave, onRename, onDelete, onSetDefault, prefix = "Asset:" }: {
+  views: OverviewView[]
+  activeView: OverviewView
+  onSelect: (id: string) => void
+  onSave: (name: string) => void
+  onRename: (id: string, name: string) => void
+  onDelete: (id: string) => void
+  onSetDefault: (id: string) => void
+  prefix?: string
+}) {
+  const [open, setOpen] = React.useState(false)
+  const [editingId, setEditingId] = React.useState<string | null>(null)
+  const [editName, setEditName] = React.useState("")
+  const [saving, setSaving] = React.useState(false)
+  const [saveName, setSaveName] = React.useState("")
+
+  function commitRename(id: string) {
+    if (editName.trim()) onRename(id, editName.trim())
+    setEditingId(null)
+  }
+  function commitSave() {
+    if (saveName.trim()) { onSave(saveName.trim()); setSaveName(""); setSaving(false); setOpen(false) }
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1 font-normal whitespace-nowrap" />}>
+        <span>{prefix}</span>
+        {activeView?.name ?? "Select view"}
+        <ChevronDownIcon data-icon="inline-end" />
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-64 p-2">
+        <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Views</p>
+        <div className="flex flex-col gap-0.5">
+          {views.map(v => (
+            <div key={v.id} className={cn("flex items-center gap-1 px-2 py-1.5 rounded-md group", v.id === activeView?.id ? "bg-primary/10" : "hover:bg-muted/60")}>
+              {editingId === v.id ? (
+                <Input
+                  autoFocus
+                  value={editName}
+                  onChange={e => setEditName(e.target.value)}
+                  onBlur={() => commitRename(v.id)}
+                  onKeyDown={e => { if (e.key === "Enter") commitRename(v.id); if (e.key === "Escape") setEditingId(null) }}
+                  className="flex-1 h-6 text-sm px-1 py-0 border-0 border-b border-primary rounded-none shadow-none focus-visible:ring-0 bg-transparent"
+                />
+              ) : (
+                <Button variant="ghost" size="sm" className={cn("flex-1 justify-start h-auto py-0 px-0 text-sm hover:bg-transparent truncate", v.id === activeView?.id ? "font-semibold text-primary" : "font-normal text-foreground")} onClick={() => { onSelect(v.id); setOpen(false) }}>
+                  {v.name}
+                </Button>
+              )}
+              <div className="flex items-center gap-0.5 w-[52px] shrink-0 justify-end">
+                {!v.builtIn ? (
+                  <>
+                    <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-primary/30 hover:text-primary" onClick={() => { setEditingId(v.id); setEditName(v.name) }}>
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-5 w-5 shrink-0 text-primary/30 hover:text-destructive hover:bg-destructive/10" onClick={() => onDelete(v.id)}>
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </>
+                ) : (
+                  <span className="w-[42px] shrink-0" />
+                )}
+                <Button variant="ghost" size="icon" title="Set as default" className="h-5 w-5 shrink-0" onClick={() => onSetDefault(v.id)}>
+                  <Bookmark className={cn("h-3 w-3", v.isDefault ? "fill-primary text-primary" : "text-primary/30")} />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="border-t border-border/60 mt-2 pt-2">
+          {saving ? (
+            <div className="flex items-center gap-1.5 px-2">
+              <Input
+                autoFocus
+                value={saveName}
+                onChange={e => setSaveName(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") commitSave(); if (e.key === "Escape") { setSaving(false); setSaveName("") } }}
+                placeholder="View name"
+                className="flex-1 h-7 text-sm px-2 py-0"
+              />
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-primary" onClick={commitSave}>Save</Button>
+            </div>
+          ) : (
+            <Button variant="ghost" size="sm" className="w-full justify-start gap-1.5 text-xs text-muted-foreground hover:text-foreground px-2" onClick={() => setSaving(true)}>
+              <Plus className="h-3.5 w-3.5" />
+              Save current as view
+            </Button>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 function GlobalPlaceholderPage({ icon: Icon, title, description }: {
   icon: LucideIcon
@@ -293,6 +764,10 @@ export default function App() {
   React.useEffect(() => {
     if (selectedDeal) setSelectedDealStatus(selectedDeal.status as DealStatus)
   }, [selectedDeal])
+  const overviewViews = useOverviewViews()
+  const [overviewInsightCards, setOverviewInsightCards] = React.useState<Array<"asset-valuation" | "leasing-strategy">>([])
+  const [insightCardsNew, setInsightCardsNew] = React.useState(false)
+  const portfolioViews = usePortfolioViews()
   const [pipelineToast, setPipelineToast] = React.useState(() => parseHash().dealId === "d00")
   const [selectedSpace, setSelectedSpace] = React.useState<SpaceRef | null>(null)
   const [selectedSpaceStatus, setSelectedSpaceStatus] = React.useState<SpaceStatus>("Available")
@@ -559,47 +1034,117 @@ export default function App() {
       const visibleAssets = selectedPortfolio
         ? ASSETS.filter(a => selectedPortfolio.assetIds.includes(a.id))
         : ASSETS
+      const visibleAssetNames = new Set(visibleAssets.map(a => a.name))
+      const portfolioExpiring = CRITICAL_DATES.filter(d => d.category === "expiring" && d.monthsOut <= 12 && (!d.asset || visibleAssetNames.has(d.asset)))
+      const expiringCount = portfolioExpiring.length
+      const expiringSf = portfolioExpiring.reduce((s, d) => s + d.sf, 0)
+      const expiringSfStr = expiringSf >= 1000000 ? `${(expiringSf / 1000000).toFixed(1)}M sf` : `${Math.round(expiringSf / 1000)}K sf`
+      const portfolioDeals = DEALS.filter(d => visibleAssetNames.has(d.asset))
+      const portfolioAtRisk = portfolioDeals.filter(d => getDealHealth(d.id, d.stage as any).score === "at-risk")
+      const portfolioCaution = portfolioDeals.filter(d => getDealHealth(d.id, d.stage as any).score === "caution")
+      const portfolioNeedAttention = portfolioAtRisk.length + portfolioCaution.length
+
+      const activePortfolioViewId = portfolioViews.activeView?.id ?? "pv-assets"
+      const portfolioDates = CRITICAL_DATES.filter(d => visibleAssetNames.has(d.asset))
+
+      // Card grid for non-Assets portfolio views (same greedy packing as asset overview)
+      const portfolioCardRows: OverviewCardId[][] = []
+      for (const id of portfolioViews.liveCards) {
+        const def = OVERVIEW_CARD_DEFS.find(c => c.id === id)
+        if (!def) continue
+        const lastRow = portfolioCardRows[portfolioCardRows.length - 1]
+        const lastRowSpan = lastRow?.reduce((s, c) => s + (OVERVIEW_CARD_DEFS.find(d => d.id === c)?.span ?? 1), 0) ?? 3
+        if (!lastRow || lastRowSpan + def.span > 3) portfolioCardRows.push([id])
+        else lastRow.push(id)
+      }
+
+      function renderPortfolioCard(id: OverviewCardId, stretched: number) {
+        const colSpan = stretched === 3 ? "col-span-3" : stretched === 2 ? "col-span-2" : "col-span-1"
+        const cls = `${colSpan} rounded-2xl`
+        switch (id) {
+          case "availability":    {
+            const totalSf = 1368054 * visibleAssets.length
+            const occupiedSf = visibleAssets.reduce((s, a) => { const k = ASSET_KPIS[a.id]; return s + (k ? Math.round(1368054 * k.occupancy / 100) : 0) }, 0)
+            const vacantSf = totalSf - occupiedSf
+            return <AvailabilityOverview key={id} className={cls} occupiedSf={occupiedSf} vacantSf={vacantSf} vacantSpaces={VACANT_SPACES} deals={portfolioDeals} onViewStackingPlan={() => setCurrentPage("spaces")} onSpaceClick={v => { setSelectedSpace({ suite: v.space, floor: "–", sf: v.sf, status: "Available" }); setSelectedSpaceStatus("Available"); setCurrentPage("spaces") }} />
+          }
+          case "financial":       return <FinancialPerformance key={id} className={cls} criticalDates={portfolioDates} deals={portfolioDeals} onViewReport={() => setCurrentPage("leases")} onNavigate={setCurrentPage} />
+          case "leasing":         return <LeasingActivity key={id} className={cls} deals={portfolioDeals} onViewAll={() => setCurrentPage("deals")} onDealClick={(d, tab) => { setSelectedDeal(d); setSelectedDealStatus(d.status as DealStatus); setSelectedDealInitialTab(tab); setCurrentPage("deals") }} />
+          case "deal-actions":    return <DealActions key={id} deals={portfolioDeals} className={cls} />
+          case "critical-dates":  return <CriticalDates key={id} dates={portfolioDates} className={cls} onViewAll={() => setCurrentPage("critical-dates")} onRowClick={tenant => { const l = findLease(tenant); if (l) { setSelectedLease(l); setSelectedLeaseStatus(l.status as LeaseStatus); setCurrentPage("leases") } }} />
+          case "action-levers":   return <ActionLevers key={id} deals={portfolioDeals} criticalDates={portfolioDates} onNavigate={setCurrentPage} className={cls} />
+          default: return null
+        }
+      }
+
       return (
         <div className="space-y-4">
           <BuildingHeader {...pagedHeaderProps} />
-          {(() => {
-            const visibleAssetNames = new Set(visibleAssets.map(a => a.name))
-            const portfolioExpiring = CRITICAL_DATES.filter(d => d.category === "expiring" && d.monthsOut <= 12 && (!d.asset || visibleAssetNames.has(d.asset)))
-            const expiringCount = portfolioExpiring.length
-            const expiringSf = portfolioExpiring.reduce((s, d) => s + d.sf, 0)
-            const expiringSfStr = expiringSf >= 1000000 ? `${(expiringSf / 1000000).toFixed(1)}M sf` : `${Math.round(expiringSf / 1000)}K sf`
-            const portfolioDeals = DEALS.filter(d => visibleAssetNames.has(d.asset))
-            const portfolioAtRisk = portfolioDeals.filter(d => getDealHealth(d.id, d.stage as any).score === "at-risk")
-            const portfolioCaution = portfolioDeals.filter(d => getDealHealth(d.id, d.stage as any).score === "caution")
-            const portfolioNeedAttention = portfolioAtRisk.length + portfolioCaution.length
+
+          {/* Portfolio view switcher — above KPIs */}
+          <div className="flex items-center gap-2">
+            <ViewSwitcher
+              views={portfolioViews.views}
+              activeView={portfolioViews.activeView}
+              onSelect={portfolioViews.selectView}
+              onSave={portfolioViews.saveView}
+              onRename={portfolioViews.renameView}
+              onDelete={portfolioViews.deleteView}
+              onSetDefault={portfolioViews.setDefault}
+              prefix="Portfolio:"
+            />
+            {activePortfolioViewId !== "pv-assets" && (
+              <CardManager
+                defs={PORTFOLIO_CARD_DEFS}
+                visible={new Set(portfolioViews.liveCards)}
+                order={[...portfolioViews.liveCards, ...PORTFOLIO_CARD_DEFS.map(c => c.id).filter(id => !portfolioViews.liveCards.includes(id as OverviewCardId))]}
+                onToggle={id => portfolioViews.toggleCard(id as OverviewCardId)}
+                onReorder={next => portfolioViews.reorderCards(next.filter(id => portfolioViews.liveCards.includes(id as OverviewCardId)) as OverviewCardId[])}
+              />
+            )}
+          </div>
+
+          <KpiBar kpis={[
+            { label: "Avg portfolio NER",  value: "$62/sf",  subtitle: "+4.2% vs budget",  trend: "up" as const },
+            { label: "Occupancy",          value: "91.4%",  subtitle: "+0.8% vs budget",  trend: "up" as const },
+            { label: "Expiring < 12 mo",   value: `${expiringCount} lease${expiringCount !== 1 ? "s" : ""}`, subtitle: expiringSf > 0 ? expiringSfStr : "None expiring", trend: expiringCount > 2 ? "down" as const : undefined },
+            {
+              label: "Need attention",
+              value: `${portfolioNeedAttention} deal${portfolioNeedAttention !== 1 ? "s" : ""}`,
+              subtitleNode: (
+                <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                  {portfolioAtRisk.length > 0 && (
+                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border border-destructive/20 text-destructive bg-destructive/10">{portfolioAtRisk.length} At risk</span>
+                  )}
+                  {portfolioCaution.length > 0 && (
+                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border border-warning/20 text-warning bg-warning/10">{portfolioCaution.length} Critical</span>
+                  )}
+                  {portfolioNeedAttention === 0 && <span className="text-xs text-muted-foreground">None</span>}
+                </div>
+              ),
+            },
+          ]} />
+
+          {/* View content */}
+          {activePortfolioViewId === "pv-assets" && (
+            <PortfolioGrid
+              assets={visibleAssets}
+              deals={DEALS}
+              onAssetClick={id => { setSelectedAssetId(id); setCurrentPage("dashboard") }}
+            />
+          )}
+          {activePortfolioViewId !== "pv-assets" && portfolioCardRows.map((row, i) => {
+            const rowSpan = row.reduce((s, id) => s + (OVERVIEW_CARD_DEFS.find(c => c.id === id)?.span ?? 1), 0)
             return (
-              <KpiBar kpis={[
-                { label: "Avg portfolio NER",  value: "$62/sf",  subtitle: "+4.2% vs budget",  trend: "up" as const },
-                { label: "Occupancy",          value: "91.4%",  subtitle: "+0.8% vs budget",  trend: "up" as const },
-                { label: "Expiring < 12 mo",   value: `${expiringCount} lease${expiringCount !== 1 ? "s" : ""}`, subtitle: expiringSf > 0 ? expiringSfStr : "None expiring", trend: expiringCount > 2 ? "down" as const : undefined },
-                {
-                  label: "Need attention",
-                  value: `${portfolioNeedAttention} deal${portfolioNeedAttention !== 1 ? "s" : ""}`,
-                  subtitleNode: (
-                    <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
-                      {portfolioAtRisk.length > 0 && (
-                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border border-destructive/20 text-destructive bg-destructive/10">{portfolioAtRisk.length} At risk</span>
-                      )}
-                      {portfolioCaution.length > 0 && (
-                        <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border border-warning/20 text-warning bg-warning/10">{portfolioCaution.length} Critical</span>
-                      )}
-                      {portfolioNeedAttention === 0 && <span className="text-xs text-muted-foreground">None</span>}
-                    </div>
-                  ),
-                },
-              ]} />
+              <div key={i} className="grid grid-cols-3 gap-4">
+                {row.map(id => {
+                  const def = OVERVIEW_CARD_DEFS.find(c => c.id === id)!
+                  const stretched = rowSpan < 3 && row.length === 1 ? 3 : def.span
+                  return renderPortfolioCard(id, stretched)
+                })}
+              </div>
             )
-          })()}
-          <PortfolioGrid
-            assets={visibleAssets}
-            deals={DEALS}
-            onAssetClick={id => { setSelectedAssetId(id); setCurrentPage("dashboard") }}
-          />
+          })}
         </div>
       )
     }
@@ -790,27 +1335,84 @@ export default function App() {
     return (
       <div className="space-y-4">
         <BuildingHeader {...pagedHeaderProps} />
-        <KpiBar kpis={KPIS} />
+        {/* View controls */}
+        <div className="flex items-center gap-2">
+          <ViewSwitcher
+            views={overviewViews.views}
+            activeView={overviewViews.activeView}
+            onSelect={overviewViews.selectView}
+            onSave={overviewViews.saveView}
+            onRename={overviewViews.renameView}
+            onDelete={overviewViews.deleteView}
+            onSetDefault={overviewViews.setDefault}
+          />
+          <CardManager
+            defs={OVERVIEW_CARD_DEFS}
+            visible={new Set(overviewViews.liveCards)}
+            order={[...overviewViews.liveCards, ...OVERVIEW_CARD_DEFS.map(c => c.id).filter(id => !overviewViews.liveCards.includes(id as OverviewCardId))]}
+            onToggle={id => overviewViews.toggleCard(id as OverviewCardId)}
+            onReorder={next => overviewViews.reorderCards(next.filter(id => overviewViews.liveCards.includes(id as OverviewCardId)) as OverviewCardId[])}
+          />
+        </div>
         {(() => {
           const overviewDeals = selectedAsset ? DEALS.filter(d => d.asset === selectedAsset.name) : DEALS
           const overviewDates = selectedAsset ? CRITICAL_DATES.filter(d => d.asset === selectedAsset.name) : CRITICAL_DATES
-          return (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <AvailabilityOverview occupiedSf={957638} vacantSf={410416} vacantSpaces={VACANT_SPACES} deals={overviewDeals} onViewStackingPlan={() => setCurrentPage("stacking")} onSpaceClick={v => { setSelectedSpace({ suite: v.space, floor: "–", sf: v.sf, status: "Available", assetName: selectedAsset?.name }); setSelectedSpaceStatus("Available"); setCurrentPage("spaces") }} />
-                <FinancialPerformance className="md:col-span-2" criticalDates={overviewDates} deals={overviewDeals} onViewReport={() => setCurrentPage("leases")} onNavigate={setCurrentPage} />
+          // Pack cards into 3-column rows greedily
+          const rows: OverviewCardId[][] = []
+          let rowCols = 0
+          let currentRow: OverviewCardId[] = []
+          for (const id of overviewViews.liveCards) {
+            const def = OVERVIEW_CARD_DEFS.find(c => c.id === id)
+            if (!def) continue
+            if (currentRow.length && (rowCols + def.span > 3 || def.span === 3)) { rows.push(currentRow); currentRow = []; rowCols = 0 }
+            currentRow.push(id); rowCols += def.span
+          }
+          if (currentRow.length) rows.push(currentRow)
+
+          function renderCard(id: OverviewCardId, stretched: number) {
+            const cls = stretched === 3 ? "md:col-span-3" : stretched === 2 ? "md:col-span-2" : ""
+            switch (id) {
+              case "kpis":            return <KpiBar key={id} kpis={KPIS} className={cls} />
+              case "availability":    return <AvailabilityOverview key={id} className={cls} occupiedSf={957638} vacantSf={410416} vacantSpaces={VACANT_SPACES} deals={overviewDeals} onViewStackingPlan={() => setCurrentPage("stacking")} onSpaceClick={v => { setSelectedSpace({ suite: v.space, floor: "–", sf: v.sf, status: "Available", assetName: selectedAsset?.name }); setSelectedSpaceStatus("Available"); setCurrentPage("spaces") }} />
+              case "financial":       return <FinancialPerformance key={id} className={cls} criticalDates={overviewDates} deals={overviewDeals} onViewReport={() => setCurrentPage("leases")} onNavigate={setCurrentPage} />
+              case "leasing":         return <LeasingActivity key={id} className={cls} deals={overviewDeals} onViewAll={() => setCurrentPage("deals")} onDealClick={(d, tab) => { setSelectedDeal(d); setSelectedDealStatus(d.status as DealStatus); setSelectedDealInitialTab(tab); setCurrentPage("deals") }} />
+              case "deal-actions":    return <DealActions key={id} deals={overviewDeals} className={cls} />
+              case "critical-dates":  return <CriticalDates key={id} dates={overviewDates} className={cls} onViewAll={() => setCurrentPage("critical-dates")} onRowClick={tenant => { const l = findLease(tenant); if (l) { setSelectedLease(l); setSelectedLeaseStatus(l.status as LeaseStatus); setCurrentPage("leases") } }} />
+              case "action-levers":   return <ActionLevers key={id} deals={overviewDeals} criticalDates={overviewDates} onNavigate={setCurrentPage} className={cls} />
+              case "asset-valuation":  return <AssetValuationCard key={id} className={cls} deals={overviewDeals} dates={overviewDates} assetId={selectedAssetId} />
+              case "leasing-strategy": return <LeasingStrategyCard key={id} className={cls} deals={overviewDeals} dates={overviewDates} />
+            }
+          }
+
+          const gridRows = rows.map((row, i) => {
+            // Compute used columns and stretch last card to fill any gap
+            const defs = row.map(id => OVERVIEW_CARD_DEFS.find(c => c.id === id)!)
+            const usedCols = defs.reduce((sum, d) => sum + d.span, 0)
+            const gap = 3 - usedCols
+            const stretchedSpans = defs.map((d, j) => j === defs.length - 1 ? d.span + gap : d.span)
+            return (
+              <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {row.map((id, j) => renderCard(id, stretchedSpans[j]))}
               </div>
+            )
+          })
+
+          // Insight cards triggered by Ask VTS — inserted after the first row (KPIs)
+          const insightRow = overviewInsightCards.length > 0 ? (
+            <div key="insight-cards" className="flex flex-col gap-3 animate-in fade-in slide-in-from-bottom-6 duration-500">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <LeasingActivity className="md:col-span-2" deals={overviewDeals} onViewAll={() => setCurrentPage("deals")}
-                  onDealClick={(d, tab) => { setSelectedDeal(d); setSelectedDealStatus(d.status as DealStatus); setSelectedDealInitialTab(tab); setCurrentPage("deals") }} />
-                <DealActions deals={overviewDeals} />
+                {overviewInsightCards.map((id, i) => {
+                  const ringCls = insightCardsNew ? "ring-2 ring-primary/40 ring-offset-2 ring-offset-background transition-shadow duration-700" : ""
+                  const delayCls = i === 1 ? "animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500 delay-100" : "animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-500"
+                  return id === "asset-valuation"
+                    ? <AssetValuationCard key={id} className={cn("md:col-span-1 rounded-2xl", delayCls, ringCls)} deals={overviewDeals} dates={overviewDates} assetId={selectedAssetId} onNavigate={setCurrentPage} />
+                    : <LeasingStrategyCard key={id} className={cn("md:col-span-2 rounded-2xl", delayCls, ringCls)} deals={overviewDeals} dates={overviewDates} onNavigate={setCurrentPage} />
+                })}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <CriticalDates dates={overviewDates} className="md:col-span-2" onViewAll={() => setCurrentPage("critical-dates")} onRowClick={tenant => { const l = findLease(tenant); if (l) { setSelectedLease(l); setSelectedLeaseStatus(l.status as LeaseStatus); setCurrentPage("leases") } }} />
-                <ActionLevers deals={overviewDeals} criticalDates={overviewDates} onNavigate={setCurrentPage} />
-              </div>
-            </>
-          )
+            </div>
+          ) : null
+
+          return [gridRows[0], insightRow, ...gridRows.slice(1)]
         })()}
       </div>
     )
@@ -842,6 +1444,13 @@ export default function App() {
   if (currentPage === "deal-monitor-email-lawyer")  return <LawyerLeaseEmailPage />
   if (currentPage === "deal-monitor-email-owner")   return <OwnerUpdateEmailPage />
 
+  const handleInsightTrigger = React.useCallback(() => {
+    setOverviewInsightCards(["asset-valuation"])
+    setInsightCardsNew(true)
+    setTimeout(() => setOverviewInsightCards(["asset-valuation", "leasing-strategy"]), 350)
+    setTimeout(() => setInsightCardsNew(false), 2200)
+  }, [])
+
   const standalonePages = ["theme", "principles", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm"]
   if (standalonePages.includes(currentPage)) {
     return (
@@ -853,7 +1462,7 @@ export default function App() {
   }
 
   return (
-    <ChatPatternProvider onOpenChat={goAskVts}>
+    <ChatPatternProvider onOpenChat={goAskVts} onInsightTrigger={currentPage === "dashboard" ? handleInsightTrigger : undefined}>
       <AppShell
         navCollapsed={navCollapsed}
         setNavCollapsed={setNavCollapsed}

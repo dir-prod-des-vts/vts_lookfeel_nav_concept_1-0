@@ -7,6 +7,16 @@ import path from 'path'
 export default defineConfig({
   base: '/vts_lookfeel_nav_concept_1-0/',
   plugins: [react(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        'button-showcase': path.resolve(__dirname, 'button-showcase.html'),
+        'datepicker-showcase': path.resolve(__dirname, 'datepicker-showcase.html'),
+        'components-showcase': path.resolve(__dirname, 'components-showcase.html'),
+      },
+    },
+  },
   server: {
     port: parseInt(process.env.PORT ?? '5174'),
     proxy: {

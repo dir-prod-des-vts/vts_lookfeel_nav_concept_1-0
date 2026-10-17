@@ -35,6 +35,7 @@ interface ChatPatternContextValue {
   closeSidePush: () => void
   agentsView: AgentsView
   setAgentsView: (v: AgentsView) => void
+  onInsightTrigger: (() => void) | null
 }
 
 const ChatPatternContext = React.createContext<ChatPatternContextValue>({
@@ -49,6 +50,7 @@ const ChatPatternContext = React.createContext<ChatPatternContextValue>({
   closeSidePush: () => {},
   agentsView: "ask-vts",
   setAgentsView: () => {},
+  onInsightTrigger: null as (() => void) | null,
 })
 
 export function useChatPattern() {
@@ -58,9 +60,10 @@ export function useChatPattern() {
 interface ChatPatternProviderProps {
   children: React.ReactNode
   onOpenChat: () => void
+  onInsightTrigger?: () => void
 }
 
-export function ChatPatternProvider({ children, onOpenChat }: ChatPatternProviderProps) {
+export function ChatPatternProvider({ children, onOpenChat, onInsightTrigger }: ChatPatternProviderProps) {
   const [pattern, setPattern] = React.useState<ChatPattern>("side-push")
   const [pending, setPending] = React.useState<ChatContext | null>(null)
   const [sideOverOpen, setSideOverOpen] = React.useState(false)
@@ -85,7 +88,7 @@ export function ChatPatternProvider({ children, onOpenChat }: ChatPatternProvide
   const closeSidePush = React.useCallback(() => { setSidePushOpen(false); setPending(null) }, [])
 
   return (
-    <ChatPatternContext.Provider value={{ pattern, setPattern, pending, openChat, clearPending, sideOverOpen, closeSideOver, sidePushOpen, closeSidePush, agentsView, setAgentsView }}>
+    <ChatPatternContext.Provider value={{ pattern, setPattern, pending, openChat, clearPending, sideOverOpen, closeSideOver, sidePushOpen, closeSidePush, agentsView, setAgentsView, onInsightTrigger: onInsightTrigger ?? null }}>
       {children}
     </ChatPatternContext.Provider>
   )
