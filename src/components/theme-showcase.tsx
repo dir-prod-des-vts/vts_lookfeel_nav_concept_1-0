@@ -689,7 +689,6 @@ export function ThemeShowcase({ isDark, onToggleDark }: ThemeShowcaseProps) {
             { label: "Toggle group", href: "/vts_lookfeel_nav_concept_1-0/toggle-group-showcase.html" },
             { label: "Tooltip", href: "/vts_lookfeel_nav_concept_1-0/tooltip-showcase.html" },
             { label: "Date picker", href: "/vts_lookfeel_nav_concept_1-0/datepicker-showcase.html" },
-            { label: "All components", href: "/vts_lookfeel_nav_concept_1-0/components-showcase.html" },
           ].map(({ label, href }) => (
             <a
               key={label}
