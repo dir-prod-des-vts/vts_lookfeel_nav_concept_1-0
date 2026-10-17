@@ -1,0 +1,1 @@
+import{Z as e,et as t}from"./button-DU8wXNX7.js";var n=t(e(),1),r=n.createContext({disabled:!1});function i(){return n.useContext(r)}export{i as t};

@@ -1,0 +1,1 @@
+import{g as e}from"./button-DU8wXNX7.js";function t(t){return e(t.defaultTagName??`div`,t,t)}export{t};
