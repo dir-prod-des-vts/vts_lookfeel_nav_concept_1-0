@@ -1,1 +1,0 @@
-import{T as e,g as t,w as n}from"./button-C5AyBtPM.js";import{t as r}from"./useCompositeItem-CtYZgVRl.js";function i(i){let{render:a,className:o,style:s,state:c=e,props:l=n,refs:u=n,metadata:d,stateAttributesMapping:f,tag:p=`div`,...m}=i,{compositeProps:h,compositeRef:g}=r({metadata:d});return t(p,i,{state:c,ref:[...u,g],props:[h,...l,m],stateAttributesMapping:f})}export{i as t};
