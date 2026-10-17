@@ -1,1 +1,0 @@
-import{W as e,q as t}from"./button-BQ_vGzlQ.js";var n=t(e(),1),r=n.createContext(void 0),i={disableStyleElements:!1};function a(){return n.useContext(r)??i}export{a as t};

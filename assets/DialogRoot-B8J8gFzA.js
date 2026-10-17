@@ -1,0 +1,1 @@
+import{Z as e,et as t}from"./button-C5AyBtPM.js";import{c as n,r}from"./DialogTrigger-CEvSCa5c.js";var i=t(e(),1);function a(e){return r(e,i.useContext(n)?`drawer`:`dialog`)}export{a as t};

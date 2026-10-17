@@ -1,1 +1,0 @@
-import{W as e,q as t}from"./button-BQ_vGzlQ.js";var n=t(e(),1),r=[];function i(e){n.useEffect(e,r)}export{i as t};

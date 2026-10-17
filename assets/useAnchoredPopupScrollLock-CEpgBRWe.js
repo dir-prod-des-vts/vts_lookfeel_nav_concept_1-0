@@ -1,1 +1,0 @@
-import{B as e,W as t,q as n}from"./button-BQ_vGzlQ.js";import{t as r}from"./owner-NnnQFEU-.js";import{t as i}from"./useScrollLock-DSe3Iulm.js";var a=n(t(),1),o=20;function s(t,n,s,c){let[l,u]=a.useState(!1);e(()=>{if(!t||!n||s==null){u(!1);return}let e=r(s).documentElement.clientWidth,i=s.offsetWidth;u(e>0&&i>0&&i>=e-o)},[t,n,s]),i(t&&(!n||l),c)}export{s as t};

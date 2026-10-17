@@ -1,0 +1,1 @@
+import{Z as e,et as t,g as n}from"./button-C5AyBtPM.js";var r=t(e(),1).forwardRef(function(e,t){let{className:r,render:i,orientation:a=`horizontal`,style:o,...s}=e;return n(`div`,e,{state:{orientation:a},ref:t,props:[{role:`separator`,"aria-orientation":a},s]})});export{r as t};
