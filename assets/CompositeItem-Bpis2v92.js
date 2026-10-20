@@ -1,0 +1,1 @@
+import{C as e,h as t,w as n}from"./button-BELa_K-j.js";import{t as r}from"./useCompositeItem-D0z5kCqc.js";function i(i){let{render:a,className:o,style:s,state:c=n,props:l=e,refs:u=e,metadata:d,stateAttributesMapping:f,tag:p=`div`,...m}=i,{compositeProps:h,compositeRef:g}=r({metadata:d});return t(p,i,{state:c,ref:[...u,g],props:[h,...l,m],stateAttributesMapping:f})}export{i as t};
