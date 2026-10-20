@@ -1,1 +1,0 @@
-import{Z as e,b as t,et as n,q as r}from"./button-DcYHD05C.js";var i=n(e(),1);function a(e,n){let a=i.useRef(e),o=t(n);r(()=>{a.current!==e&&o(a.current)},[e,o]),r(()=>{a.current=e},[e])}export{a as t};
