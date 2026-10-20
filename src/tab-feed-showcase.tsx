@@ -14,6 +14,46 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   )
 }
 
+interface PropRow {
+  prop: string
+  type: string
+  required: boolean
+  description: string
+}
+
+function PropsTable({ rows }: { rows: PropRow[] }) {
+  return (
+    <div className="overflow-x-auto rounded-lg border border-border">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-border bg-muted/40">
+            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-widest text-muted-foreground w-36">Prop</th>
+            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-widest text-muted-foreground w-72">Type</th>
+            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-widest text-muted-foreground w-20">Required</th>
+            <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-widest text-muted-foreground">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={row.prop} className={i < rows.length - 1 ? "border-b border-border" : ""}>
+              <td className="px-4 py-3 align-top">
+                <code className="font-mono text-xs text-foreground">{row.prop}</code>
+              </td>
+              <td className="px-4 py-3 align-top">
+                <code className="font-mono text-xs text-muted-foreground break-all">{row.type}</code>
+              </td>
+              <td className="px-4 py-3 align-top text-xs text-muted-foreground">
+                {row.required ? <span className="text-foreground font-medium">Yes</span> : "No"}
+              </td>
+              <td className="px-4 py-3 align-top text-xs text-muted-foreground leading-relaxed">{row.description}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 const DEAL_TABS: TabFeedTab[] = [
   {
     value: "updates",
@@ -233,6 +273,53 @@ function App() {
               <TabFeed tabs={empty.tabs} onAddEntry={empty.addEntry} />
             </div>
           </Row>
+        </section>
+
+        <div className="border-t border-border" />
+
+        <section>
+          <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">05 · Props</p>
+
+          <div className="flex flex-col gap-8">
+
+            <div>
+              <p className="text-sm font-semibold text-foreground mb-1">TabFeed</p>
+              <p className="text-xs text-muted-foreground mb-4">Main component. Import from <code className="font-mono bg-muted px-1 py-0.5 rounded text-xs">@/components/ui/tab-feed</code>.</p>
+              <PropsTable rows={[
+                { prop: "tabs", type: "TabFeedTab[]", required: true, description: "Array of tab definitions. Each tab has its own label and list of entries." },
+                { prop: "defaultTab", type: "string", required: false, description: "Value of the tab to show on first render. Defaults to the first tab in the array." },
+                { prop: "loading", type: "boolean", required: false, description: "When true, renders a skeleton in place of entries. Use while data is fetching." },
+                { prop: "onAddEntry", type: "(tab: string, text: string) => void", required: false, description: "Called when the user submits the compose box. Receives the active tab value and the trimmed text. Omit to hide the compose input entirely." },
+                { prop: "onEntryAction", type: '(tab: string, id: string, action: "edit" | "delete") => void', required: false, description: "Called when the user selects Edit or Delete from an entry's overflow menu. Omit to hide the action menu on all entries." },
+                { prop: "className", type: "string", required: false, description: "Additional class names applied to the root wrapper." },
+              ]} />
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-foreground mb-1">TabFeedTab</p>
+              <p className="text-xs text-muted-foreground mb-4">Shape of each object in the <code className="font-mono bg-muted px-1 py-0.5 rounded text-xs">tabs</code> array.</p>
+              <PropsTable rows={[
+                { prop: "value", type: "string", required: true, description: 'Unique identifier for the tab. Built-in contextual config exists for "updates", "tasks", "docs", and "reminders" — these get tab-specific placeholder text and empty state copy. Any other value gets a generic fallback.' },
+                { prop: "label", type: "string", required: true, description: "Display label shown in the tab trigger." },
+                { prop: "entries", type: "TabFeedEntry[]", required: true, description: "List of activity entries for this tab. Pass an empty array to render the empty state." },
+              ]} />
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-foreground mb-1">TabFeedEntry</p>
+              <p className="text-xs text-muted-foreground mb-4">Shape of each item in a tab's <code className="font-mono bg-muted px-1 py-0.5 rounded text-xs">entries</code> array.</p>
+              <PropsTable rows={[
+                { prop: "id", type: "string", required: true, description: "Unique identifier. Used as the React key and passed back in onEntryAction callbacks." },
+                { prop: "author", type: "string", required: true, description: "Full name of the person who created the entry. Initials are derived from this for the avatar fallback." },
+                { prop: "action", type: "string", required: true, description: 'Short verb phrase describing what happened. Rendered as regular text, e.g. "moved this deal to".' },
+                { prop: "avatarSrc", type: "string", required: false, description: "URL of the author's avatar image. Falls back to initials when omitted or the image fails to load." },
+                { prop: "target", type: "string", required: false, description: "Bold label appended after the action text, e.g. a stage name or document title." },
+                { prop: "body", type: "string", required: false, description: "Optional freeform note rendered on a new line below the action summary." },
+                { prop: "timestamp", type: "string", required: true, description: 'Human-readable time string displayed below the action, e.g. "27 days ago".' },
+              ]} />
+            </div>
+
+          </div>
         </section>
 
       </div>

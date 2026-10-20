@@ -1,0 +1,1 @@
+import{$ as e,G as t,X as n}from"./button-BELa_K-j.js";var r=e(n(),1),i=r.createContext(void 0);function a(e){let n=r.useContext(i);if(n===void 0&&!e)throw Error(t(69));return n}export{a as t};
