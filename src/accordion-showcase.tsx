@@ -20,14 +20,14 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 function App() {
   const [isDark, setIsDark] = React.useState(false)
-  const [controlledValue, setControlledValue] = React.useState<string[]>([])
+  const [controlledValue, setControlledValue] = React.useState<string[]>(["renewal-options"])
 
   React.useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark)
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       {/* Header */}
       <div className="flex items-start justify-between mb-12">
         <div>
@@ -48,8 +48,8 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">01 · Single expand</p>
           <Row label="default">
-            <div className="max-w-xl border rounded-xl">
-              <Accordion openMultiple={false}>
+            <div className="max-w-xl">
+              <Accordion>
                 <AccordionItem value="lease-terms">
                   <AccordionTrigger>Lease terms</AccordionTrigger>
                   <AccordionContent>
@@ -85,8 +85,8 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">02 · Multiple expand</p>
           <Row label="openMultiple">
-            <div className="max-w-xl border rounded-xl">
-              <Accordion openMultiple={true}>
+            <div className="max-w-xl">
+              <Accordion multiple>
                 <AccordionItem value="critical-dates">
                   <AccordionTrigger>Critical dates</AccordionTrigger>
                   <AccordionContent>
@@ -116,8 +116,8 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">03 · Disabled item</p>
           <Row label="mixed">
-            <div className="max-w-xl border rounded-xl">
-              <Accordion openMultiple={false}>
+            <div className="max-w-xl">
+              <Accordion>
                 <AccordionItem value="overview">
                   <AccordionTrigger>Overview</AccordionTrigger>
                   <AccordionContent>
@@ -149,15 +149,14 @@ function App() {
           <Row label="controlled">
             <div className="flex flex-col gap-4 max-w-xl">
               <div className="flex gap-2 flex-wrap">
-                <Button size="sm" variant="outline" onClick={() => setControlledValue(["renewal-options"])}>Open renewal options</Button>
-                <Button size="sm" variant="outline" onClick={() => setControlledValue(["break-options"])}>Open break options</Button>
+                <Button size="sm" variant="outline" onClick={() => setControlledValue(["renewal-options"])}>Renewal options</Button>
+                <Button size="sm" variant="outline" onClick={() => setControlledValue(["break-options"])}>Break options</Button>
                 <Button size="sm" variant="ghost" onClick={() => setControlledValue([])}>Close all</Button>
               </div>
-              <div className="border rounded-xl">
+              <div className="max-w-xl">
                 <Accordion
-                  openMultiple={false}
                   value={controlledValue}
-                  onValueChange={setControlledValue}
+                  onValueChange={(v) => setControlledValue(v)}
                 >
                   <AccordionItem value="renewal-options">
                     <AccordionTrigger>Renewal options</AccordionTrigger>
@@ -189,12 +188,12 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">05 · Real-world: lease detail panel</p>
           <Row label="lease panel">
-            <div className="max-w-xl border rounded-xl">
-              <div className="px-4 py-3 border-b">
+            <div className="max-w-xl">
+              <div className="px-4 py-3 border-b border-border">
                 <p className="text-xs text-muted-foreground">Lease</p>
                 <p className="font-semibold text-sm mt-0.5">101 Park Ave, Floor 18 — Acme Corp</p>
               </div>
-              <Accordion openMultiple={true}>
+              <Accordion multiple>
                 <AccordionItem value="address">
                   <AccordionTrigger>Property address</AccordionTrigger>
                   <AccordionContent>

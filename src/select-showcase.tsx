@@ -32,7 +32,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       <div className="flex items-start justify-between mb-12">
         <div>
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">VTS design system</p>
@@ -71,7 +71,7 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">02 · With groups</p>
           <Row label="market">
-            <Select value={market} onValueChange={setMarket}>
+            <Select value={market} onValueChange={v => setMarket(v ?? "")}>
               <SelectTrigger className="w-52">
                 <SelectValue placeholder="Select market" />
               </SelectTrigger>
@@ -101,7 +101,7 @@ function App() {
             </Select>
           </Row>
           <Row label="property type">
-            <Select value={propertyType} onValueChange={setPropertyType}>
+            <Select value={propertyType} onValueChange={v => setPropertyType(v ?? "")}>
               <SelectTrigger className="w-52">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>

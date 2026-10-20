@@ -1683,9 +1683,9 @@ export function AgentDetailPanel({ agent }: { agent: AgentDef }) {
       )}
 
       <Tabs value={tab} onValueChange={setTab} className="w-full flex flex-col flex-1 min-h-0">
-        <TabsList variant="line" className="w-full mb-5 border-b border-border rounded-none bg-transparent p-0 h-auto gap-0 justify-start shrink-0">
-          <TabsTrigger value="about"    className="rounded-none !bg-transparent border-b-2 border-transparent data-active:border-primary data-active:!text-primary data-active:font-medium hover:!bg-transparent hover:text-foreground !shadow-none px-4 pb-2.5 pt-0 text-sm flex-none -mb-px">About</TabsTrigger>
-          <TabsTrigger value="activity" className="rounded-none !bg-transparent border-b-2 border-transparent data-active:border-primary data-active:!text-primary data-active:font-medium hover:!bg-transparent hover:text-foreground !shadow-none px-4 pb-2.5 pt-0 text-sm flex-none -mb-px">Activity</TabsTrigger>
+        <TabsList variant="line">
+          <TabsTrigger value="about">About</TabsTrigger>
+          <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
         <div className="flex-1 overflow-y-auto">
           <TabsContent value="about"    className="mt-0"><AboutTab agent={agent} onCopy={handleCopy} copied={copied} /></TabsContent>
@@ -1906,9 +1906,9 @@ export function AgentsPage({ className, defaultAgentId, defaultView, onViewChang
           </Button>
         )}
         <Tabs value={tab} onValueChange={v => setTab(v as typeof tab)} className={cn("w-full", mobileShowDetail && viewMode === "list" && "hidden md:flex")}>
-          <TabsList variant="line" className="border-b border-border rounded-none bg-transparent p-0 h-auto gap-0 justify-start w-full">
-            <TabsTrigger value="catalog"  className="rounded-none !bg-transparent border-b-2 border-transparent data-active:border-primary data-active:!text-primary data-active:font-medium hover:!bg-transparent hover:text-foreground !shadow-none px-4 pb-2.5 pt-0 text-sm flex-none -mb-px">Agents</TabsTrigger>
-            <TabsTrigger value="activity" className="rounded-none !bg-transparent border-b-2 border-transparent data-active:border-primary data-active:!text-primary data-active:font-medium hover:!bg-transparent hover:text-foreground !shadow-none px-4 pb-2.5 pt-0 text-sm flex-none -mb-px">Activity</TabsTrigger>
+          <TabsList variant="line">
+            <TabsTrigger value="catalog">Agents</TabsTrigger>
+            <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
         </Tabs>
         {tab === "catalog" && (

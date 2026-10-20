@@ -25,7 +25,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       <div className="flex items-start justify-between mb-12">
         <div>
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">VTS design system</p>
@@ -51,7 +51,7 @@ function App() {
               </div>
               <Slider
                 value={occupancy}
-                onValueChange={setOccupancy}
+                onValueChange={v => setOccupancy(Array.isArray(v) ? [...v] : [v])}
                 min={0}
                 max={100}
               />
@@ -74,7 +74,7 @@ function App() {
               </div>
               <Slider
                 value={rent}
-                onValueChange={setRent}
+                onValueChange={v => setRent(Array.isArray(v) ? [...v] : [v])}
                 min={0}
                 max={200}
               />
@@ -91,7 +91,7 @@ function App() {
               </div>
               <Slider
                 value={area}
-                onValueChange={setArea}
+                onValueChange={v => setArea(Array.isArray(v) ? [...v] : [v])}
                 min={0}
                 max={100000}
                 step={1000}
@@ -115,7 +115,7 @@ function App() {
               </div>
               <Slider
                 value={floor}
-                onValueChange={setFloor}
+                onValueChange={v => setFloor(Array.isArray(v) ? [...v] : [v])}
                 min={1}
                 max={40}
                 step={1}
@@ -187,7 +187,7 @@ function ValueSlider() {
         <span className="text-muted-foreground">Lease term</span>
         <span className="font-semibold text-foreground text-sm">{value[0]} {value[0] === 1 ? "year" : "years"}</span>
       </div>
-      <Slider value={value} onValueChange={setValue} min={1} max={20} step={1} />
+      <Slider value={value} onValueChange={v => setValue(Array.isArray(v) ? [...v] : [v])} min={1} max={20} step={1} />
       <div className="flex justify-between text-xs text-muted-foreground">
         <span>1 year</span><span>20 years</span>
       </div>

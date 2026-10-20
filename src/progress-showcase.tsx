@@ -27,7 +27,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       <div className="flex items-start justify-between mb-12">
         <div>
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">VTS design system</p>
@@ -50,7 +50,7 @@ function App() {
             {[0, 25, 50, 75, 100].map(v => (
               <Progress key={v} value={v}>
                 <ProgressLabel>{v}%</ProgressLabel>
-                <ProgressValue>{v}%</ProgressValue>
+                <ProgressValue>{() => `${v}%`}</ProgressValue>
               </Progress>
             ))}
           </Row>
@@ -94,28 +94,28 @@ function App() {
           <Row label="semantic">
             <Progress value={85}>
               <ProgressLabel>Healthy occupancy</ProgressLabel>
-              <ProgressValue>85%</ProgressValue>
+              <ProgressValue>{() => "85%"}</ProgressValue>
               <ProgressTrack className="h-2">
                 <ProgressIndicator className="bg-green-500" />
               </ProgressTrack>
             </Progress>
             <Progress value={55}>
               <ProgressLabel>Moderate occupancy</ProgressLabel>
-              <ProgressValue>55%</ProgressValue>
+              <ProgressValue>{() => "55%"}</ProgressValue>
               <ProgressTrack className="h-2">
                 <ProgressIndicator className="bg-yellow-500" />
               </ProgressTrack>
             </Progress>
             <Progress value={22}>
               <ProgressLabel>Low occupancy</ProgressLabel>
-              <ProgressValue>22%</ProgressValue>
+              <ProgressValue>{() => "22%"}</ProgressValue>
               <ProgressTrack className="h-2">
                 <ProgressIndicator className="bg-red-500" />
               </ProgressTrack>
             </Progress>
             <Progress value={100}>
               <ProgressLabel>Fully leased</ProgressLabel>
-              <ProgressValue>100%</ProgressValue>
+              <ProgressValue>{() => "100%"}</ProgressValue>
               <ProgressTrack className="h-2">
                 <ProgressIndicator className="bg-primary" />
               </ProgressTrack>
@@ -192,23 +192,23 @@ function App() {
               <div className="flex flex-col gap-3 w-full">
                 <Progress value={20}>
                   <ProgressLabel>Touring</ProgressLabel>
-                  <ProgressValue>2 deals</ProgressValue>
+                  <ProgressValue>{() => "2 deals"}</ProgressValue>
                 </Progress>
                 <Progress value={45}>
                   <ProgressLabel>LOI issued</ProgressLabel>
-                  <ProgressValue>4 deals</ProgressValue>
+                  <ProgressValue>{() => "4 deals"}</ProgressValue>
                 </Progress>
                 <Progress value={70}>
                   <ProgressLabel>In negotiation</ProgressLabel>
-                  <ProgressValue>7 deals</ProgressValue>
+                  <ProgressValue>{() => "7 deals"}</ProgressValue>
                 </Progress>
                 <Progress value={90}>
                   <ProgressLabel>Lease out for signature</ProgressLabel>
-                  <ProgressValue>9 deals</ProgressValue>
+                  <ProgressValue>{() => "9 deals"}</ProgressValue>
                 </Progress>
                 <Progress value={100}>
                   <ProgressLabel>Executed</ProgressLabel>
-                  <ProgressValue>10 deals</ProgressValue>
+                  <ProgressValue>{() => "10 deals"}</ProgressValue>
                 </Progress>
               </div>
             </Row>

@@ -1,1 +1,0 @@
-import{Z as e,et as t}from"./button-DcYHD05C.js";var n=t(e(),1),r=[];function i(e){n.useEffect(e,r)}export{i as t};

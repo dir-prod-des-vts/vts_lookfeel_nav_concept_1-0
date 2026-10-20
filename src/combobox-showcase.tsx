@@ -10,11 +10,9 @@ import {
   ComboboxItem,
   ComboboxGroup,
   ComboboxLabel,
-  ComboboxCollection,
   ComboboxEmpty,
   ComboboxSeparator,
   ComboboxChips,
-  ComboboxChip,
   ComboboxChipsInput,
   useComboboxAnchor,
 } from "@/components/ui/combobox"
@@ -47,11 +45,9 @@ function TenantCombobox({ disabled = false }: { disabled?: boolean }) {
       <ComboboxInput placeholder="Search tenants..." disabled={disabled} className="w-56" showClear />
       <ComboboxContent>
         <ComboboxList>
-          <ComboboxCollection>
-            {TENANTS.map(t => (
-              <ComboboxItem key={t} value={t}>{t}</ComboboxItem>
-            ))}
-          </ComboboxCollection>
+          {TENANTS.map(t => (
+            <ComboboxItem key={t} value={t}>{t}</ComboboxItem>
+          ))}
           <ComboboxEmpty>No tenants found</ComboboxEmpty>
         </ComboboxList>
       </ComboboxContent>
@@ -65,21 +61,19 @@ function GroupedCombobox() {
       <ComboboxInput placeholder="Select market or sector..." className="w-64" showClear />
       <ComboboxContent>
         <ComboboxList>
-          <ComboboxCollection>
-            <ComboboxGroup>
-              <ComboboxLabel>Markets</ComboboxLabel>
-              {MARKETS.map(m => (
-                <ComboboxItem key={m} value={m}>{m}</ComboboxItem>
-              ))}
-            </ComboboxGroup>
-            <ComboboxSeparator />
-            <ComboboxGroup>
-              <ComboboxLabel>Sectors</ComboboxLabel>
-              {SECTORS.map(s => (
-                <ComboboxItem key={s} value={s}>{s}</ComboboxItem>
-              ))}
-            </ComboboxGroup>
-          </ComboboxCollection>
+          <ComboboxGroup>
+            <ComboboxLabel>Markets</ComboboxLabel>
+            {MARKETS.map(m => (
+              <ComboboxItem key={m} value={m}>{m}</ComboboxItem>
+            ))}
+          </ComboboxGroup>
+          <ComboboxSeparator />
+          <ComboboxGroup>
+            <ComboboxLabel>Sectors</ComboboxLabel>
+            {SECTORS.map(s => (
+              <ComboboxItem key={s} value={s}>{s}</ComboboxItem>
+            ))}
+          </ComboboxGroup>
           <ComboboxEmpty>No results</ComboboxEmpty>
         </ComboboxList>
       </ComboboxContent>
@@ -96,11 +90,9 @@ function MultiSelectCombobox() {
       </ComboboxChips>
       <ComboboxContent anchor={anchor}>
         <ComboboxList>
-          <ComboboxCollection>
-            {TENANTS.map(t => (
-              <ComboboxItem key={t} value={t}>{t}</ComboboxItem>
-            ))}
-          </ComboboxCollection>
+          {TENANTS.map(t => (
+            <ComboboxItem key={t} value={t}>{t}</ComboboxItem>
+          ))}
           <ComboboxEmpty>No tenants found</ComboboxEmpty>
         </ComboboxList>
       </ComboboxContent>
@@ -116,7 +108,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       <div className="flex items-start justify-between mb-12">
         <div>
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">VTS design system</p>

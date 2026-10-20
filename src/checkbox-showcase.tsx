@@ -31,7 +31,7 @@ function LabeledCheckbox({
   return (
     <label className={`flex items-start gap-2.5 cursor-pointer ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}>
       <Checkbox
-        checked={indeterminate ? "mixed" : checked}
+        checked={indeterminate ? undefined : checked} indeterminate={indeterminate}
         onCheckedChange={onCheckedChange}
         disabled={disabled}
         className="mt-0.5"
@@ -93,7 +93,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       {/* Header */}
       <div className="flex items-start justify-between mb-12">
         <div>
@@ -122,13 +122,13 @@ function App() {
           </Row>
           <div className="mt-5" />
           <Row label="indeterminate">
-            <Checkbox checked="mixed" />
+            <Checkbox indeterminate />
           </Row>
           <div className="mt-5" />
           <Row label="disabled">
             <Checkbox disabled />
             <Checkbox disabled defaultChecked />
-            <Checkbox disabled checked="mixed" />
+            <Checkbox disabled indeterminate />
           </Row>
         </section>
 
@@ -275,7 +275,7 @@ function TableWithCheckboxes() {
           <tr>
             <th className="px-4 py-2.5 w-10">
               <Checkbox
-                checked={someSelected ? "mixed" : allSelected}
+                checked={allSelected} indeterminate={someSelected && !allSelected}
                 onCheckedChange={toggleAll}
               />
             </th>

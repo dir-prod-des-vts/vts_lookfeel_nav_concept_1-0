@@ -13,7 +13,7 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer"
 import { Input } from "@/components/ui/input"
-import { Building2, X } from "lucide-react"
+import { Building2 } from "lucide-react"
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -32,7 +32,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       <div className="flex items-start justify-between mb-12">
         <div>
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">VTS design system</p>
@@ -51,7 +51,7 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">01 · Right drawer</p>
           <Row label="lease details">
-            <Drawer direction="right">
+            <Drawer>
               <DrawerTrigger render={<Button variant="outline">Open lease details</Button>} />
               <DrawerContent className="w-96">
                 <DrawerHeader>
@@ -100,7 +100,7 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">02 · Bottom drawer</p>
           <Row label="mobile-style">
-            <Drawer direction="bottom" showSwipeHandle>
+            <Drawer showSwipeHandle>
               <DrawerTrigger render={<Button variant="outline">Open bottom sheet</Button>} />
               <DrawerContent className="max-h-[60vh]">
                 <DrawerHeader>
@@ -137,7 +137,7 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">03 · With form</p>
           <Row label="add contact">
-            <Drawer direction="right">
+            <Drawer>
               <DrawerTrigger render={<Button>Add contact</Button>} />
               <DrawerContent className="w-96">
                 <DrawerHeader>

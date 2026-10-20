@@ -1,13 +1,12 @@
 import * as React from "react"
-import { Sun, Moon, Check, ArrowRight, ChevronRight, CheckCircle2, Loader2, Clock, Sparkle, LayoutGrid, FileText, Handshake, Calculator, UserCircle } from "lucide-react"
+import { Sun, Moon, Check, ArrowRight, ChevronRight, Sparkle, LayoutGrid, FileText, Handshake, Calculator, UserCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn, cardBase } from "@/lib/utils"
-import { AgentBtn } from "@/components/agent-btn"
+import { cn } from "@/lib/utils"
 import { LogoMenuContent } from "@/components/logo-menu-content"
 
 // ── Data ─────────────────────────────────────────────────────────────────────
@@ -124,20 +123,23 @@ function Swatch({ name, role, cssVar, description }: { name: string; role: strin
   )
 }
 
-function TokenSwatch({ token, label, cls }: { token: string; label: string; cls: string }) {
+
+function TokenRow({ label, cssVar }: { label: string; cssVar: string }) {
   const [value, setValue] = React.useState("")
   React.useEffect(() => {
-    const v = getComputedStyle(document.documentElement).getPropertyValue(token).trim()
-    setValue(v)
-  }, [token])
+    setValue(getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim())
+  }, [cssVar])
+  const isColor = value.startsWith("oklch") || value.startsWith("#") || value.startsWith("rgb")
   return (
-    <div className="rounded-xl overflow-hidden border border-border bg-card">
-      <div className={cn("h-10", cls)} />
-      <div className="px-3 py-2 space-y-0.5">
-        <p className="text-xs font-medium text-foreground leading-none">{label}</p>
-        <p className="font-mono text-[10px] text-muted-foreground">{token}</p>
-        {value && <p className="font-mono text-[9px] text-muted-foreground/70 truncate">{value}</p>}
-      </div>
+    <div className="flex items-center gap-4 px-4 py-2.5 bg-card">
+      {isColor ? (
+        <div className="size-6 rounded-md shrink-0 border border-border/50" style={{ background: `var(${cssVar})` }} />
+      ) : (
+        <div className="size-6 shrink-0 flex items-center justify-center font-mono text-[10px] text-muted-foreground border border-border rounded-md">{value || "—"}</div>
+      )}
+      <span className="font-mono text-xs text-foreground w-52 shrink-0">{label}</span>
+      <span className="font-mono text-[10px] text-muted-foreground/70 bg-muted rounded px-1.5 py-0.5 shrink-0">{cssVar}</span>
+      {isColor && <span className="font-mono text-[10px] text-muted-foreground ml-auto truncate max-w-56">{value}</span>}
     </div>
   )
 }
@@ -446,7 +448,7 @@ export function ThemeShowcase({ isDark, onToggleDark }: ThemeShowcaseProps) {
         <SectionHeader
           kicker="07 · Components"
           title="Tokens, applied to Components."
-          description="shadcn/ui components with VTS tokens wired in: one refined indigo for every primary action and focus state, slate for secondary emphasis, and Geist carrying every label."
+          description="VTS components with a single refined indigo for every primary action and focus state, slate for secondary emphasis, and Geist carrying every label."
         />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
 
@@ -628,8 +630,8 @@ export function ThemeShowcase({ isDark, onToggleDark }: ThemeShowcaseProps) {
       <section>
         <SectionHeader
           kicker="09 · Component library"
-          title="shadcn/ui"
-          description="Built on Base UI primitives. Every component is installed directly into the project and styled with VTS tokens."
+          title="VTS components"
+          description="Built on Base UI primitives. Every component is owned by the project and styled with VTS design tokens."
         />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {[
@@ -689,11 +691,11 @@ export function ThemeShowcase({ isDark, onToggleDark }: ThemeShowcaseProps) {
             { label: "Toggle group", href: "/vts_lookfeel_nav_concept_1-0/toggle-group-showcase.html" },
             { label: "Tooltip", href: "/vts_lookfeel_nav_concept_1-0/tooltip-showcase.html" },
             { label: "Date picker", href: "/vts_lookfeel_nav_concept_1-0/datepicker-showcase.html" },
+            { label: "Tab feed", href: "/vts_lookfeel_nav_concept_1-0/tab-feed-showcase.html" },
           ].map(({ label, href }) => (
             <a
               key={label}
               href={href}
-              target="_blank"
               rel="noopener noreferrer"
               className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-foreground hover:bg-muted hover:border-primary/30 hover:text-primary transition-colors flex items-center justify-between gap-2"
             >
@@ -701,6 +703,207 @@ export function ThemeShowcase({ isDark, onToggleDark }: ThemeShowcaseProps) {
               <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             </a>
           ))}
+        </div>
+      </section>
+
+      {/* ── 10 Tokens ──────────────────────────────────────────────────────── */}
+      <section>
+        <SectionHeader
+          kicker="10 · Tokens"
+          title="Theme tokens"
+          description="All custom CSS variables defined in this theme. Values shown are computed at runtime for the current mode."
+        />
+        {[
+          {
+            group: "Brand",
+            rows: [
+              { label: "primary",            var: "--primary" },
+              { label: "primary-foreground",  var: "--primary-foreground" },
+            ],
+          },
+          {
+            group: "Surfaces",
+            rows: [
+              { label: "background",   var: "--background" },
+              { label: "foreground",   var: "--foreground" },
+              { label: "card",         var: "--card" },
+              { label: "card-foreground", var: "--card-foreground" },
+              { label: "popover",      var: "--popover" },
+              { label: "popover-foreground", var: "--popover-foreground" },
+              { label: "muted",        var: "--muted" },
+              { label: "muted-foreground", var: "--muted-foreground" },
+              { label: "secondary",    var: "--secondary" },
+              { label: "secondary-foreground", var: "--secondary-foreground" },
+              { label: "accent",       var: "--accent" },
+              { label: "accent-foreground", var: "--accent-foreground" },
+            ],
+          },
+          {
+            group: "Structure",
+            rows: [
+              { label: "border",  var: "--border" },
+              { label: "input",   var: "--input" },
+              { label: "ring",    var: "--ring" },
+              { label: "radius",  var: "--radius" },
+            ],
+          },
+          {
+            group: "System status",
+            rows: [
+              { label: "destructive", var: "--destructive" },
+              { label: "success",     var: "--success" },
+              { label: "warning",     var: "--warning" },
+              { label: "declined",    var: "--declined" },
+            ],
+          },
+          {
+            group: "Charts",
+            rows: [
+              { label: "chart-1", var: "--chart-1" },
+              { label: "chart-2", var: "--chart-2" },
+              { label: "chart-3", var: "--chart-3" },
+              { label: "chart-4", var: "--chart-4" },
+              { label: "chart-5", var: "--chart-5" },
+            ],
+          },
+          {
+            group: "Sidebar",
+            rows: [
+              { label: "sidebar",                    var: "--sidebar" },
+              { label: "sidebar-foreground",         var: "--sidebar-foreground" },
+              { label: "sidebar-primary",            var: "--sidebar-primary" },
+              { label: "sidebar-primary-foreground", var: "--sidebar-primary-foreground" },
+              { label: "sidebar-accent",             var: "--sidebar-accent" },
+              { label: "sidebar-accent-foreground",  var: "--sidebar-accent-foreground" },
+              { label: "sidebar-border",             var: "--sidebar-border" },
+              { label: "sidebar-ring",               var: "--sidebar-ring" },
+            ],
+          },
+        ].map(({ group, rows }) => (
+          <div key={group} className="mb-8">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">{group}</p>
+            <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
+              {rows.map(({ label, var: cssVar }) => (
+                <TokenRow key={cssVar} label={label} cssVar={cssVar} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+
+      <div className="border-t border-border" />
+
+      {/* ── 11 Tailwind ────────────────────────────────────────────────────── */}
+      <section>
+        <SectionHeader
+          kicker="11 · Tailwind"
+          title="Tailwind defaults"
+          description="Tailwind's built-in design tokens — spacing scale, font sizes, font weights, line heights, and border radius defaults available alongside VTS tokens."
+        />
+
+        {/* Spacing */}
+        <div className="mb-10">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">Spacing scale</p>
+          <div className="flex flex-wrap gap-2">
+            {[0,0.5,1,1.5,2,2.5,3,3.5,4,5,6,7,8,9,10,11,12,14,16,20,24,28,32,36,40,44,48,52,56,60,64,72,80,96].map(step => (
+              <div key={step} className="flex flex-col items-center gap-1.5">
+                <div className="bg-primary/20 rounded" style={{ width: `${Math.max(step * 4, 2)}px`, height: "20px" }} />
+                <span className="font-mono text-[9px] text-muted-foreground">{step}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Font sizes */}
+        <div className="mb-10">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Font sizes</p>
+          <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
+            {[
+              { name: "xs",   cls: "text-xs",   size: "12px / 0.75rem" },
+              { name: "sm",   cls: "text-sm",   size: "14px / 0.875rem" },
+              { name: "base", cls: "text-base", size: "16px / 1rem" },
+              { name: "lg",   cls: "text-lg",   size: "18px / 1.125rem" },
+              { name: "xl",   cls: "text-xl",   size: "20px / 1.25rem" },
+              { name: "2xl",  cls: "text-2xl",  size: "24px / 1.5rem" },
+              { name: "3xl",  cls: "text-3xl",  size: "30px / 1.875rem" },
+              { name: "4xl",  cls: "text-4xl",  size: "36px / 2.25rem" },
+              { name: "5xl",  cls: "text-5xl",  size: "48px / 3rem" },
+              { name: "6xl",  cls: "text-6xl",  size: "60px / 3.75rem" },
+            ].map(({ name, cls, size }) => (
+              <div key={name} className="flex items-baseline gap-6 px-4 py-3 bg-card">
+                <span className="font-mono text-[11px] text-muted-foreground w-10 shrink-0">{name}</span>
+                <span className={cn(cls, "text-foreground leading-none")}>{name}</span>
+                <span className="font-mono text-[11px] text-muted-foreground ml-auto">{size}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Font weights */}
+        <div className="mb-10">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Font weights</p>
+          <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
+            {[
+              { name: "thin",       cls: "font-thin",       weight: "100" },
+              { name: "extralight", cls: "font-extralight", weight: "200" },
+              { name: "light",      cls: "font-light",      weight: "300" },
+              { name: "normal",     cls: "font-normal",     weight: "400" },
+              { name: "medium",     cls: "font-medium",     weight: "500" },
+              { name: "semibold",   cls: "font-semibold",   weight: "600" },
+              { name: "bold",       cls: "font-bold",       weight: "700" },
+              { name: "extrabold",  cls: "font-extrabold",  weight: "800" },
+              { name: "black",      cls: "font-black",      weight: "900" },
+            ].map(({ name, cls, weight }) => (
+              <div key={name} className="flex items-center gap-6 px-4 py-2.5 bg-card">
+                <span className="font-mono text-[11px] text-muted-foreground w-24 shrink-0">{name}</span>
+                <span className={cn("text-base text-foreground", cls)}>The quick brown fox</span>
+                <span className="font-mono text-[11px] text-muted-foreground ml-auto">{weight}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Border radius */}
+        <div className="mb-10">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Border radius</p>
+          <div className="flex flex-wrap gap-4">
+            {[
+              { name: "none",  cls: "rounded-none",  px: "0px" },
+              { name: "sm",    cls: "rounded-sm",    px: "~2px" },
+              { name: "md",    cls: "rounded-md",    px: "~4px" },
+              { name: "lg",    cls: "rounded-lg",    px: "~6px" },
+              { name: "xl",    cls: "rounded-xl",    px: "~8px" },
+              { name: "2xl",   cls: "rounded-2xl",   px: "12px" },
+              { name: "3xl",   cls: "rounded-3xl",   px: "16px" },
+              { name: "full",  cls: "rounded-full",  px: "9999px" },
+            ].map(({ name, cls, px }) => (
+              <div key={name} className="flex flex-col items-center gap-2">
+                <div className={cn("size-12 border-2 border-primary/40 bg-primary/10", cls)} />
+                <span className="font-mono text-[10px] text-muted-foreground text-center">{name}<br />{px}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Line heights */}
+        <div className="mb-10">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Line heights</p>
+          <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
+            {[
+              { name: "none",    cls: "leading-none",    value: "1" },
+              { name: "tight",   cls: "leading-tight",   value: "1.25" },
+              { name: "snug",    cls: "leading-snug",    value: "1.375" },
+              { name: "normal",  cls: "leading-normal",  value: "1.5" },
+              { name: "relaxed", cls: "leading-relaxed", value: "1.625" },
+              { name: "loose",   cls: "leading-loose",   value: "2" },
+            ].map(({ name, cls, value }) => (
+              <div key={name} className="flex items-start gap-6 px-4 py-3 bg-card">
+                <span className="font-mono text-[11px] text-muted-foreground w-20 shrink-0 pt-0.5">{name}</span>
+                <p className={cn("text-sm text-foreground max-w-xs", cls)}>The quick brown fox jumps over the lazy dog. A second sentence for context.</p>
+                <span className="font-mono text-[11px] text-muted-foreground ml-auto shrink-0 pt-0.5">{value}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

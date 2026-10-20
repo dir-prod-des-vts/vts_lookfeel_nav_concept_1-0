@@ -41,7 +41,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       <div className="flex items-start justify-between mb-12">
         <div>
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">VTS design system</p>
@@ -63,10 +63,12 @@ function App() {
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="outline"><User className="size-4" data-icon="inline-start" />Enrique Sacasa<ChevronDown className="size-3.5 ml-1 text-muted-foreground" /></Button>} />
               <DropdownMenuContent>
-                <DropdownMenuLabel className="flex flex-col gap-0.5 py-2">
-                  <span className="font-medium text-sm">Enrique Sacasa</span>
-                  <span className="text-xs font-normal text-muted-foreground">enrique.sacasa@vts.com</span>
-                </DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className="flex flex-col gap-0.5 py-2">
+                    <span className="font-medium text-sm">Enrique Sacasa</span>
+                    <span className="text-xs font-normal text-muted-foreground">enrique.sacasa@vts.com</span>
+                  </DropdownMenuLabel>
+                </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem><User className="size-4" />Profile<DropdownMenuShortcut>⌘P</DropdownMenuShortcut></DropdownMenuItem>
                 <DropdownMenuItem><Settings className="size-4" />Settings<DropdownMenuShortcut>⌘,</DropdownMenuShortcut></DropdownMenuItem>
@@ -105,10 +107,12 @@ function App() {
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="outline"><Eye className="size-4" data-icon="inline-start" />View options</Button>} />
               <DropdownMenuContent>
-                <DropdownMenuLabel>Display</DropdownMenuLabel>
-                <DropdownMenuCheckboxItem checked={showArchived} onCheckedChange={setShowArchived}>Show archived</DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem checked={showDrafts} onCheckedChange={setShowDrafts}>Show drafts</DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem checked={showExpiring} onCheckedChange={setShowExpiring}>Show expiring within 90 days</DropdownMenuCheckboxItem>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Display</DropdownMenuLabel>
+                  <DropdownMenuCheckboxItem checked={showArchived} onCheckedChange={setShowArchived}>Show archived</DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={showDrafts} onCheckedChange={setShowDrafts}>Show drafts</DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem checked={showExpiring} onCheckedChange={setShowExpiring}>Show expiring within 90 days</DropdownMenuCheckboxItem>
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           </Row>
@@ -122,7 +126,9 @@ function App() {
             <DropdownMenu>
               <DropdownMenuTrigger render={<Button variant="outline"><SortAsc className="size-4" data-icon="inline-start" />Sort</Button>} />
               <DropdownMenuContent>
-                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                </DropdownMenuGroup>
                 <DropdownMenuRadioGroup value={sortOrder} onValueChange={setSortOrder}>
                   <DropdownMenuRadioItem value="expiry-asc">Expiry — earliest first</DropdownMenuRadioItem>
                   <DropdownMenuRadioItem value="expiry-desc">Expiry — latest first</DropdownMenuRadioItem>

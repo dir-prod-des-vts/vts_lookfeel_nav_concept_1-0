@@ -25,7 +25,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       <div className="flex items-start justify-between mb-12">
         <div>
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">VTS design system</p>
@@ -104,7 +104,7 @@ function App() {
           <div className="flex flex-col gap-5">
             {(["sm", "default", "lg"] as const).map(size => (
               <Row key={size} label={size}>
-                <ToggleGroup size={size} defaultValue="list">
+                <ToggleGroup size={size} defaultValue={["list"]}>
                   <ToggleGroupItem value="list">List</ToggleGroupItem>
                   <ToggleGroupItem value="grid">Grid</ToggleGroupItem>
                   <ToggleGroupItem value="map">Map</ToggleGroupItem>
@@ -120,14 +120,14 @@ function App() {
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">04 · Disabled</p>
           <div className="flex flex-col gap-5">
             <Row label="all disabled">
-              <ToggleGroup defaultValue="list">
+              <ToggleGroup defaultValue={["list"]}>
                 <ToggleGroupItem value="list" disabled>List</ToggleGroupItem>
                 <ToggleGroupItem value="grid" disabled>Grid</ToggleGroupItem>
                 <ToggleGroupItem value="map" disabled>Map</ToggleGroupItem>
               </ToggleGroup>
             </Row>
             <Row label="partial">
-              <ToggleGroup defaultValue="list">
+              <ToggleGroup defaultValue={["list"]}>
                 <ToggleGroupItem value="list">List</ToggleGroupItem>
                 <ToggleGroupItem value="grid" disabled>Grid</ToggleGroupItem>
                 <ToggleGroupItem value="map">Map</ToggleGroupItem>
@@ -142,14 +142,14 @@ function App() {
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">05 · Outline variant</p>
           <div className="flex flex-col gap-5">
             <Row label="text">
-              <ToggleGroup variant="outline" defaultValue="active">
+              <ToggleGroup variant="outline" defaultValue={["active"]}>
                 <ToggleGroupItem value="active">Active</ToggleGroupItem>
                 <ToggleGroupItem value="expiring">Expiring</ToggleGroupItem>
                 <ToggleGroupItem value="expired">Expired</ToggleGroupItem>
               </ToggleGroup>
             </Row>
             <Row label="icon">
-              <ToggleGroup variant="outline" defaultValue="grid">
+              <ToggleGroup variant="outline" defaultValue={["grid"]}>
                 <ToggleGroupItem value="list" aria-label="List"><List /></ToggleGroupItem>
                 <ToggleGroupItem value="grid" aria-label="Grid"><Grid3x3 /></ToggleGroupItem>
                 <ToggleGroupItem value="map" aria-label="Map"><Map /></ToggleGroupItem>

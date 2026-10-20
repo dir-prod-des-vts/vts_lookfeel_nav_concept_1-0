@@ -12,7 +12,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       <div className="flex items-start justify-between mb-12">
         <div>
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">VTS design system</p>
@@ -31,7 +31,7 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">01 · Horizontal</p>
           <div className="h-48 rounded-lg border border-border overflow-hidden">
-            <ResizablePanelGroup direction="horizontal">
+            <ResizablePanelGroup orientation="horizontal">
               <ResizablePanel defaultSize={40}>
                 <div className="flex h-full flex-col p-4 bg-muted/30">
                   <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Portfolio</p>
@@ -63,7 +63,7 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">02 · Vertical</p>
           <div className="h-56 rounded-lg border border-border overflow-hidden">
-            <ResizablePanelGroup direction="vertical">
+            <ResizablePanelGroup orientation="vertical">
               <ResizablePanel defaultSize={50}>
                 <div className="flex h-full flex-col p-4">
                   <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-3">Active leases</p>
@@ -105,7 +105,7 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">03 · Three panels</p>
           <div className="h-64 rounded-lg border border-border overflow-hidden">
-            <ResizablePanelGroup direction="horizontal">
+            <ResizablePanelGroup orientation="horizontal">
               <ResizablePanel defaultSize={20} minSize={15}>
                 <div className="flex h-full flex-col p-3 bg-muted/30">
                   <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-3">Nav</p>
@@ -146,7 +146,7 @@ function App() {
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">04 · With min/max constraints</p>
           <p className="text-sm text-muted-foreground mb-4">Left panel: min 20%, max 40%. Try dragging beyond the limit.</p>
           <div className="h-40 rounded-lg border border-border overflow-hidden">
-            <ResizablePanelGroup direction="horizontal">
+            <ResizablePanelGroup orientation="horizontal">
               <ResizablePanel defaultSize={30} minSize={20} maxSize={40}>
                 <div className="flex h-full items-center justify-center bg-muted/30 text-sm text-muted-foreground">
                   20–40% wide

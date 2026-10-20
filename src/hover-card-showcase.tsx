@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client"
 import "./index.css"
 import { Button } from "@/components/ui/button"
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card"
-import { Building2, Mail, Phone, MapPin, BarChart2 } from "lucide-react"
+import { Building2, Mail, Phone, MapPin } from "lucide-react"
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -22,7 +22,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       <div className="flex items-start justify-between mb-12">
         <div>
           <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">VTS design system</p>

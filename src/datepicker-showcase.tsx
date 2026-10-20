@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client"
 import "./index.css"
 import { format, addDays, subDays } from "date-fns"
 import type { DateRange } from "react-day-picker"
-import { CalendarIcon, ChevronDownIcon } from "lucide-react"
+import { CalendarIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
@@ -137,8 +137,8 @@ function DateOfBirthPicker() {
           captionLayout="dropdown"
           selected={date}
           onSelect={setDate}
-          fromYear={1920}
-          toYear={new Date().getFullYear()}
+          startMonth={new Date(1920, 0)}
+          endMonth={new Date()}
         />
       </PopoverContent>
     </Popover>
@@ -306,7 +306,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       {/* Header */}
       <div className="flex items-start justify-between mb-12">
         <div>

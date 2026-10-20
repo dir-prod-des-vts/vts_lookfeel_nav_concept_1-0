@@ -1045,7 +1045,7 @@ export default function App() {
       const portfolioNeedAttention = portfolioAtRisk.length + portfolioCaution.length
 
       const activePortfolioViewId = portfolioViews.activeView?.id ?? "pv-assets"
-      const portfolioDates = CRITICAL_DATES.filter(d => visibleAssetNames.has(d.asset))
+      const portfolioDates = CRITICAL_DATES.filter(d => visibleAssetNames.has(d.asset ?? ""))
 
       // Card grid for non-Assets portfolio views (same greedy packing as asset overview)
       const portfolioCardRows: OverviewCardId[][] = []

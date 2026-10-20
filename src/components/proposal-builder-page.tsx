@@ -485,9 +485,9 @@ export function ProposalBuilderPage({ className, isDark = false, onToggleDark }:
             {/* Tabs */}
             <Tabs value={activeTab} onValueChange={v => setActiveTab(v as TabId)} className="flex flex-col flex-1 min-h-0">
               <div className="flex items-center border-b border-border shrink-0">
-                <TabsList variant="line" className="flex-1 rounded-none bg-transparent p-0 h-auto gap-0 justify-start">
+                <TabsList variant="line">
                   {TABS.map(tab => (
-                    <TabsTrigger key={tab.id} value={tab.id} className="rounded-none !bg-transparent border-b-2 border-transparent data-active:border-primary data-active:!text-primary data-active:font-medium hover:!bg-transparent hover:text-foreground !shadow-none px-3 pb-2.5 pt-0 text-sm flex-none -mb-px">
+                    <TabsTrigger key={tab.id} value={tab.id}>
                       {tab.label}
                     </TabsTrigger>
                   ))}

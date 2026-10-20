@@ -3,11 +3,11 @@ import ReactDOM from "react-dom/client"
 import "./index.css"
 import { toast, Toaster } from "sonner"
 import {
-  AlertCircle, Archive, ArrowRight, Bell, BookOpen, Check, ChevronDown,
-  ChevronRight, CircleUser, Clock, Copy, Download, ExternalLink, File,
-  FileText, Globe, Home, Image, Info, Inbox, Layers, Loader2, Mail,
-  Menu, MessageSquare, MoreHorizontal, Paperclip, Plus, Search, Settings,
-  Smile, Star, Trash2, Upload, User, X, ZoomIn,
+  AlertCircle, Bell, Check, ChevronDown,
+  ChevronRight, Copy, Download, ExternalLink, File,
+  FileText, Home, Image, Info, Inbox, Layers, Mail,
+  Menu, Plus, Search, Settings,
+  Star, Trash2, Upload,
 } from "lucide-react"
 
 // ── UI imports ────────────────────────────────────────────────────────────────
@@ -15,13 +15,12 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
-import { Attachment, AttachmentActions, AttachmentContent, AttachmentDescription, AttachmentGroup, AttachmentMedia, AttachmentTitle } from "@/components/ui/attachment"
+import { Attachment, AttachmentActions, AttachmentContent, AttachmentDescription, AttachmentMedia, AttachmentTitle } from "@/components/ui/attachment"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
 import { Bubble, BubbleContent, BubbleGroup } from "@/components/ui/bubble"
 import { Button } from "@/components/ui/button"
-import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
@@ -113,7 +112,7 @@ function App() {
   return (
     <TooltipProvider>
       <Toaster />
-      <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+      <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-12">
@@ -138,7 +137,7 @@ function App() {
             <Section num="01" title="Accordion" />
             <div className="flex flex-col gap-5">
               <Row label="default">
-                <Accordion type="single" collapsible className="w-80">
+                <Accordion multiple={false} className="w-80">
                   <AccordionItem value="a">
                     <AccordionTrigger>What is VTS?</AccordionTrigger>
                     <AccordionContent>VTS is the world's leading commercial real estate platform.</AccordionContent>
@@ -454,7 +453,7 @@ function App() {
           <section>
             <Section num="15" title="Combobox" />
             <Row label="default">
-              <Combobox value={comboValue} onValueChange={setComboValue}>
+              <Combobox value={comboValue} onValueChange={v => setComboValue(v ?? "")}>
                 <ComboboxInput placeholder="Search tenants…" className="w-56" />
                 <ComboboxContent>
                   <ComboboxList>
@@ -1022,7 +1021,7 @@ function App() {
           <section>
             <Section num="39" title="Resizable" />
             <Row label="panels">
-              <ResizablePanelGroup direction="horizontal" className="w-96 h-32 rounded-lg border">
+              <ResizablePanelGroup orientation="horizontal" className="w-96 h-32 rounded-lg border">
                 <ResizablePanel defaultSize={40}>
                   <div className="h-full p-3 flex items-center justify-center text-sm text-muted-foreground">Nav</div>
                 </ResizablePanel>
@@ -1163,7 +1162,7 @@ function App() {
               <Row label="default">
                 <Slider
                   value={sliderVal}
-                  onValueChange={setSliderVal}
+                  onValueChange={v => setSliderVal(Array.isArray(v) ? [...v] : [v])}
                   className="w-64"
                 />
                 <span className="text-sm text-muted-foreground pt-1">{sliderVal[0]}</span>
@@ -1318,7 +1317,7 @@ function App() {
           <section>
             <Section num="53" title="Toggle group" />
             <Row label="single">
-              <ToggleGroup type="single" defaultValue="list">
+              <ToggleGroup type="single" defaultValue={["list"]}>
                 <ToggleGroupItem value="grid" aria-label="Grid view">
                   <Layers className="size-4" />
                 </ToggleGroupItem>

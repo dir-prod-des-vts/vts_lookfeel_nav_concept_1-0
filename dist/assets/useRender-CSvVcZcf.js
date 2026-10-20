@@ -1,1 +1,0 @@
-import{g as e}from"./button-DcYHD05C.js";function t(t){return e(t.defaultTagName??`div`,t,t)}export{t};

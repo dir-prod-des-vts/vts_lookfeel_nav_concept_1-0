@@ -83,7 +83,7 @@ function App() {
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-white text-foreground px-10 py-12 font-sans">
+    <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans">
       {/* Header */}
       <div className="flex items-start justify-between mb-12">
         <div>
@@ -104,7 +104,7 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">01 · Horizontal — property cards</p>
           <Row label="with arrows">
-            <div className="px-12">
+            <div className="px-12 max-w-2xl">
               <Carousel opts={{ align: "start" }}>
                 <CarouselContent>
                   {PROPERTIES.map(p => (
@@ -182,11 +182,11 @@ function App() {
         <section>
           <p className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.07em] text-primary mb-6">03 · Deal cards</p>
           <Row label="deals">
-            <div className="px-12">
+            <div className="px-12 max-w-2xl">
               <Carousel opts={{ align: "start" }}>
                 <CarouselContent>
                   {DEALS.map(d => (
-                    <CarouselItem key={d.tenant} className="basis-56">
+                    <CarouselItem key={d.tenant} className="basis-64">
                       <div className="border rounded-xl p-4 bg-card flex flex-col gap-2">
                         <div className="flex items-start justify-between gap-2">
                           <p className="font-semibold text-sm">{d.tenant}</p>
@@ -216,7 +216,7 @@ function App() {
               <Carousel orientation="vertical" opts={{ align: "start" }} className="h-full">
                 <CarouselContent className="h-64">
                   {PROPERTIES.map(p => (
-                    <CarouselItem key={p.name} className="basis-1/3">
+                    <CarouselItem key={p.name} className="basis-24">
                       <div className="border rounded-xl p-3 bg-card flex items-center gap-3 h-full">
                         <img src={p.img} alt={p.name} className="size-10 rounded-lg object-cover shrink-0" />
                         <div className="min-w-0">

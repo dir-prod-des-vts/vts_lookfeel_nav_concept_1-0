@@ -2484,13 +2484,13 @@ export function DealProfile({ deal, onBack: _onBack, status: statusProp, onStatu
         <div className="flex-[5] min-w-0 flex flex-col gap-4">
           <div className={cn(cardBase, "flex-1")}>
             <Tabs value={tab} onValueChange={v => setTab(v)} className="w-full">
-              <TabsList variant="line" className="w-full mb-5 border-b border-border rounded-none bg-transparent p-0 h-auto gap-0 justify-start">
+              <TabsList variant="line">
                 {[
                   { value: "info",         label: "Info" },
                   { value: "proposals",    label: "Proposals" },
                   { value: "encumbrances", label: "Encumbrances", badge: DEAL_ENCUMBRANCES[deal.id]?.length, badgeCls: "bg-destructive text-primary-foreground" },
                 ].map(({ value, label, badge, badgeCls }) => (
-                  <TabsTrigger key={value} value={value} className="rounded-none !bg-transparent border-b-2 border-transparent data-active:border-primary data-active:!text-primary data-active:font-medium hover:!bg-transparent hover:text-foreground !shadow-none px-4 pb-2.5 pt-0 text-sm flex-none -mb-px">
+                  <TabsTrigger key={value} value={value}>
                     {label}
                     {badge ? <span className={cn("ml-1 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full text-[10px] font-bold", badgeCls ?? "bg-destructive text-primary-foreground")}>{badge}</span> : null}
                   </TabsTrigger>
@@ -2525,14 +2525,14 @@ export function DealProfile({ deal, onBack: _onBack, status: statusProp, onStatu
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <TabsList variant="line" className={cn("flex-1 rounded-none bg-transparent p-0 h-auto gap-0 justify-start", rightCollapsed && "lg:hidden")}>
+                <TabsList variant="line" className={cn(rightCollapsed && "lg:hidden")}>
                     {[
                       { value: "updates",   label: "Updates" },
                       { value: "tasks",     label: "Tasks", badge: STAGE_TASKS[stage]?.filter(t => !t.done).length || undefined, badgeCls: "bg-primary text-primary-foreground" },
                       { value: "documents", label: "Docs" },
                       { value: "reminders", label: "Reminders" },
                     ].map(({ value, label, badge, badgeCls }) => (
-                      <TabsTrigger key={value} value={value} className="rounded-none !bg-transparent border-b-2 border-transparent data-active:border-primary data-active:!text-primary data-active:font-medium hover:!bg-transparent hover:text-foreground !shadow-none px-3 pb-2.5 pt-0 text-sm flex-none -mb-px">
+                      <TabsTrigger key={value} value={value}>
                         {label}
                         {badge ? <span className={cn("ml-1 inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full text-[10px] font-bold", badgeCls ?? "bg-destructive text-primary-foreground")}>{badge}</span> : null}
                       </TabsTrigger>

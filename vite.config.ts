@@ -67,6 +67,7 @@ export default defineConfig({
         'toast-showcase': path.resolve(__dirname, 'toast-showcase.html'),
         'toggle-showcase': path.resolve(__dirname, 'toggle-showcase.html'),
         'toggle-group-showcase': path.resolve(__dirname, 'toggle-group-showcase.html'),
+        'tab-feed-showcase': path.resolve(__dirname, 'tab-feed-showcase.html'),
         'tooltip-showcase': path.resolve(__dirname, 'tooltip-showcase.html'),
       },
     },
