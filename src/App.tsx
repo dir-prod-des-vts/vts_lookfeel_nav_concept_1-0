@@ -1103,8 +1103,8 @@ export default function App() {
               />
             )}
             <div className="ml-auto flex items-center gap-2">
-              <Button variant="outline" size="sm"><Download className="size-4" />Export</Button>
-              <Button variant="outline" size="sm"><Share2 className="size-4" />Share</Button>
+              <Button variant="outline" size="sm" className="h-8"><Download className="size-4" />Export</Button>
+              <Button variant="outline" size="sm" className="h-8"><Share2 className="size-4" />Share</Button>
             </div>
           </div>
 
@@ -1358,8 +1358,8 @@ export default function App() {
             onReorder={next => overviewViews.reorderCards(next.filter(id => overviewViews.liveCards.includes(id as OverviewCardId)) as OverviewCardId[])}
           />
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="outline" size="sm"><Download className="size-4" />Export</Button>
-            <Button variant="outline" size="sm"><Share2 className="size-4" />Share</Button>
+            <Button variant="outline" size="sm" className="h-8"><Download className="size-4" />Export</Button>
+            <Button variant="outline" size="sm" className="h-8"><Share2 className="size-4" />Share</Button>
           </div>
         </div>
         {(() => {
