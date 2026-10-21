@@ -1059,7 +1059,7 @@ export default function App() {
       }
 
       function renderPortfolioCard(id: OverviewCardId, stretched: number) {
-        const colSpan = stretched === 3 ? "col-span-3" : stretched === 2 ? "col-span-2" : "col-span-1"
+        const colSpan = stretched === 3 ? "md:col-span-3" : stretched === 2 ? "md:col-span-2" : ""
         const cls = `${colSpan} rounded-2xl`
         switch (id) {
           case "availability":    {
@@ -1082,7 +1082,7 @@ export default function App() {
           <BuildingHeader {...pagedHeaderProps} />
 
           {/* Portfolio view switcher — above KPIs */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <ViewSwitcher
               views={portfolioViews.views}
               activeView={portfolioViews.activeView}
@@ -1140,7 +1140,7 @@ export default function App() {
           {activePortfolioViewId !== "pv-assets" && portfolioCardRows.map((row, i) => {
             const rowSpan = row.reduce((s, id) => s + (OVERVIEW_CARD_DEFS.find(c => c.id === id)?.span ?? 1), 0)
             return (
-              <div key={i} className="grid grid-cols-3 gap-4">
+              <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {row.map(id => {
                   const def = OVERVIEW_CARD_DEFS.find(c => c.id === id)!
                   const stretched = rowSpan < 3 && row.length === 1 ? 3 : def.span
@@ -1340,7 +1340,7 @@ export default function App() {
       <div className="space-y-4">
         <BuildingHeader {...pagedHeaderProps} />
         {/* View controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <ViewSwitcher
             views={overviewViews.views}
             activeView={overviewViews.activeView}
