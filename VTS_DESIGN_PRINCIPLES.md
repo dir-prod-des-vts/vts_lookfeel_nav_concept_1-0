@@ -4,7 +4,7 @@
 
 ---
 
-## 1. Show what matters, hide what doesn't
+## 1\. Show what matters, hide what doesn't
 
 Every screen has one job. Before adding a component, name the one thing it helps the user do. If you can't name it, don't add it. Remove anything that doesn't serve that job — even if it's technically accurate.
 
@@ -12,7 +12,7 @@ Every screen has one job. Before adding a component, name the one thing it helps
 
 ---
 
-## 2. Let the data speak first
+## 2\. Let the data speak first
 
 The interface is not the story — the data is. Surface numbers, status, and signals at the top. Explanation and context live one level down (a popover, a tab, a detail pane), not in the default view.
 
@@ -20,7 +20,7 @@ The interface is not the story — the data is. Surface numbers, status, and sig
 
 ---
 
-## 3. One action per surface
+## 3\. One action per surface
 
 Every card, popover, and modal should have at most one primary action. If you find yourself writing two buttons of equal weight, you have two screens, not one.
 
@@ -28,7 +28,7 @@ Every card, popover, and modal should have at most one primary action. If you fi
 
 ---
 
-## 4. Tokens, not taste
+## 4\. Tokens, not taste
 
 Color, spacing, and type are not design decisions you make per component. They are system decisions made once in the token file and applied everywhere. When something looks off, fix the token — not the component.
 
@@ -36,7 +36,7 @@ Color, spacing, and type are not design decisions you make per component. They a
 
 ---
 
-## 5. Dark surfaces have their own rules
+## 5\. Dark surfaces have their own rules
 
 The sidebar and its popovers are a different visual environment. They have their own token family (`sidebar-*`) for a reason. Mixing light-surface tokens onto dark backgrounds breaks the system even if it looks close enough on your screen.
 
@@ -44,7 +44,7 @@ The sidebar and its popovers are a different visual environment. They have their
 
 ---
 
-## 6. Hierarchy before decoration
+## 6\. Hierarchy before decoration
 
 Establish a clear reading order before reaching for color, weight, or size. Eyebrow → headline → body → metadata. Every screen should have one thing that reads first, one that reads second. Decoration applied without hierarchy produces noise.
 
@@ -52,7 +52,7 @@ Establish a clear reading order before reaching for color, weight, or size. Eyeb
 
 ---
 
-## 7. Copy is part of the design
+## 7\. Copy is part of the design
 
 Sentence case, no em dashes, no jargon, no passive voice. A label that requires explanation is a design failure. If you can't say it in five words, you probably don't understand it well enough yet.
 
@@ -60,7 +60,7 @@ Sentence case, no em dashes, no jargon, no passive voice. A label that requires 
 
 ---
 
-## 8. Every deal has a next action
+## 8\. Every deal has a next action
 
 The system is not a dashboard — it is a work surface. Every deal shown to a user should have a visible next action associated with it. A deal with no recommended action is a deal the system has abandoned.
 
@@ -68,15 +68,15 @@ The system is not a dashboard — it is a work surface. Every deal shown to a us
 
 ---
 
-## 9. Agents are collaborators, not features
+## 9\. Agents are collaborators, not features
 
-Agent functionality is not a badge or a label applied to existing UI. It is a presence that shows up when it has something useful to say. If an agent card, button, or suggestion appears without a specific, actionable recommendation, remove it.
+Agent functionality is not a badge or a label applied to existing UI. It appears only when it has something useful to say. If an agent card, button, or suggestion appears without a specific, actionable recommendation, remove it.
 
 **In practice:** the agent card in the tasks tab shows a specific action with a specific urgency and a named agent. Not "AI is monitoring this deal."
 
 ---
 
-## 10. Build it, look at it, then ship it
+## 10\. Build it, look at it, then ship it
 
 A clean TypeScript build is not proof that the design works. Open the browser. Click the thing. Look at it on a narrow viewport. Read the copy out loud. If something feels wrong, it is wrong — fix it before committing.
 
