@@ -86,10 +86,11 @@ function SidePushMain({ children, navCollapsed }: { children: React.ReactNode; n
   )
 }
 import { cn, cardBase } from "@/lib/utils"
-import { type LucideIcon, UserCircle, BellRing, Activity, Plus, Pencil, Trash2, Bookmark, ChevronDownIcon, Sparkles, AlertTriangle, Clock, Download, Share2 } from "lucide-react"
+import { type LucideIcon, UserCircle, BellRing, Activity, Plus, Pencil, Trash2, Bookmark, ChevronDownIcon, Sparkles, AlertTriangle, Clock, Download, Share2, MoreHorizontal } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import buildingImg from "@/assets/building.jpg"
 
 // ── Overview view switcher ─────────────────────────────────────────────────────
@@ -1103,8 +1104,21 @@ export default function App() {
               />
             )}
             <div className="ml-auto flex items-center gap-2">
-              <Button variant="outline" size="sm" className="h-8"><Download className="size-4" />Export</Button>
-              <Button variant="outline" size="sm" className="h-8"><Share2 className="size-4" />Share</Button>
+              <div className="hidden md:flex items-center gap-2">
+                <Button variant="outline" size="sm" className="h-8"><Download className="size-4" />Export</Button>
+                <Button variant="outline" size="sm" className="h-8"><Share2 className="size-4" />Share</Button>
+              </div>
+              <div className="md:hidden">
+                <DropdownMenu>
+                  <DropdownMenuTrigger render={<Button variant="outline" size="icon" className="h-8 w-8" />}>
+                    <MoreHorizontal className="size-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem><Download className="size-4" />Export</DropdownMenuItem>
+                    <DropdownMenuItem><Share2 className="size-4" />Share</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
           </div>
 
@@ -1358,8 +1372,21 @@ export default function App() {
             onReorder={next => overviewViews.reorderCards(next.filter(id => overviewViews.liveCards.includes(id as OverviewCardId)) as OverviewCardId[])}
           />
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-8"><Download className="size-4" />Export</Button>
-            <Button variant="outline" size="sm" className="h-8"><Share2 className="size-4" />Share</Button>
+            <div className="hidden md:flex items-center gap-2">
+              <Button variant="outline" size="sm" className="h-8"><Download className="size-4" />Export</Button>
+              <Button variant="outline" size="sm" className="h-8"><Share2 className="size-4" />Share</Button>
+            </div>
+            <div className="md:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<Button variant="outline" size="icon" className="h-8 w-8" />}>
+                  <MoreHorizontal className="size-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem><Download className="size-4" />Export</DropdownMenuItem>
+                  <DropdownMenuItem><Share2 className="size-4" />Share</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
         {(() => {

@@ -1,1 +1,0 @@
-import{$ as e,X as t}from"./button-BELa_K-j.js";var n=e(t(),1),r=n.createContext(void 0),i={disableStyleElements:!1};function a(){return n.useContext(r)??i}export{a as t};
