@@ -2487,7 +2487,7 @@ export function DealProfile({ deal, onBack: _onBack, status: statusProp, onStatu
         <div className="flex-[5] min-w-0 flex flex-col gap-4">
           <div className={cn(cardBase, "flex-1")}>
             <Tabs value={tab} onValueChange={v => setTab(v)} className="w-full">
-              <TabsList variant="line">
+              <TabsList variant="line" className="mb-4">
                 {[
                   { value: "info",         label: "Info" },
                   { value: "proposals",    label: "Proposals" },
@@ -2528,7 +2528,7 @@ export function DealProfile({ deal, onBack: _onBack, status: statusProp, onStatu
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <TabsList variant="line" className={cn(rightCollapsed && "lg:hidden")}>
+                <TabsList variant="line" className={cn("mb-4", rightCollapsed && "lg:hidden")}>
                     {[
                       { value: "updates",   label: "Updates" },
                       { value: "tasks",     label: "Tasks", badge: STAGE_TASKS[stage]?.filter(t => !t.done).length || undefined, badgeCls: "bg-primary text-primary-foreground" },
