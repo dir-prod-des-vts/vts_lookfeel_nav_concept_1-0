@@ -167,35 +167,10 @@ function InboxDetail({ onForward, onBack }: { onForward: () => void; onBack?: ()
 }
 
 function ForwardCompose({ onSend }: { onSend: () => void }) {
-  const [sent, setSent] = React.useState(false)
-
-  if (sent) {
-    return (
-      <div className="flex flex-col h-full items-center justify-center gap-4 p-8 text-center">
-        <div className="w-12 h-12 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">
-          <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <div>
-          <p className="text-base font-semibold text-gray-900 mb-1">Email Sent</p>
-          <p className="text-sm text-gray-500">Forwarded to <span className="font-medium text-gray-700">deal.capture@vts.com</span>.<br />VTS will process it and confirm shortly.</p>
-        </div>
-        <Button
-          size="sm"
-          className="bg-blue-600 hover:bg-blue-700 text-white mt-2"
-          onClick={onSend}
-        >
-          Back to Inbox
-        </Button>
-      </div>
-    )
-  }
-
   return (
     <div className="flex flex-col h-full">
       <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 shrink-0">
-        <h2 className="text-base font-semibold text-gray-900">Forward Email</h2>
+        <h2 className="text-base font-semibold text-gray-900">Forward email</h2>
       </div>
       <div className="flex-1 flex flex-col p-4 sm:p-6 gap-4 overflow-auto">
         <div className="space-y-3">
@@ -223,8 +198,8 @@ function ForwardCompose({ onSend }: { onSend: () => void }) {
           </div>
         </div>
         <div className="flex gap-2 pt-2 shrink-0">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => setSent(true)}>Send</Button>
-          <Button variant="outline" className="border-gray-300 text-gray-600" onClick={() => { window.location.hash = "#/email" }}>Discard</Button>
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white" onClick={onSend}>Send</Button>
+          <Button variant="outline" className="border-gray-300 text-gray-600" onClick={() => { window.location.hash = "#/inquiry-email" }}>Discard</Button>
         </div>
       </div>
     </div>
@@ -363,6 +338,7 @@ export function EmailFlow({ step }: EmailFlowProps) {
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const [mobileView, setMobileView] = React.useState<"list" | "detail">("list")
   const [gmailLogoOpen, setGmailLogoOpen] = React.useState(false)
+  const [snackbar, setSnackbar] = React.useState(false)
 
   const confirmEmails = step === "confirm"
     ? [{ id: "vts-confirm", from: VTS_CONFIRM_EMAIL.from, email: VTS_CONFIRM_EMAIL.email, subject: VTS_CONFIRM_EMAIL.subject, preview: VTS_CONFIRM_EMAIL.preview, time: VTS_CONFIRM_EMAIL.time, unread: true }, ...EMAILS]
@@ -373,13 +349,24 @@ export function EmailFlow({ step }: EmailFlowProps) {
     if (step === "forward") setMobileView("detail")
   }, [step])
 
+  React.useEffect(() => {
+    if (!snackbar) return
+    const t = setTimeout(() => setSnackbar(false), 4000)
+    return () => clearTimeout(t)
+  }, [snackbar])
+
+  const handleSend = () => {
+    setSnackbar(true)
+    window.location.hash = "#/inquiry-email-confirm"
+  }
+
   const handleEmailClick = (id: string) => {
     setSelectedEmail(id)
     setMobileView("detail")
   }
 
   return (
-    <div className="force-light h-screen flex flex-col bg-white overflow-hidden">
+    <div className="force-light h-screen flex flex-col bg-white overflow-hidden relative">
       {/* Top bar */}
       <div className="flex items-center gap-3 px-3 sm:px-4 py-2 border-b border-gray-200 bg-white shrink-0">
         <button className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600 md:hidden" onClick={() => setSidebarOpen(o => !o)}>
@@ -443,7 +430,7 @@ export function EmailFlow({ step }: EmailFlowProps) {
           ${mobileView === "list" ? "hidden md:flex" : "flex"}
         `}>
           {step === "forward" ? (
-            <ForwardCompose onSend={() => { window.location.hash = "#/inquiry-email-confirm" }} />
+            <ForwardCompose onSend={handleSend} />
           ) : selectedEmail === "vts-confirm" ? (
             <ConfirmDetail onBack={() => { setSelectedEmail(null); setMobileView("list") }} />
           ) : selectedEmail === "amazon" ? (
@@ -457,6 +444,17 @@ export function EmailFlow({ step }: EmailFlowProps) {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Gmail-style sent snackbar */}
+      <div className={`absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 px-4 py-3 rounded-lg bg-gray-800 text-white text-sm shadow-xl transition-all duration-300 ${snackbar ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}`}>
+        <span>Message sent</span>
+        <button
+          className="text-blue-300 hover:text-blue-200 font-medium"
+          onClick={() => { setSnackbar(false); window.location.hash = "#/inquiry-email-forward" }}
+        >
+          Undo
+        </button>
       </div>
     </div>
   )

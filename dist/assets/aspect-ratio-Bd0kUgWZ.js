@@ -1,0 +1,1 @@
+import{S as e,f as t}from"./button-Bg7OhqGX.js";var n=e();function r({ratio:e,className:r,...i}){return(0,n.jsx)(`div`,{"data-slot":`aspect-ratio`,style:{"--ratio":e},className:t(`relative aspect-(--ratio)`,r),...i})}export{r as t};
