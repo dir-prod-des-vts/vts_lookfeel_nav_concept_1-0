@@ -14,6 +14,7 @@ interface LogoMenuContentProps {
 const AGENT_LINKS = [
   { label: "Deal Monitor",     hash: "#/deal-monitor" },
   { label: "Deal Capture",     hash: "#/inquiry-email" },
+  { label: "Comp Capture",     hash: "#/comp-email" },
   { label: "Doc Drafting",     hash: "#/document-agent" },
   { label: "Proposal Builder", hash: "#/proposal-builder" },
 ]

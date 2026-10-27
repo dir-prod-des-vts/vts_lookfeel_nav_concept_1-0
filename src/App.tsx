@@ -24,6 +24,7 @@ import { PageBreadcrumb } from "@/components/page-breadcrumb"
 import { LeasesPage, LEASES, type Lease } from "@/components/leases-page"
 import { LeaseDetailPage, LeaseStatusBadge, type LeaseStatus } from "@/components/lease-detail-page"
 import { EmailFlow } from "@/components/email-flow"
+import { CompEmailFlow } from "@/components/comp-email-flow"
 import { AskVTSPage } from "@/components/ask-vts"
 import { DocumentAgentPage } from "@/components/document-agent-page"
 import { ProposalBuilderPage } from "@/components/proposal-builder-page"
@@ -780,7 +781,7 @@ export default function App() {
   const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains("dark"))
 
   React.useEffect(() => {
-    const globalPages = ["ai", "theme", "principles", "activity", "reminders", "avatar", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm", "ask-vts", "document-agent", "proposal-builder", "deal-monitor", "deal-monitor-email-am", "deal-monitor-email-broker", "deal-monitor-email-tenant", "deal-monitor-email-lawyer", "deal-monitor-email-owner"]
+    const globalPages = ["ai", "theme", "principles", "activity", "reminders", "avatar", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm", "comp-email", "comp-email-forward", "comp-email-confirm", "ask-vts", "document-agent", "proposal-builder", "deal-monitor", "deal-monitor-email-am", "deal-monitor-email-broker", "deal-monitor-email-tenant", "deal-monitor-email-lawyer", "deal-monitor-email-owner"]
     let base = globalPages.includes(currentPage)
       ? `/${currentPage}`
       : `/${currentPage}/${selectedAssetId}`
@@ -922,6 +923,9 @@ export default function App() {
     if (page === "inquiry-email") return <EmailFlow step="inbox" />
     if (page === "inquiry-email-forward") return <EmailFlow step="forward" />
     if (page === "inquiry-email-confirm") return <EmailFlow step="confirm" />
+    if (page === "comp-email") return <CompEmailFlow step="inbox" />
+    if (page === "comp-email-forward") return <CompEmailFlow step="forward" />
+    if (page === "comp-email-confirm") return <CompEmailFlow step="confirm" />
 
 
     const assetDetail = ASSET_DETAILS[selectedAssetId]
@@ -1486,7 +1490,7 @@ export default function App() {
     setTimeout(() => setInsightCardsNew(false), 2200)
   }, [])
 
-  const standalonePages = ["theme", "principles", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm"]
+  const standalonePages = ["theme", "principles", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm", "comp-email", "comp-email-forward", "comp-email-confirm"]
   if (standalonePages.includes(currentPage)) {
     return (
       <ChatPatternProvider onOpenChat={goAskVts}>
