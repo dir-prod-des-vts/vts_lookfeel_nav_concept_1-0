@@ -1,23 +1,29 @@
 import * as React from "react"
+import {
+  ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, LabelList,
+} from "recharts"
 import { cn, cardBase } from "@/lib/utils"
 import { KpiBar } from "@/components/kpi-bar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { FilterBar, toggleFilterValue, clearFilterKey } from "@/components/filter-chip"
+import { FilterBar, toggleFilterValue, clearFilterKey, FILTER_TAB_GROUP_CLS, FILTER_TAB_ITEM_CLS } from "@/components/filter-chip"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
   Search, ChevronLeft, ChevronRight, ChevronDown, Check,
   MoreHorizontal, Plus, Settings2, GripVertical, Eye, EyeOff, X,
+  Download, FileType2, FileSpreadsheet,
 } from "lucide-react"
 import { AgentBtn } from "@/components/agent-btn"
 import { TenantAvatar } from "@/components/tenant-avatar"
 import {
-  Table, TableHeader, TableBody, TableRow, TableCell,
+  Table, TableHeader, TableBody, TableRow, TableCell, TableHead,
   SortableHead, useSortState,
 } from "@/components/sortable-table"
 
@@ -89,6 +95,45 @@ const COMP_META: Record<string, CompMeta> = {
   c31: { sector: "Office", leaseType: "Modified gross",     recoveries: 9,    tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 7.5 },
   c32: { sector: "Office", leaseType: "Modified gross",     recoveries: 11,   tenantRep: "Newmark",             leasingBroker: "JLL",                  discountRate: 7.5 },
   c33: { sector: "Office", leaseType: "Modified gross",     recoveries: 8,    tenantRep: "Savills",             leasingBroker: "Cushman & Wakefield",  discountRate: 7.5 },
+  // Boston / Financial Dist additions
+  c34: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "CBRE",                leasingBroker: "JLL",                  discountRate: 7.5 },
+  c35: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Cushman & Wakefield", leasingBroker: "Newmark",              discountRate: 7.5 },
+  c36: { sector: "Office", leaseType: "Modified gross",     recoveries: 10,   tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 7.5 },
+  c37: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Newmark",             leasingBroker: "JLL",                  discountRate: 8.0 },
+  c38: { sector: "Office", leaseType: "Modified gross",     recoveries: 9,    tenantRep: "Savills",             leasingBroker: "Cushman & Wakefield",  discountRate: 7.5 },
+  // New York / Hudson Sq additions
+  c39: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 8.5 },
+  c40: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "CBRE",                leasingBroker: "Newmark",              discountRate: 8.5 },
+  c41: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Cushman & Wakefield", leasingBroker: "JLL",                  discountRate: 8.5 },
+  c42: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Newmark",             leasingBroker: "CBRE",                 discountRate: 8.5 },
+  // New York / Downtown additions
+  c43: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "JLL",                 leasingBroker: "Cushman & Wakefield",  discountRate: 7.5 },
+  c44: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "CBRE",                leasingBroker: "JLL",                  discountRate: 7.5 },
+  c45: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Savills",             leasingBroker: "Newmark",              discountRate: 8.0 },
+  // New York / Midtown additions
+  c46: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Eastdil Secured",     leasingBroker: "JLL",                  discountRate: 8.5 },
+  c47: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 8.0 },
+  // Chicago / Loop additions
+  c48: { sector: "Office", leaseType: "Modified gross",     recoveries: 15,   tenantRep: "CBRE",                leasingBroker: "Cushman & Wakefield",  discountRate: 7.5 },
+  c49: { sector: "Office", leaseType: "Modified gross",     recoveries: 14,   tenantRep: "Avison Young",        leasingBroker: "JLL",                  discountRate: 7.5 },
+  // San Francisco / Financial Dist additions
+  c50: { sector: "Office", leaseType: "Modified gross",     recoveries: 20,   tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 8.0 },
+  c51: { sector: "Office", leaseType: "Modified gross",     recoveries: 18,   tenantRep: "Cushman & Wakefield", leasingBroker: "Newmark",              discountRate: 8.0 },
+  // Seattle / Downtown additions
+  c52: { sector: "Office", leaseType: "Modified gross",     recoveries: 11,   tenantRep: "CBRE",                leasingBroker: "JLL",                  discountRate: 7.5 },
+  c53: { sector: "Office", leaseType: "Modified gross",     recoveries: 12,   tenantRep: "JLL",                 leasingBroker: "Cushman & Wakefield",  discountRate: 7.5 },
+  // Atlanta / Midtown additions
+  c54: { sector: "Office", leaseType: "Triple net",         recoveries: 21,   tenantRep: "Newmark",             leasingBroker: "JLL",                  discountRate: 7.5 },
+  c55: { sector: "Office", leaseType: "Triple net",         recoveries: 19,   tenantRep: "CBRE",                leasingBroker: "Cushman & Wakefield",  discountRate: 7.5 },
+  // Providence / Downtown additions
+  c56: { sector: "Office", leaseType: "Modified gross",     recoveries: 8,    tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 7.5 },
+  c57: { sector: "Office", leaseType: "Modified gross",     recoveries: 9,    tenantRep: "Cushman & Wakefield", leasingBroker: "Newmark",              discountRate: 7.5 },
+  // Archived
+  c58: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "JLL",                 leasingBroker: "Cushman & Wakefield",  discountRate: 8.0 },
+  c60: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Eastdil Secured",     leasingBroker: "Newmark",              discountRate: 9.0 },
+  c64: { sector: "Office", leaseType: "Modified gross",     recoveries: 17,   tenantRep: "CBRE",                leasingBroker: "JLL",                  discountRate: 8.0 },
+  c68: { sector: "Office", leaseType: "Triple net",         recoveries: 20,   tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 7.5 },
+  c70: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "CBRE",                leasingBroker: "Cushman & Wakefield",  discountRate: 7.5 },
 }
 
 function calcNer(c: Comp): number {
@@ -144,31 +189,32 @@ interface ColDef {
 // ── Column definitions ────────────────────────────────────────────────────────
 
 const ALL_COLUMNS: ColDef[] = [
-  { id: "status",         label: "Status",              sortable: false, defaultVisible: false },
+  { id: "status",         label: "Status",              sortable: false, defaultVisible: true  },
   { id: "label",          label: "Label",               sortable: true,  defaultVisible: false },
-  { id: "tenant",         label: "Tenant name",         sortable: true,  defaultVisible: true  },
+  { id: "tenant",         label: "Tenant",              sortable: true,  defaultVisible: true  },
   { id: "currentAddress", label: "Building",            sortable: true,  defaultVisible: true  },
-  { id: "citySubmarket",  label: "Market / submarket",  sortable: true,  defaultVisible: true  },
+  { id: "city",           label: "Market",              sortable: false, defaultVisible: true  },
+  { id: "submarket",      label: "Submarket",           sortable: false, defaultVisible: true  },
   { id: "sector",         label: "Sector",              sortable: false, defaultVisible: true  },
   { id: "sf",             label: "SF",                  sortable: true,  right: true, defaultVisible: true  },
-  { id: "lcd",            label: "Lease start date",    sortable: true,  defaultVisible: true  },
+  { id: "lcd",            label: "LCD",                 sortable: true,  defaultVisible: true  },
   { id: "term",           label: "Lease term (mo.)",    sortable: true,  right: true, defaultVisible: true  },
   { id: "freeRent",       label: "Free rent (mo.)",     sortable: true,  right: true, defaultVisible: true  },
-  { id: "dealType",       label: "Lease classification",sortable: true,  defaultVisible: true  },
+  { id: "dealType",       label: "Deal type",           sortable: true,  defaultVisible: true  },
   { id: "leaseType",      label: "Lease type",          sortable: false, defaultVisible: true  },
-  { id: "rent",           label: "Annual base rent/SF", sortable: true,  right: true, defaultVisible: true  },
-  { id: "esca",           label: "Annual escalation %", sortable: true,  defaultVisible: true  },
+  { id: "rent",           label: "$/SF/yr",             sortable: true,  right: true, defaultVisible: true  },
+  { id: "esca",           label: "Escalation %",        sortable: true,  defaultVisible: true  },
   { id: "recoveries",     label: "Recoveries/SF",       sortable: false, right: true, defaultVisible: true  },
-  { id: "grossRent",      label: "Annual gross rent/SF",sortable: false, right: true, defaultVisible: true  },
+  { id: "grossRent",      label: "Gross $/SF/yr",       sortable: false, right: true, defaultVisible: true  },
   { id: "ti",             label: "TI & LLW/SF",         sortable: true,  right: true, defaultVisible: true  },
-  { id: "tiPerYear",      label: "TI/lease year",       sortable: false, right: true, defaultVisible: true  },
+  { id: "tiPerYear",      label: "TI/yr",               sortable: false, right: true, defaultVisible: true  },
   { id: "tenantRep",      label: "Tenant rep",          sortable: false, defaultVisible: true  },
   { id: "leasingBroker",  label: "Leasing broker",      sortable: false, defaultVisible: true  },
   { id: "payback",        label: "Payback (yrs)",       sortable: false, right: true, defaultVisible: true  },
   { id: "ner",            label: "NER/SF/yr",           sortable: false, right: true, defaultVisible: true  },
   { id: "discountRate",   label: "Discount rate",       sortable: false, right: true, defaultVisible: true  },
   { id: "nerDiscounted",  label: "NER/SF/yr (disc.)",   sortable: false, right: true, defaultVisible: true  },
-  { id: "note",           label: "Deal note",           sortable: false, defaultVisible: true  },
+  { id: "note",           label: "Note",                sortable: false, defaultVisible: true  },
   { id: "createdDate",    label: "Created date",        sortable: true,  defaultVisible: false },
   { id: "actions",        label: "",                    sortable: false, defaultVisible: true  },
 ]
@@ -176,51 +222,83 @@ const ALL_COLUMNS: ColDef[] = [
 // ── Mock data ─────────────────────────────────────────────────────────────────
 
 export const COMPS: Comp[] = [
-  // VTS Tower HQ tenants
-  { id: "c01", label: "Goldman Sachs expansion",    tenant: "Goldman Sachs",          currentAddress: "200 West St",          citySubmarket: "New York / Hudson Sq",     sf: 45000, term: 120, rent: 96.00, esca: "3% fixed",    ti: 185.00, freeRent: 12, lcd: "03/01/26", createdDate: "01/26/23", note: null,                  industry: "Financial services", dealType: "Expansion",  archived: false },
-  { id: "c02", label: "Sullivan & Cromwell",        tenant: "Sullivan & Cromwell LLP", currentAddress: "125 Broad St",         citySubmarket: "New York / Midtown",       sf: 38000, term: 84,  rent: 93.00, esca: "3% fixed",    ti: 175.00, freeRent: 10, lcd: "01/15/26", createdDate: "03/12/25", note: "Verified with broker", industry: "Legal",               dealType: "New deal",   archived: false },
-  { id: "c03", label: "Fidelity direct",            tenant: "Fidelity Investments",    currentAddress: "One Federal St",       citySubmarket: "Boston / Financial Dist",  sf: 22000, term: 60,  rent: 88.00, esca: "CPI cap 3%",  ti: 160.00, freeRent:  8, lcd: "11/01/25", createdDate: "08/05/25", note: null,                  industry: "Financial services", dealType: "New deal",   archived: false },
-  { id: "c04", label: "Credit Suisse renewal",      tenant: "Credit Suisse",           currentAddress: "1221 Ave Americas",    citySubmarket: "New York / Midtown",       sf: 62000, term: 120, rent: 100.00, esca: "3% fixed",   ti: 200.00, freeRent: 14, lcd: "04/01/26", createdDate: "11/20/25", note: null,                  industry: "Financial services", dealType: "Renewal",    archived: false },
-  { id: "c05", label: "Davis Polk new deal",        tenant: "Davis Polk & Wardwell",   currentAddress: "450 Lexington Ave",    citySubmarket: "New York / Midtown",       sf: 55000, term: 132, rent: 102.00, esca: "3.5% fixed", ti: 210.00, freeRent: 15, lcd: "02/01/26", createdDate: "09/18/25", note: "Comp list",           industry: "Legal",               dealType: "New deal",   archived: false },
-  { id: "c06", label: "Marsh McLennan sublease",    tenant: "Marsh & McLennan",        currentAddress: "1166 Ave Americas",    citySubmarket: "New York / Midtown",       sf: 30000, term: 96,  rent: 97.00, esca: null,           ti: 190.00, freeRent: 12, lcd: "12/15/25", createdDate: "04/30/25", note: null,                  industry: "Insurance",           dealType: "Sublease",   archived: false },
-  { id: "c07", label: "KKR flagship",               tenant: "KKR & Co.",               currentAddress: "9 W 57th St",          citySubmarket: "New York / Hudson Yards",  sf: 80000, term: 144, rent: 118.00, esca: "3% fixed",   ti: 250.00, freeRent: 18, lcd: "05/01/26", createdDate: "12/01/25", note: null,                  industry: "Private equity",      dealType: "New deal",   archived: false },
-  { id: "c08", label: "Warner Media relocation",    tenant: "Warner Media",            currentAddress: "30 Rockefeller Plaza", citySubmarket: "New York / Hudson Yards",  sf: 48000, term: 120, rent: 113.00, esca: "3% fixed",   ti: 230.00, freeRent: 15, lcd: "03/15/26", createdDate: "07/22/25", note: null,                  industry: "Media & entertainment", dealType: "New deal", archived: false },
-  { id: "c09", label: "Pfizer sublease",            tenant: "Pfizer Inc.",             currentAddress: "235 E 42nd St",        citySubmarket: "New York / Hudson Yards",  sf: 35000, term: 84,  rent: 109.00, esca: null,          ti: 220.00, freeRent: 14, lcd: "01/01/26", createdDate: "06/14/25", note: "Needs confirmation",  industry: "Pharmaceuticals",     dealType: "Sublease",   archived: false },
-  { id: "c10", label: "BofA anchor renewal",        tenant: "Bank of America",         currentAddress: "One Bryant Park",      citySubmarket: "New York / Midtown",       sf: 95000, term: 120, rent: 104.00, esca: "3% fixed",   ti: 205.00, freeRent: 16, lcd: "02/15/26", createdDate: "10/08/25", note: null,                  industry: "Financial services", dealType: "Renewal",    archived: false },
-  { id: "c11", label: "JPMorgan downtown",          tenant: "JPMorgan Chase",          currentAddress: "383 Madison Ave",      citySubmarket: "New York / Downtown",      sf: 70000, term: 96,  rent: 78.00,  esca: "CPI cap 3%", ti: 145.00, freeRent: 10, lcd: "04/01/26", createdDate: "02/03/26", note: null,                  industry: "Financial services", dealType: "New deal",   archived: false },
-  // Chicago / Loop
-  { id: "c14", label: "United Airlines HQ",          tenant: "United Airlines",         currentAddress: "233 S Wacker Dr",      citySubmarket: "Chicago / Loop",           sf: 62000, term: 120, rent: 72.00, esca: "3% fixed",    ti: 85.00, freeRent: 10, lcd: "02/01/26", createdDate: "10/15/25", note: null,                   industry: "Transportation",      dealType: "Renewal",    archived: false },
-  { id: "c15", label: "Salesforce Chicago",          tenant: "Salesforce Inc.",         currentAddress: "111 W Illinois St",    citySubmarket: "Chicago / Loop",           sf: 45000, term: 96,  rent: 68.00, esca: "3% fixed",    ti: 75.00, freeRent: 8,  lcd: "05/01/26", createdDate: "01/20/26", note: null,                   industry: "Technology",          dealType: "New deal",   archived: false },
-  { id: "c16", label: "PwC expansion",               tenant: "PwC",                     currentAddress: "One North Wacker",     citySubmarket: "Chicago / Loop",           sf: 38000, term: 84,  rent: 65.00, esca: "CPI cap 3%",  ti: 68.00, freeRent: 7,  lcd: "04/01/26", createdDate: "12/08/25", note: "Verified with broker",  industry: "Professional services", dealType: "Expansion", archived: false },
-  { id: "c17", label: "Citadel renewal",             tenant: "Citadel",                 currentAddress: "131 S Dearborn St",    citySubmarket: "Chicago / Loop",           sf: 55000, term: 120, rent: 75.00, esca: "3.5% fixed",  ti: 90.00, freeRent: 12, lcd: "06/01/26", createdDate: "02/28/26", note: null,                   industry: "Financial services",  dealType: "Renewal",    archived: false },
+  // ── 2020 ─────────────────────────────────────────────────────────────────────
+  { id: "c03", label: "Fidelity Boston",            tenant: "Fidelity Investments",    currentAddress: "One Federal St",             citySubmarket: "Boston / Financial Dist",        sf: 22000, term: 60,  rent: 85.00, esca: "CPI cap 3%",  ti: 155.00, freeRent:  7, lcd: "06/01/20", createdDate: "03/10/20", note: null,                   industry: "Financial services",  dealType: "New deal",   archived: false },
+  { id: "c11", label: "JPMorgan downtown",          tenant: "JPMorgan Chase",          currentAddress: "383 Madison Ave",            citySubmarket: "New York / Downtown",            sf: 70000, term: 96,  rent: 74.00, esca: "CPI cap 3%",  ti: 138.00, freeRent:  9, lcd: "09/01/20", createdDate: "05/18/20", note: null,                   industry: "Financial services",  dealType: "New deal",   archived: false },
+  { id: "c14", label: "United Airlines HQ",         tenant: "United Airlines",         currentAddress: "233 S Wacker Dr",            citySubmarket: "Chicago / Loop",                 sf: 62000, term: 120, rent: 66.00, esca: "3% fixed",    ti: 78.00,  freeRent:  9, lcd: "03/01/20", createdDate: "11/05/19", note: null,                   industry: "Transportation",      dealType: "Renewal",    archived: false },
+  { id: "c18", label: "Salesforce SF",              tenant: "Salesforce Inc.",         currentAddress: "415 Mission St",             citySubmarket: "San Francisco / Financial Dist", sf: 75000, term: 132, rent: 100.00, esca: "3% fixed",   ti: 132.00, freeRent: 13, lcd: "07/01/20", createdDate: "03/22/20", note: null,                   industry: "Technology",          dealType: "Renewal",    archived: false },
+  { id: "c22", label: "Amazon downtown",            tenant: "Amazon.com",              currentAddress: "410 Terry Ave N",            citySubmarket: "Seattle / Downtown",             sf: 80000, term: 120, rent: 62.00, esca: "3% fixed",    ti: 88.00,  freeRent: 11, lcd: "05/15/20", createdDate: "01/28/20", note: null,                   industry: "Technology",          dealType: "New deal",   archived: false },
+  { id: "c26", label: "Delta Air Lines office",     tenant: "Delta Air Lines",         currentAddress: "1030 Delta Blvd",            citySubmarket: "Atlanta / Midtown",              sf: 44000, term: 84,  rent: 46.00, esca: "3% fixed",    ti: 48.00,  freeRent:  5, lcd: "04/01/20", createdDate: "12/10/19", note: null,                   industry: "Transportation",      dealType: "New deal",   archived: false },
+  { id: "c30", label: "Fidelity Providence",        tenant: "Fidelity Investments",    currentAddress: "100 Westminster St",         citySubmarket: "Providence / Downtown",          sf: 22000, term: 60,  rent: 32.00, esca: "3% fixed",    ti: 36.00,  freeRent:  3, lcd: "08/01/20", createdDate: "04/15/20", note: null,                   industry: "Financial services",  dealType: "New deal",   archived: false },
+  { id: "c34", label: "State Street renewal",       tenant: "State Street Corp",       currentAddress: "State Street Financial Ctr", citySubmarket: "Boston / Financial Dist",        sf: 34000, term: 96,  rent: 83.00, esca: "3% fixed",    ti: 148.00, freeRent:  8, lcd: "11/01/20", createdDate: "06/20/20", note: null,                   industry: "Financial services",  dealType: "Renewal",    archived: false },
 
-  // San Francisco / Financial Dist
-  { id: "c18", label: "Salesforce SF",               tenant: "Salesforce Inc.",         currentAddress: "415 Mission St",       citySubmarket: "San Francisco / Financial Dist", sf: 75000, term: 132, rent: 108.00, esca: "3% fixed",   ti: 145.00, freeRent: 14, lcd: "03/01/26", createdDate: "09/22/25", note: null,                   industry: "Technology",          dealType: "Renewal",    archived: false },
-  { id: "c19", label: "Twitter/X sublease",          tenant: "Twitter/X",               currentAddress: "1355 Market St",       citySubmarket: "San Francisco / Financial Dist", sf: 42000, term: 60,  rent: 95.00, esca: null,          ti: 110.00, freeRent: 8,  lcd: "01/15/26", createdDate: "07/14/25", note: "Needs confirmation",   industry: "Technology",          dealType: "Sublease",   archived: false },
-  { id: "c20", label: "Airbnb HQ renewal",           tenant: "Airbnb",                  currentAddress: "888 Brannan St",       citySubmarket: "San Francisco / Financial Dist", sf: 48000, term: 96,  rent: 102.00, esca: "3% fixed",  ti: 130.00, freeRent: 10, lcd: "04/01/26", createdDate: "11/30/25", note: null,                   industry: "Technology",          dealType: "Renewal",    archived: false },
-  { id: "c21", label: "Stripe expansion",            tenant: "Stripe",                  currentAddress: "510 Townsend St",      citySubmarket: "San Francisco / Financial Dist", sf: 35000, term: 84,  rent: 110.00, esca: "3.5% fixed", ti: 150.00, freeRent: 12, lcd: "05/15/26", createdDate: "01/10/26", note: "Comp list",            industry: "Technology",          dealType: "Expansion",  archived: false },
+  // ── 2021 ─────────────────────────────────────────────────────────────────────
+  { id: "c02", label: "Sullivan & Cromwell",        tenant: "Sullivan & Cromwell LLP", currentAddress: "125 Broad St",               citySubmarket: "New York / Midtown",             sf: 38000, term: 84,  rent: 88.00, esca: "3% fixed",    ti: 165.00, freeRent:  9, lcd: "02/15/21", createdDate: "10/08/20", note: "Verified with broker", industry: "Legal",               dealType: "New deal",   archived: false },
+  { id: "c15", label: "Salesforce Chicago",         tenant: "Salesforce Inc.",         currentAddress: "111 W Illinois St",          citySubmarket: "Chicago / Loop",                 sf: 45000, term: 96,  rent: 62.00, esca: "3% fixed",    ti: 68.00,  freeRent:  7, lcd: "05/01/21", createdDate: "01/12/21", note: null,                   industry: "Technology",          dealType: "New deal",   archived: false },
+  { id: "c19", label: "Twitter/X sublease",         tenant: "Twitter/X",               currentAddress: "1355 Market St",             citySubmarket: "San Francisco / Financial Dist", sf: 42000, term: 60,  rent: 88.00, esca: null,           ti: 100.00, freeRent:  7, lcd: "08/01/21", createdDate: "04/20/21", note: "Needs confirmation",   industry: "Technology",          dealType: "Sublease",   archived: false },
+  { id: "c23", label: "Boeing relocation",          tenant: "Boeing",                  currentAddress: "100 N Riverside",            citySubmarket: "Seattle / Downtown",             sf: 55000, term: 96,  rent: 58.00, esca: "3% fixed",    ti: 72.00,  freeRent:  7, lcd: "03/15/21", createdDate: "11/20/20", note: null,                   industry: "Aerospace",           dealType: "New deal",   archived: false },
+  { id: "c27", label: "Cox Media Atlanta",          tenant: "Cox Enterprises",         currentAddress: "6205 Peachtree Dunwoody Rd", citySubmarket: "Atlanta / Midtown",              sf: 38000, term: 72,  rent: 42.00, esca: "3% fixed",    ti: 44.00,  freeRent:  4, lcd: "06/01/21", createdDate: "02/10/21", note: null,                   industry: "Media & entertainment", dealType: "Renewal",  archived: false },
+  { id: "c31", label: "Textron renewal",            tenant: "Textron",                 currentAddress: "40 Westminster St",          citySubmarket: "Providence / Downtown",          sf: 18000, term: 72,  rent: 30.00, esca: "3% fixed",    ti: 32.00,  freeRent:  3, lcd: "09/01/21", createdDate: "05/05/21", note: null,                   industry: "Industrials",         dealType: "Renewal",    archived: false },
+  { id: "c35", label: "Liberty Mutual expansion",   tenant: "Liberty Mutual",          currentAddress: "175 Berkeley St",            citySubmarket: "Boston / Financial Dist",        sf: 28000, term: 84,  rent: 86.00, esca: "3% fixed",    ti: 152.00, freeRent:  9, lcd: "04/15/21", createdDate: "12/18/20", note: null,                   industry: "Insurance",           dealType: "Expansion",  archived: false },
+  { id: "c39", label: "Google Hudson Sq",           tenant: "Google LLC",              currentAddress: "550 Washington St",          citySubmarket: "New York / Hudson Sq",           sf: 62000, term: 144, rent: 92.00, esca: "3% fixed",    ti: 182.00, freeRent: 14, lcd: "11/01/21", createdDate: "07/08/21", note: null,                   industry: "Technology",          dealType: "New deal",   archived: false },
 
-  // Seattle / Downtown
-  { id: "c22", label: "Amazon downtown",             tenant: "Amazon.com",              currentAddress: "410 Terry Ave N",      citySubmarket: "Seattle / Downtown",       sf: 80000, term: 120, rent: 68.00, esca: "3% fixed",    ti: 95.00, freeRent: 12, lcd: "02/15/26", createdDate: "08/18/25", note: null,                   industry: "Technology",          dealType: "New deal",   archived: false },
-  { id: "c23", label: "Boeing relocation",           tenant: "Boeing",                  currentAddress: "100 N Riverside",      citySubmarket: "Seattle / Downtown",       sf: 55000, term: 96,  rent: 62.00, esca: "3% fixed",    ti: 78.00, freeRent: 8,  lcd: "05/01/26", createdDate: "12/04/25", note: null,                   industry: "Aerospace",           dealType: "New deal",   archived: false },
-  { id: "c24", label: "Microsoft Seattle office",    tenant: "Microsoft",               currentAddress: "320 Westlake Ave N",   citySubmarket: "Seattle / Downtown",       sf: 48000, term: 84,  rent: 65.00, esca: "CPI cap 3%",  ti: 82.00, freeRent: 7,  lcd: "03/01/26", createdDate: "10/22/25", note: "Verified with broker",  industry: "Technology",          dealType: "Expansion",  archived: false },
-  { id: "c25", label: "Starbucks headquarters",      tenant: "Starbucks Corporation",   currentAddress: "2401 Utah Ave S",      citySubmarket: "Seattle / Downtown",       sf: 65000, term: 144, rent: 70.00, esca: "3.5% fixed",  ti: 100.00, freeRent: 14, lcd: "06/01/26", createdDate: "02/14/26", note: null,                   industry: "Food & beverage",     dealType: "Renewal",    archived: false },
+  // ── 2022 ─────────────────────────────────────────────────────────────────────
+  { id: "c04", label: "Credit Suisse renewal",      tenant: "Credit Suisse",           currentAddress: "1221 Ave Americas",          citySubmarket: "New York / Midtown",             sf: 62000, term: 120, rent: 92.00, esca: "3% fixed",    ti: 182.00, freeRent: 12, lcd: "01/15/22", createdDate: "09/05/21", note: null,                   industry: "Financial services",  dealType: "Renewal",    archived: false },
+  { id: "c16", label: "PwC expansion",              tenant: "PwC",                     currentAddress: "One North Wacker",           citySubmarket: "Chicago / Loop",                 sf: 38000, term: 84,  rent: 60.00, esca: "CPI cap 3%",  ti: 62.00,  freeRent:  6, lcd: "05/01/22", createdDate: "01/15/22", note: "Verified with broker",  industry: "Professional services", dealType: "Expansion", archived: false },
+  { id: "c20", label: "Airbnb HQ renewal",          tenant: "Airbnb",                  currentAddress: "888 Brannan St",             citySubmarket: "San Francisco / Financial Dist", sf: 48000, term: 96,  rent: 95.00, esca: "3% fixed",    ti: 120.00, freeRent:  9, lcd: "08/15/22", createdDate: "04/28/22", note: null,                   industry: "Technology",          dealType: "Renewal",    archived: false },
+  { id: "c24", label: "Microsoft Seattle office",   tenant: "Microsoft",               currentAddress: "320 Westlake Ave N",         citySubmarket: "Seattle / Downtown",             sf: 48000, term: 84,  rent: 60.00, esca: "CPI cap 3%",  ti: 76.00,  freeRent:  6, lcd: "03/01/22", createdDate: "10/20/21", note: "Verified with broker",  industry: "Technology",          dealType: "Expansion",  archived: false },
+  { id: "c28", label: "Home Depot expansion",       tenant: "Home Depot",              currentAddress: "2455 Paces Ferry Rd",        citySubmarket: "Atlanta / Midtown",              sf: 52000, term: 96,  rent: 50.00, esca: "3% fixed",    ti: 52.00,  freeRent:  6, lcd: "06/01/22", createdDate: "02/14/22", note: "Comp list",            industry: "Retail",              dealType: "Expansion",  archived: false },
+  { id: "c32", label: "CVS Health offices",         tenant: "CVS Health",              currentAddress: "1 CVS Dr",                   citySubmarket: "Providence / Downtown",          sf: 28000, term: 84,  rent: 35.00, esca: "3% fixed",    ti: 38.00,  freeRent:  4, lcd: "10/15/22", createdDate: "06/25/22", note: "Verified with broker",  industry: "Healthcare",          dealType: "Expansion",  archived: false },
+  { id: "c36", label: "Wellington Management",      tenant: "Wellington Mgmt",         currentAddress: "280 Congress St",            citySubmarket: "Boston / Financial Dist",        sf: 42000, term: 120, rent: 88.00, esca: "CPI cap 3%",  ti: 158.00, freeRent: 11, lcd: "04/01/22", createdDate: "12/05/21", note: "Comp list",            industry: "Financial services",  dealType: "Renewal",    archived: false },
+  { id: "c43", label: "HSBC Americas HQ",           tenant: "HSBC",                    currentAddress: "452 Fifth Ave",              citySubmarket: "New York / Downtown",            sf: 55000, term: 120, rent: 72.00, esca: "3% fixed",    ti: 140.00, freeRent: 11, lcd: "07/01/22", createdDate: "03/18/22", note: null,                   industry: "Financial services",  dealType: "Renewal",    archived: false },
 
-  // Atlanta / Midtown
-  { id: "c26", label: "Delta Air Lines office",      tenant: "Delta Air Lines",         currentAddress: "1030 Delta Blvd",      citySubmarket: "Atlanta / Midtown",        sf: 44000, term: 84,  rent: 52.00, esca: "3% fixed",    ti: 55.00, freeRent: 6,  lcd: "03/15/26", createdDate: "11/05/25", note: null,                   industry: "Transportation",      dealType: "New deal",   archived: false },
-  { id: "c27", label: "Cox Media Atlanta",           tenant: "Cox Enterprises",         currentAddress: "6205 Peachtree Dunwoody Rd", citySubmarket: "Atlanta / Midtown",   sf: 38000, term: 72,  rent: 48.00, esca: "3% fixed",    ti: 50.00, freeRent: 5,  lcd: "04/01/26", createdDate: "12/18/25", note: null,                   industry: "Media & entertainment", dealType: "Renewal",  archived: false },
-  { id: "c28", label: "Home Depot expansion",        tenant: "Home Depot",              currentAddress: "2455 Paces Ferry Rd",  citySubmarket: "Atlanta / Midtown",        sf: 52000, term: 96,  rent: 56.00, esca: "3% fixed",    ti: 60.00, freeRent: 7,  lcd: "05/01/26", createdDate: "01/22/26", note: "Comp list",            industry: "Retail",              dealType: "Expansion",  archived: false },
-  { id: "c29", label: "NCR Corporation HQ",          tenant: "NCR Corporation",         currentAddress: "864 Spring St NW",     citySubmarket: "Atlanta / Midtown",        sf: 30000, term: 60,  rent: 46.00, esca: "CPI cap 3%",  ti: 45.00, freeRent: 4,  lcd: "02/01/26", createdDate: "09/30/25", note: null,                   industry: "Technology",          dealType: "Renewal",    archived: false },
+  // ── 2023 ─────────────────────────────────────────────────────────────────────
+  { id: "c05", label: "Davis Polk new deal",        tenant: "Davis Polk & Wardwell",   currentAddress: "450 Lexington Ave",          citySubmarket: "New York / Midtown",             sf: 55000, term: 132, rent: 96.00, esca: "3.5% fixed",  ti: 195.00, freeRent: 14, lcd: "02/01/23", createdDate: "10/10/22", note: "Comp list",            industry: "Legal",               dealType: "New deal",   archived: false },
+  { id: "c17", label: "Citadel renewal",            tenant: "Citadel",                 currentAddress: "131 S Dearborn St",          citySubmarket: "Chicago / Loop",                 sf: 55000, term: 120, rent: 70.00, esca: "3.5% fixed",  ti: 84.00,  freeRent: 11, lcd: "06/15/23", createdDate: "02/22/23", note: null,                   industry: "Financial services",  dealType: "Renewal",    archived: false },
+  { id: "c21", label: "Stripe expansion",           tenant: "Stripe",                  currentAddress: "510 Townsend St",            citySubmarket: "San Francisco / Financial Dist", sf: 35000, term: 84,  rent: 102.00, esca: "3.5% fixed", ti: 140.00, freeRent: 11, lcd: "09/01/23", createdDate: "05/10/23", note: "Comp list",            industry: "Technology",          dealType: "Expansion",  archived: false },
+  { id: "c25", label: "Starbucks headquarters",     tenant: "Starbucks Corporation",   currentAddress: "2401 Utah Ave S",            citySubmarket: "Seattle / Downtown",             sf: 65000, term: 144, rent: 64.00, esca: "3.5% fixed",  ti: 92.00,  freeRent: 13, lcd: "04/01/23", createdDate: "12/05/22", note: null,                   industry: "Food & beverage",     dealType: "Renewal",    archived: false },
+  { id: "c29", label: "NCR Corporation HQ",         tenant: "NCR Corporation",         currentAddress: "864 Spring St NW",           citySubmarket: "Atlanta / Midtown",              sf: 30000, term: 60,  rent: 44.00, esca: "CPI cap 3%",  ti: 42.00,  freeRent:  4, lcd: "07/15/23", createdDate: "03/20/23", note: null,                   industry: "Technology",          dealType: "Renewal",    archived: false },
+  { id: "c33", label: "Brown University offices",   tenant: "Brown University",        currentAddress: "164 Angell St",              citySubmarket: "Providence / Downtown",          sf: 15000, term: 60,  rent: 30.00, esca: "CPI cap 2.5%", ti: 32.00,  freeRent:  3, lcd: "11/01/23", createdDate: "07/08/23", note: null,                   industry: "Education",           dealType: "New deal",   archived: false },
+  { id: "c37", label: "Putnam Investments",         tenant: "Putnam Investments",      currentAddress: "100 Federal St",             citySubmarket: "Boston / Financial Dist",        sf: 18000, term: 72,  rent: 80.00, esca: "3% fixed",    ti: 142.00, freeRent:  7, lcd: "03/01/23", createdDate: "11/05/22", note: null,                   industry: "Financial services",  dealType: "New deal",   archived: false },
+  { id: "c44", label: "American Express expansion", tenant: "American Express",        currentAddress: "200 Vesey St",               citySubmarket: "New York / Downtown",            sf: 42000, term: 96,  rent: 72.00, esca: "CPI cap 3%",  ti: 135.00, freeRent:  9, lcd: "08/01/23", createdDate: "04/15/23", note: null,                   industry: "Financial services",  dealType: "Expansion",  archived: false },
 
-  // Providence / Downtown
-  { id: "c30", label: "Fidelity Providence",         tenant: "Fidelity Investments",    currentAddress: "100 Westminster St",   citySubmarket: "Providence / Downtown",    sf: 22000, term: 60,  rent: 38.00, esca: "3% fixed",    ti: 42.00, freeRent: 4,  lcd: "01/15/26", createdDate: "08/20/25", note: null,                   industry: "Financial services",  dealType: "New deal",   archived: false },
-  { id: "c31", label: "Textron renewal",             tenant: "Textron",                 currentAddress: "40 Westminster St",    citySubmarket: "Providence / Downtown",    sf: 18000, term: 72,  rent: 35.00, esca: "3% fixed",    ti: 38.00, freeRent: 3,  lcd: "03/01/26", createdDate: "10/12/25", note: null,                   industry: "Industrials",         dealType: "Renewal",    archived: false },
-  { id: "c32", label: "CVS Health offices",          tenant: "CVS Health",              currentAddress: "1 CVS Dr",             citySubmarket: "Providence / Downtown",    sf: 28000, term: 84,  rent: 40.00, esca: "3% fixed",    ti: 45.00, freeRent: 5,  lcd: "04/15/26", createdDate: "12/01/25", note: "Verified with broker",  industry: "Healthcare",          dealType: "Expansion",  archived: false },
-  { id: "c33", label: "Brown University offices",    tenant: "Brown University",        currentAddress: "164 Angell St",        citySubmarket: "Providence / Downtown",    sf: 15000, term: 60,  rent: 32.00, esca: "CPI cap 2.5%", ti: 35.00, freeRent: 3,  lcd: "02/01/26", createdDate: "09/08/25", note: null,                   industry: "Education",           dealType: "New deal",   archived: false },
+  // ── 2024 ─────────────────────────────────────────────────────────────────────
+  { id: "c06", label: "Marsh McLennan sublease",    tenant: "Marsh & McLennan",        currentAddress: "1166 Ave Americas",          citySubmarket: "New York / Midtown",             sf: 30000, term: 96,  rent: 94.00, esca: null,           ti: 182.00, freeRent: 11, lcd: "01/15/24", createdDate: "09/12/23", note: null,                   industry: "Insurance",           dealType: "Sublease",   archived: false },
+  { id: "c07", label: "KKR flagship",               tenant: "KKR & Co.",               currentAddress: "9 W 57th St",                citySubmarket: "New York / Hudson Yards",        sf: 80000, term: 144, rent: 112.00, esca: "3% fixed",   ti: 238.00, freeRent: 17, lcd: "05/01/24", createdDate: "01/08/24", note: null,                   industry: "Private equity",      dealType: "New deal",   archived: false },
+  { id: "c40", label: "Meta NYC office",            tenant: "Meta Platforms",          currentAddress: "770 Broadway",               citySubmarket: "New York / Hudson Sq",           sf: 48000, term: 120, rent: 92.00, esca: "3% fixed",    ti: 178.00, freeRent: 12, lcd: "03/15/24", createdDate: "11/20/23", note: null,                   industry: "Technology",          dealType: "Expansion",  archived: false },
+  { id: "c45", label: "LinkedIn NY offices",        tenant: "LinkedIn",                currentAddress: "222 W 39th St",              citySubmarket: "New York / Downtown",            sf: 30000, term: 84,  rent: 72.00, esca: "3% fixed",    ti: 132.00, freeRent:  8, lcd: "07/01/24", createdDate: "03/25/24", note: "Needs confirmation",   industry: "Technology",          dealType: "New deal",   archived: false },
+  { id: "c46", label: "Skadden Arps flagship",      tenant: "Skadden Arps",            currentAddress: "One Manhattan West",         citySubmarket: "New York / Midtown",             sf: 70000, term: 132, rent: 100.00, esca: "3.5% fixed", ti: 205.00, freeRent: 15, lcd: "02/01/24", createdDate: "10/05/23", note: null,                   industry: "Legal",               dealType: "New deal",   archived: false },
+  { id: "c48", label: "Accenture Chicago",          tenant: "Accenture",               currentAddress: "161 N Clark St",             citySubmarket: "Chicago / Loop",                 sf: 42000, term: 84,  rent: 66.00, esca: "3% fixed",    ti: 75.00,  freeRent:  8, lcd: "09/15/24", createdDate: "05/28/24", note: null,                   industry: "Professional services", dealType: "New deal",  archived: false },
+  { id: "c50", label: "Dropbox SF office",          tenant: "Dropbox Inc.",            currentAddress: "333 Brannan St",             citySubmarket: "San Francisco / Financial Dist", sf: 30000, term: 72,  rent: 95.00, esca: "3% fixed",    ti: 115.00, freeRent:  8, lcd: "04/01/24", createdDate: "12/10/23", note: null,                   industry: "Technology",          dealType: "Sublease",   archived: false },
+  { id: "c52", label: "Nordstrom headquarters",     tenant: "Nordstrom",               currentAddress: "1600 Seventh Ave",           citySubmarket: "Seattle / Downtown",             sf: 50000, term: 120, rent: 62.00, esca: "3% fixed",    ti: 82.00,  freeRent: 10, lcd: "06/01/24", createdDate: "02/12/24", note: null,                   industry: "Retail",              dealType: "Renewal",    archived: false },
 
-  // Archived
-  { id: "c12", label: "Deloitte 2023",              tenant: "Deloitte LLP",            currentAddress: "30 Rockefeller Plaza", citySubmarket: "New York / Downtown",      sf: 52000, term: 84,  rent: 75.00,  esca: "3% fixed",   ti: 140.00, freeRent:  9, lcd: "12/01/23", createdDate: "09/04/19", note: "Comp list",           industry: "Professional services", dealType: "Renewal",  archived: true  },
-  { id: "c13", label: "AIG sublease 2022",          tenant: "AIG",                     currentAddress: "175 Water St",         citySubmarket: "New York / Downtown",      sf: 28000, term: 60,  rent: 72.00,  esca: null,          ti: 130.00, freeRent:  8, lcd: "08/01/22", createdDate: "01/26/23", note: null,                  industry: "Insurance",           dealType: "Sublease",   archived: true  },
+  // ── 2025 ─────────────────────────────────────────────────────────────────────
+  { id: "c08", label: "Warner Media relocation",    tenant: "Warner Media",            currentAddress: "30 Rockefeller Plaza",       citySubmarket: "New York / Hudson Yards",        sf: 48000, term: 120, rent: 110.00, esca: "3% fixed",   ti: 222.00, freeRent: 14, lcd: "02/15/25", createdDate: "10/18/24", note: null,                   industry: "Media & entertainment", dealType: "New deal", archived: false },
+  { id: "c09", label: "Pfizer sublease",            tenant: "Pfizer Inc.",             currentAddress: "235 E 42nd St",              citySubmarket: "New York / Hudson Yards",        sf: 35000, term: 84,  rent: 106.00, esca: null,          ti: 212.00, freeRent: 13, lcd: "05/01/25", createdDate: "01/22/25", note: "Needs confirmation",   industry: "Pharmaceuticals",     dealType: "Sublease",   archived: false },
+  { id: "c10", label: "BofA anchor renewal",        tenant: "Bank of America",         currentAddress: "One Bryant Park",            citySubmarket: "New York / Midtown",             sf: 95000, term: 120, rent: 101.00, esca: "3% fixed",   ti: 198.00, freeRent: 15, lcd: "08/01/25", createdDate: "04/05/25", note: null,                   industry: "Financial services",  dealType: "Renewal",    archived: false },
+  { id: "c38", label: "Nuveen office",              tenant: "Nuveen",                  currentAddress: "Two International Place",    citySubmarket: "Boston / Financial Dist",        sf: 22000, term: 60,  rent: 80.00, esca: "3% fixed",    ti: 136.00, freeRent:  6, lcd: "03/15/25", createdDate: "11/25/24", note: "Verified with broker",  industry: "Financial services",  dealType: "New deal",   archived: false },
+  { id: "c41", label: "Spotify US HQ",              tenant: "Spotify",                 currentAddress: "4 World Trade Center",       citySubmarket: "New York / Hudson Sq",           sf: 35000, term: 96,  rent: 90.00, esca: "3.5% fixed",  ti: 172.00, freeRent: 10, lcd: "06/01/25", createdDate: "02/15/25", note: "Comp list",            industry: "Media & entertainment", dealType: "Renewal",  archived: false },
+  { id: "c47", label: "Blackstone Midtown",         tenant: "Blackstone",              currentAddress: "345 Park Ave",               citySubmarket: "New York / Midtown",             sf: 58000, term: 120, rent: 105.00, esca: "3% fixed",   ti: 212.00, freeRent: 13, lcd: "10/01/25", createdDate: "06/05/25", note: "Comp list",            industry: "Private equity",      dealType: "Renewal",    archived: false },
+  { id: "c49", label: "KPMG Chicago offices",       tenant: "KPMG",                    currentAddress: "200 E Randolph St",          citySubmarket: "Chicago / Loop",                 sf: 35000, term: 96,  rent: 65.00, esca: "CPI cap 3%",  ti: 70.00,  freeRent:  7, lcd: "04/15/25", createdDate: "12/20/24", note: null,                   industry: "Professional services", dealType: "Renewal",   archived: false },
+  { id: "c51", label: "DocuSign SF headquarters",   tenant: "DocuSign",                currentAddress: "221 Main St",                citySubmarket: "San Francisco / Financial Dist", sf: 44000, term: 108, rent: 100.00, esca: "3.5% fixed", ti: 130.00, freeRent: 10, lcd: "07/01/25", createdDate: "03/12/25", note: "Verified with broker",  industry: "Technology",          dealType: "Renewal",    archived: false },
+
+  // ── 2026 ─────────────────────────────────────────────────────────────────────
+  { id: "c01", label: "Goldman Sachs expansion",    tenant: "Goldman Sachs",           currentAddress: "200 West St",                citySubmarket: "New York / Hudson Sq",           sf: 45000, term: 120, rent: 96.00, esca: "3% fixed",    ti: 185.00, freeRent: 12, lcd: "03/01/26", createdDate: "01/26/26", note: null,                   industry: "Financial services",  dealType: "Expansion",  archived: false },
+  { id: "c42", label: "Disney NYC offices",         tenant: "Warner Media",            currentAddress: "77 West 66th St",            citySubmarket: "New York / Hudson Sq",           sf: 40000, term: 108, rent: 96.00, esca: "3% fixed",    ti: 188.00, freeRent: 12, lcd: "05/01/26", createdDate: "01/30/26", note: null,                   industry: "Media & entertainment", dealType: "New deal",  archived: false },
+  { id: "c53", label: "Expedia Seattle office",     tenant: "Expeditors Intl",         currentAddress: "1111 Expedia Group Way W",   citySubmarket: "Seattle / Downtown",             sf: 38000, term: 84,  rent: 63.00, esca: "3% fixed",    ti: 76.00,  freeRent:  7, lcd: "02/15/26", createdDate: "10/22/25", note: null,                   industry: "Technology",          dealType: "New deal",   archived: false },
+  { id: "c54", label: "Invesco Atlanta",            tenant: "Invesco",                 currentAddress: "1555 Peachtree St NE",       citySubmarket: "Atlanta / Midtown",              sf: 36000, term: 84,  rent: 54.00, esca: "3% fixed",    ti: 58.00,  freeRent:  6, lcd: "01/15/26", createdDate: "09/18/25", note: null,                   industry: "Financial services",  dealType: "New deal",   archived: false },
+  { id: "c55", label: "Equifax HQ renewal",         tenant: "Equifax",                 currentAddress: "1550 Peachtree St NW",       citySubmarket: "Atlanta / Midtown",              sf: 48000, term: 96,  rent: 58.00, esca: "3% fixed",    ti: 62.00,  freeRent:  7, lcd: "04/01/26", createdDate: "12/05/25", note: "Comp list",            industry: "Technology",          dealType: "Renewal",    archived: false },
+  { id: "c56", label: "Amica Mutual offices",       tenant: "Liberty Mutual (Berk)",   currentAddress: "100 Amica Way",              citySubmarket: "Providence / Downtown",          sf: 20000, term: 72,  rent: 36.00, esca: "3% fixed",    ti: 40.00,  freeRent:  4, lcd: "03/15/26", createdDate: "11/18/25", note: null,                   industry: "Insurance",           dealType: "New deal",   archived: false },
+  { id: "c57", label: "GTECH Providence",           tenant: "Wayfair Inc.",            currentAddress: "10 Memorial Blvd",           citySubmarket: "Providence / Downtown",          sf: 24000, term: 84,  rent: 38.00, esca: "3% fixed",    ti: 43.00,  freeRent:  5, lcd: "05/15/26", createdDate: "02/05/26", note: null,                   industry: "Technology",          dealType: "Expansion",  archived: false },
+
+  // ── Archived (selective) ─────────────────────────────────────────────────────
+  { id: "c12", label: "Deloitte 2020",              tenant: "Deloitte LLP",            currentAddress: "30 Rockefeller Plaza",       citySubmarket: "New York / Downtown",            sf: 52000, term: 84,  rent: 72.00, esca: "3% fixed",    ti: 132.00, freeRent:  8, lcd: "06/01/20", createdDate: "02/10/20", note: "Comp list",            industry: "Professional services", dealType: "Renewal",   archived: true },
+  { id: "c13", label: "AIG sublease 2021",          tenant: "AIG",                     currentAddress: "175 Water St",               citySubmarket: "New York / Downtown",            sf: 28000, term: 60,  rent: 70.00, esca: null,           ti: 125.00, freeRent:  7, lcd: "09/01/21", createdDate: "05/12/21", note: null,                   industry: "Insurance",           dealType: "Sublease",  archived: true },
+  { id: "c58", label: "Morgan Stanley 2022",        tenant: "Morgan Stanley",          currentAddress: "1585 Broadway",              citySubmarket: "New York / Midtown",             sf: 68000, term: 120, rent: 90.00, esca: "3% fixed",    ti: 180.00, freeRent: 13, lcd: "04/01/22", createdDate: "12/10/21", note: null,                   industry: "Financial services",  dealType: "Renewal",   archived: true },
+  { id: "c60", label: "JPMorgan Hudson Yards 2023", tenant: "JPMorgan Chase",          currentAddress: "383 Madison Ave",            citySubmarket: "New York / Hudson Yards",        sf: 72000, term: 132, rent: 108.00, esca: "3.5% fixed", ti: 225.00, freeRent: 16, lcd: "03/01/23", createdDate: "11/20/22", note: "Comp list",            industry: "Financial services",  dealType: "New deal",  archived: true },
+  { id: "c64", label: "Adobe SF 2021",              tenant: "Adobe Systems",           currentAddress: "601 Townsend St",            citySubmarket: "San Francisco / Financial Dist", sf: 38000, term: 96,  rent: 95.00, esca: "3% fixed",    ti: 125.00, freeRent: 10, lcd: "07/01/21", createdDate: "03/15/21", note: null,                   industry: "Technology",          dealType: "New deal",  archived: true },
+  { id: "c68", label: "Delta Atlanta 2020",         tenant: "Delta Air Lines",         currentAddress: "1030 Delta Blvd",            citySubmarket: "Atlanta / Midtown",              sf: 40000, term: 96,  rent: 44.00, esca: "3% fixed",    ti: 46.00,  freeRent:  4, lcd: "05/01/20", createdDate: "01/08/20", note: null,                   industry: "Transportation",      dealType: "Renewal",   archived: true },
+  { id: "c70", label: "Fidelity Boston 2021",       tenant: "Fidelity Investments",    currentAddress: "245 Summer St",              citySubmarket: "Boston / Financial Dist",        sf: 30000, term: 84,  rent: 80.00, esca: "3% fixed",    ti: 142.00, freeRent:  8, lcd: "08/01/21", createdDate: "04/20/21", note: null,                   industry: "Financial services",  dealType: "Renewal",   archived: true },
 ]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -298,24 +376,11 @@ function ColumnManager({
   )
 }
 
-// ── Filter definitions ────────────────────────────────────────────────────────
+// ── Static filter options (not market-scoped) ─────────────────────────────────
 
-const UNIQUE_SUBMARKETS = Array.from(new Set(COMPS.map(c => c.citySubmarket))).sort()
-const UNIQUE_INDUSTRIES = Array.from(new Set(COMPS.map(c => c.industry))).sort()
-const UNIQUE_LCD_YEARS  = Array.from(new Set(COMPS.map(c => `20${c.lcd.slice(-2)}`))).sort()
-
-const SF_BUCKETS    = ["< 5,000 SF", "5,000–10,000 SF", "10,000–25,000 SF", "25,000–50,000 SF", "50,000–100,000 SF", "100,000+ SF"]
-const TERM_BUCKETS  = ["0–36 mo", "37–60 mo", "61–84 mo", "85–120 mo", "120+ mo"]
-const RENT_BUCKETS  = ["< $80", "$80–$100", "$100–$120", "$120+"]
-
-const FILTER_DEFS = [
-  { key: "_sfBucket",    label: "Requirement size", options: SF_BUCKETS.map(v => ({ label: v, value: v })) },
-  { key: "citySubmarket",label: "Submarket",        options: UNIQUE_SUBMARKETS.map(v => ({ label: v, value: v })) },
-  { key: "_lcdYear",     label: "LCD",              options: UNIQUE_LCD_YEARS.map(v => ({ label: v, value: v })) },
-  { key: "industry",     label: "Industry",         options: UNIQUE_INDUSTRIES.map(v => ({ label: v, value: v })) },
-  { key: "_termBucket",  label: "Term",             options: TERM_BUCKETS.map(v => ({ label: v, value: v })) },
-  { key: "_rentBucket",  label: "Starting rent",    options: RENT_BUCKETS.map(v => ({ label: v, value: v })) },
-]
+const SF_BUCKETS        = ["< 5,000 SF", "5,000–10,000 SF", "10,000–25,000 SF", "25,000–50,000 SF", "50,000–100,000 SF", "100,000+ SF"]
+const ALL_LEASE_TYPES   = Array.from(new Set(Object.values(COMP_META).map(m => m.leaseType))).sort()
+const ALL_DEAL_TYPES    = Array.from(new Set(COMPS.map(c => c.dealType))).sort()
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -328,11 +393,34 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
   const [activeFilters, setActiveFilters] = React.useState<Record<string, string[]>>({})
   const [page, setPage] = React.useState(1)
+  const [chartView, setChartView] = React.useState<"year" | "market" | "submarket">("year")
 
   function handleSort(key: SortKey) { _handleSort(key); setPage(1) }
   function onToggle(key: string, value: string) { setActiveFilters(prev => toggleFilterValue(prev, key, value)); setPage(1) }
   function onClear(key: string) { setActiveFilters(prev => clearFilterKey(prev, key)); setPage(1) }
   function onClearAll() { setActiveFilters({}); setPage(1) }
+
+  // Reset filters when the asset selection changes
+  const prevCityFilter = React.useRef(cityFilter)
+  if (prevCityFilter.current !== cityFilter) {
+    prevCityFilter.current = cityFilter
+    setActiveFilters({})
+    setPage(1)
+  }
+
+  // Filter options scoped to asset-selector markets
+  const scopedComps = React.useMemo(
+    () => cityFilter?.length ? COMPS.filter(c => cityFilter.some(city => c.citySubmarket.toLowerCase().includes(city.toLowerCase()))) : COMPS,
+    [cityFilter]
+  )
+  const FILTER_DEFS = React.useMemo(() => [
+    { key: "_market",    label: "Market",     options: Array.from(new Set(scopedComps.map(c => c.citySubmarket.split(" / ")[0]))).sort().map(v => ({ label: v, value: v })) },
+    { key: "_submarket", label: "Submarket",  options: Array.from(new Set(scopedComps.map(c => c.citySubmarket.split(" / ")[1]).filter(Boolean))).sort().map(v => ({ label: v, value: v })) },
+    { key: "_sfBucket",  label: "SF",         options: SF_BUCKETS.map(v => ({ label: v, value: v })) },
+    { key: "_lcdYear",   label: "LCD",        options: Array.from(new Set(scopedComps.map(c => `20${c.lcd.slice(-2)}`))).sort().map(v => ({ label: v, value: v })) },
+    { key: "dealType",   label: "Deal type",  options: ALL_DEAL_TYPES.map(v => ({ label: v, value: v })) },
+    { key: "_leaseType", label: "Lease type", options: ALL_LEASE_TYPES.map(v => ({ label: v, value: v })) },
+  ], [scopedComps])
 
   const [visible, setVisible] = React.useState<Set<string>>(
     () => new Set(ALL_COLUMNS.filter(c => c.defaultVisible).map(c => c.id))
@@ -362,10 +450,13 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
     }
     for (const [key, values] of Object.entries(activeFilters)) {
       if (!values.length) continue
+      if (key === "_market")     { r = r.filter(c => values.includes(c.citySubmarket.split(" / ")[0] ?? c.citySubmarket)); continue }
+      if (key === "_submarket")  { r = r.filter(c => values.includes(c.citySubmarket.split(" / ")[1] ?? c.citySubmarket)); continue }
       if (key === "_sfBucket")   { r = r.filter(c => values.includes(sfBucket(c.sf)));     continue }
       if (key === "_termBucket") { r = r.filter(c => values.includes(termBucket(c.term))); continue }
       if (key === "_rentBucket") { r = r.filter(c => values.includes(rentBucket(c.rent))); continue }
       if (key === "_lcdYear")    { r = r.filter(c => values.includes(`20${c.lcd.slice(-2)}`)); continue }
+      if (key === "_leaseType")  { r = r.filter(c => values.includes(COMP_META[c.id]?.leaseType ?? "")); continue }
       r = r.filter(c => values.includes(String(c[key as keyof Comp] ?? "")))
     }
     r.sort((a, b) => {
@@ -393,19 +484,41 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
     setSelected(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })
   }
 
-  const base          = cityFilter?.length ? COMPS.filter(c => cityFilter.some(city => c.citySubmarket.toLowerCase().includes(city.toLowerCase()))) : COMPS
-  const activeComps   = base.filter(c => !c.archived)
-  const archivedComps = base.filter(c => c.archived)
-  const totalSf = activeComps.reduce((s, c) => s + c.sf, 0)
-  const avgRent = totalSf > 0 ? activeComps.reduce((s, c) => s + c.rent * c.sf, 0) / totalSf : 0
-  const avgTi   = totalSf > 0 ? activeComps.reduce((s, c) => s + c.ti * c.sf, 0) / totalSf : 0
+  // KPIs and chart derive from the same filtered set as the table
+  const base          = filtered
+  const totalSf       = React.useMemo(() => base.reduce((s, c) => s + c.sf, 0), [base])
+  const avgRent       = React.useMemo(() => totalSf > 0 ? base.reduce((s, c) => s + c.rent * c.sf, 0) / totalSf : 0, [base, totalSf])
+  const avgTi         = React.useMemo(() => totalSf > 0 ? base.reduce((s, c) => s + c.ti   * c.sf, 0) / totalSf : 0, [base, totalSf])
+  const avgNer        = React.useMemo(() => base.length > 0 ? base.reduce((s, c) => s + calcNer(c), 0) / base.length : 0, [base])
+  const avgTerm       = React.useMemo(() => base.length > 0 ? base.reduce((s, c) => s + c.term, 0) / base.length : 0, [base])
+  const avgFreeRent   = React.useMemo(() => base.length > 0 ? base.reduce((s, c) => s + c.freeRent, 0) / base.length : 0, [base])
 
-  const kpis = [
-    { label: "Active comps",    value: String(activeComps.length) },
-    { label: "Archived",        value: String(archivedComps.length) },
-    { label: "Avg rent",        value: activeComps.length ? `$${avgRent.toFixed(2)}` : "$–" },
-    { label: "Avg TI",          value: activeComps.length ? `$${avgTi.toFixed(2)}` : "$–" },
-  ]
+
+  // Chart data — group by year, market, or submarket based on toggle
+  const chartGroups = React.useMemo(() => {
+    const map = new Map<string, Comp[]>()
+    filtered.forEach(c => {
+      const key = chartView === "year"
+        ? `20${c.lcd.slice(-2)}`
+        : chartView === "market"
+          ? (c.citySubmarket.split(" / ")[0] ?? c.citySubmarket)
+          : (c.citySubmarket.split(" / ")[1] ?? c.citySubmarket)
+      if (!map.has(key)) map.set(key, [])
+      map.get(key)!.push(c)
+    })
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, comps]) => {
+        const sf = comps.reduce((s, c) => s + c.sf, 0)
+        return {
+          label,
+          count: comps.length,
+          rent:  sf > 0 ? comps.reduce((s, c) => s + c.rent * c.sf, 0) / sf : 0,
+          ner:   comps.reduce((s, c) => s + calcNer(c), 0) / comps.length,
+          ti:    sf > 0 ? comps.reduce((s, c) => s + c.ti * c.sf, 0) / sf : 0,
+        }
+      })
+  }, [filtered, chartView])
 
   const VIEW_LABELS: Record<ViewFilter, string> = {
     active:   "Active comps",
@@ -434,7 +547,14 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
         </TableCell>
       )
       case "currentAddress": return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{c.currentAddress || <span className="text-muted-foreground/40">—</span>}</TableCell>
-      case "citySubmarket":  return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{c.citySubmarket || <span className="text-muted-foreground/40">—</span>}</TableCell>
+      case "city": {
+        const city = c.citySubmarket.split(" / ")[0] ?? c.citySubmarket
+        return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{city || <span className="text-muted-foreground/40">—</span>}</TableCell>
+      }
+      case "submarket": {
+        const submarket = c.citySubmarket.split(" / ")[1] ?? ""
+        return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{submarket || <span className="text-muted-foreground/40">—</span>}</TableCell>
+      }
       case "sf":             return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{fmtSf(c.sf)}</TableCell>
       case "term":           return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{c.term}</TableCell>
       case "rent":           return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{fmtRent(c.rent)}</TableCell>
@@ -494,7 +614,7 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
         return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{fmtRent(nerD)}</TableCell>
       }
       case "actions": return (
-        <TableCell key={col.id} className="py-3 pl-1">
+        <TableCell key={col.id} className="py-3 pl-1 sticky right-0 bg-card [box-shadow:-1px_0_0_0_color-mix(in_oklab,var(--color-border)_40%,transparent)]">
           <div className="flex items-center gap-1">
             <AgentBtn entity="Comp" label={`${c.label || "Unlabeled"} · ${c.tenant} · ${fmtSf(c.sf)} sf · rent ${fmtRent(c.rent)} · TI ${fmtRent(c.ti)} · LCD ${c.lcd}`} />
             <DropdownMenu>
@@ -512,26 +632,169 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
     }
   }
 
+
   return (
     <div className="space-y-4">
-      <KpiBar kpis={kpis} />
+      {/* Filter bar above KPIs */}
+      <div className="flex flex-wrap items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium">{VIEW_LABELS[viewFilter]}<ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /></Button>} />
+          <DropdownMenuContent align="start" className="w-44">
+            {(["active", "archived", "all"] as ViewFilter[]).map(v => (
+              <DropdownMenuItem key={v} onClick={() => { setViewFilter(v); setPage(1) }}
+                className="flex items-center justify-between">
+                {VIEW_LABELS[v]}
+                {viewFilter === v && <Check className="h-3.5 w-3.5 text-primary" />}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <FilterBar
+          filters={FILTER_DEFS}
+          active={activeFilters}
+          onToggle={onToggle}
+          onClear={onClear}
+          onClearAll={onClearAll}
+          visibleCount={6}
+        />
+
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium ml-auto shrink-0" />}>
+            <Download className="h-3.5 w-3.5" />
+            Export
+            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-44">
+            <DropdownMenuItem className="gap-2 text-sm">
+              <FileType2 className="h-3.5 w-3.5" />Download as PDF
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="gap-2 text-sm">
+              <FileSpreadsheet className="h-3.5 w-3.5" />Download as Excel
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Analytics KPIs */}
+      <KpiBar kpis={[
+        { label: "Avg $/SF/yr",        value: `$${avgRent.toFixed(2)}` },
+        { label: "Avg NER/SF/yr",      value: `$${avgNer.toFixed(2)}` },
+        { label: "Avg TI/SF",          value: `$${avgTi.toFixed(2)}` },
+        { label: "Avg term (mo)",      value: avgTerm.toFixed(1) },
+        { label: "Avg free rent (mo)", value: avgFreeRent.toFixed(1) },
+      ]} />
+
+      {/* Chart card */}
+      <div className={cn(cardBase, "min-w-0")}>
+        {/* Header */}
+        <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 mb-5">
+          <div>
+            <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Comps</p>
+            <h2 className="text-xl font-semibold text-foreground">
+              {chartView === "year" ? "By LCD year" : chartView === "market" ? "By market" : "By submarket"}
+            </h2>
+          </div>
+          <ToggleGroup type="single" value={chartView}
+            onValueChange={v => { if (v) setChartView(v as "year" | "market" | "submarket") }}
+            className={FILTER_TAB_GROUP_CLS}>
+            <ToggleGroupItem value="year" size="sm" className={FILTER_TAB_ITEM_CLS}>Year</ToggleGroupItem>
+            <ToggleGroupItem value="market" size="sm" className={FILTER_TAB_ITEM_CLS}>Market</ToggleGroupItem>
+            <ToggleGroupItem value="submarket" size="sm" className={FILTER_TAB_ITEM_CLS}>Submarket</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+
+        <ResponsiveContainer width="100%" height={182}>
+          <ComposedChart data={chartGroups} margin={{ top: 20, right: 40, left: 4, bottom: 0 }} barCategoryGap="35%">
+            <CartesianGrid vertical={false} stroke="var(--color-border)" strokeOpacity={0.5} />
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
+              axisLine={false} tickLine={false} dy={6}
+            />
+            <YAxis
+              yAxisId="left"
+              tickFormatter={v => `$${v}`}
+              tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
+              axisLine={false} tickLine={false} width={46}
+            />
+            <YAxis
+              yAxisId="right" orientation="right"
+              tick={{ fontSize: 10, fill: "var(--color-muted-foreground)" }}
+              axisLine={false} tickLine={false} width={28}
+            />
+            <Tooltip
+              cursor={{ fill: "var(--color-muted)", opacity: 0.5 }}
+              content={({ active, payload, label }) => {
+                if (!active || !payload?.length) return null
+                const order = ["$/SF/yr", "Count", "NER/SF/yr", "TI/SF"]
+                const sorted = [...payload].sort((a, b) => order.indexOf(a.name as string) - order.indexOf(b.name as string))
+                return (
+                  <div style={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12, color: "var(--color-popover-foreground)", boxShadow: "0 4px 12px rgba(0,0,0,0.12)", padding: "10px 14px" }}>
+                    <p style={{ fontWeight: 600, marginBottom: 6 }}>{label}</p>
+                    {sorted.map(entry => (
+                      <p key={entry.name as string} style={{ color: entry.color, margin: "2px 0" }}>
+                        {entry.name} : {entry.name === "Count" ? String(entry.value) : `$${Number(entry.value).toFixed(2)}`}
+                      </p>
+                    ))}
+                  </div>
+                )
+              }}
+            />
+            <Bar yAxisId="right" dataKey="count" name="Count"
+              fill="var(--color-muted-foreground)" fillOpacity={0.25} radius={[4, 4, 0, 0]} maxBarSize={72} minPointSize={6}>
+              <LabelList dataKey="count" position="top"
+                style={{ fontSize: 11, fill: "var(--color-muted-foreground)", fontWeight: 600 }} />
+            </Bar>
+            <Line yAxisId="left" type="monotone" dataKey="rent" name="$/SF/yr"
+              stroke="var(--color-chart-1)" strokeWidth={2.5}
+              dot={{ r: 5, fill: "var(--color-chart-1)", stroke: "var(--color-card)", strokeWidth: 2 }}
+              activeDot={{ r: 6, strokeWidth: 0 }}>
+              <LabelList dataKey="rent" position="top" formatter={(v: unknown) => `$${Number(v).toFixed(2)}`}
+                style={{ fontSize: 10, fill: "var(--color-chart-1)", fontWeight: 600 }} offset={10} />
+            </Line>
+            <Line yAxisId="left" type="monotone" dataKey="ner" name="NER/SF/yr"
+              stroke="var(--color-chart-3)" strokeWidth={2.5}
+              dot={{ r: 5, fill: "var(--color-chart-3)", stroke: "var(--color-card)", strokeWidth: 2 }}
+              activeDot={{ r: 6, strokeWidth: 0 }}>
+              <LabelList dataKey="ner" position="insideBottom" formatter={(v: unknown) => `$${Number(v).toFixed(2)}`}
+                style={{ fontSize: 10, fill: "var(--color-chart-3)", fontWeight: 600 }} offset={-14} />
+            </Line>
+            <Line yAxisId="left" type="monotone" dataKey="ti" name="TI/SF"
+              stroke="var(--color-chart-2)" strokeWidth={2.5}
+              dot={{ r: 5, fill: "var(--color-chart-2)", stroke: "var(--color-card)", strokeWidth: 2 }}
+              activeDot={{ r: 6, strokeWidth: 0 }}>
+              <LabelList dataKey="ti" position="right" formatter={(v: unknown) => `$${Number(v).toFixed(2)}`}
+                style={{ fontSize: 10, fill: "var(--color-chart-2)", fontWeight: 600 }} />
+            </Line>
+          </ComposedChart>
+        </ResponsiveContainer>
+
+        {/* Legend */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 mt-3">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full shrink-0 bg-muted-foreground/35" />
+            <span className="text-sm text-muted-foreground">Count</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-4 rounded-full shrink-0 bg-[var(--color-chart-1)]" />
+            <span className="text-sm text-muted-foreground">$/SF/yr</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-4 rounded-full shrink-0 bg-[var(--color-chart-3)]" />
+            <span className="text-sm text-muted-foreground">NER/SF/yr</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-4 rounded-full shrink-0 bg-[var(--color-chart-2)]" />
+            <span className="text-sm text-muted-foreground">TI/SF</span>
+          </div>
+        </div>
+      </div>
 
       <div className={cardBase}>
         {/* Toolbar */}
         <div className={cn("flex flex-wrap items-center gap-2 mb-4", selected.size > 0 && "hidden")}>
-          <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium">{VIEW_LABELS[viewFilter]}<ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /></Button>} />
-            <DropdownMenuContent align="start" className="w-44">
-              {(["active", "archived", "all"] as ViewFilter[]).map(v => (
-                <DropdownMenuItem key={v} onClick={() => { setViewFilter(v); setPage(1) }}
-                  className="flex items-center justify-between">
-                  {VIEW_LABELS[v]}
-                  {viewFilter === v && <Check className="h-3.5 w-3.5 text-primary" />}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
             <Input
@@ -541,15 +804,6 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
               className="pl-8 h-8 text-sm w-44"
             />
           </div>
-
-          <FilterBar
-            filters={FILTER_DEFS}
-            active={activeFilters}
-            onToggle={onToggle}
-            onClear={onClear}
-            onClearAll={onClearAll}
-            visibleCount={6}
-          />
 
           <div className="ml-auto flex items-center gap-2">
             <ColumnManager
@@ -588,9 +842,9 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
                   <Checkbox checked={allOnPage} onCheckedChange={toggleAll} className="h-3.5 w-3.5" />
                 </th>
                 {orderedCols.map(col => col.id === "actions" ? (
-                  <th key="actions" className="pb-2 pt-0 w-8" />
-                ) : (col.id === "status" || col.id === "sector" || col.id === "leaseType" || col.id === "recoveries" || col.id === "grossRent" || col.id === "tiPerYear" || col.id === "tenantRep" || col.id === "leasingBroker" || col.id === "payback" || col.id === "ner" || col.id === "discountRate" || col.id === "nerDiscounted" || col.id === "dealType") ? (
-                  <th key={col.id} className={`pb-2 pt-0 text-xs font-medium text-muted-foreground text-left pr-4 whitespace-nowrap${col.right ? " text-right" : ""}`}>{col.label}</th>
+                  <th key="actions" className="pb-2 pt-0 w-8 sticky right-0 bg-card [box-shadow:-1px_0_0_0_color-mix(in_oklab,var(--color-border)_40%,transparent)]" />
+                ) : (!col.sortable) ? (
+                  <TableHead key={col.id} className={cn("pb-2 pt-0 text-[10px] font-medium uppercase tracking-widest text-foreground/50 whitespace-nowrap", col.right ? "text-right" : "text-left")}>{col.label}</TableHead>
                 ) : (
                   <SortableHead
                     key={col.id}
