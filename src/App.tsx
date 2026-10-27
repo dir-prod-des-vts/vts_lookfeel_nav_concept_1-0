@@ -743,7 +743,10 @@ const VACANT_SPACES: VacantSpace[] = [
 ]
 
 export default function App() {
-  const [navCollapsed, setNavCollapsed] = React.useState(false)
+  const [navCollapsed, setNavCollapsed] = React.useState(() => {
+    const params = new URLSearchParams(window.location.hash.replace(/^[^?]*/, "").slice(1))
+    return params.get("nav") === "closed"
+  })
   function parseHash() {
     const raw = window.location.hash.replace(/^#\//, "")
     const [pathPart, queryPart] = raw.split("?")
