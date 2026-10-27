@@ -1,1 +1,0 @@
-import{$ as e,X as t}from"./button-Wry3-kas.js";var n=e(t(),1),r=[];function i(e){n.useEffect(e,r)}export{i as t};
