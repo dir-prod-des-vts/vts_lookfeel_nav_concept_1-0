@@ -462,7 +462,7 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
     .filter((c): c is ColDef => !!c && (c.id === "actions" || visible.has(c.id)))
 
   const filtered = React.useMemo(() => {
-    let r = cityFilter?.length ? COMPS.filter(c => cityFilter.some(city => c.citySubmarket.toLowerCase().includes(city.toLowerCase()))) : [...COMPS]
+    let r = [...COMPS]
     if (viewFilter === "active")   r = r.filter(c => !c.archived)
     if (viewFilter === "archived") r = r.filter(c => c.archived)
     if (search) {
@@ -492,7 +492,7 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
       return sortDir === "asc" ? cmp : -cmp
     })
     return r
-  }, [cityFilter, search, viewFilter, activeFilters, sortKey, sortDir])
+  }, [search, viewFilter, activeFilters, sortKey, sortDir])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
