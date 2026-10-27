@@ -421,6 +421,7 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
   function onToggle(key: string, value: string) { setActiveFilters(prev => toggleFilterValue(prev, key, value)); setPage(1) }
   function onClear(key: string) { setActiveFilters(prev => clearFilterKey(prev, key)); setPage(1) }
   function onClearAll() { setActiveFilters({}); setPage(1) }
+  function onSelectAll(key: string, values: string[]) { setActiveFilters(prev => ({ ...prev, [key]: values })); setPage(1) }
 
   // Reset filters and pre-select asset markets when the asset selection changes
   const prevCityFilter = React.useRef(cityFilter)
@@ -699,6 +700,7 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
           onToggle={onToggle}
           onClear={onClear}
           onClearAll={onClearAll}
+          onSelectAll={onSelectAll}
           visibleCount={6}
           className="hidden md:flex"
         />
@@ -711,6 +713,7 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
             onToggle={onToggle}
             onClear={onClear}
             onClearAll={onClearAll}
+            onSelectAll={onSelectAll}
           />
         </div>
 

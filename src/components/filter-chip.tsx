@@ -30,11 +30,14 @@ interface FilterChipProps {
   selected: string[]
   onToggle: (value: string) => void
   onClear: () => void
+  onSelectAll?: (values: string[]) => void
   triggerClassName?: string
 }
 
-export function FilterChip({ filter, selected, onToggle, onClear, triggerClassName }: FilterChipProps) {
+export function FilterChip({ filter, selected, onToggle, onClear, onSelectAll, triggerClassName }: FilterChipProps) {
   const isActive = selected.length > 0
+  const allValues = filter.options.map(o => o.value)
+  const allSelected = allValues.every(v => selected.includes(v))
   return (
     <Popover>
       <PopoverTrigger render={<Button
@@ -57,16 +60,28 @@ export function FilterChip({ filter, selected, onToggle, onClear, triggerClassNa
       <PopoverContent align="start" className="w-52 p-2">
         <div className="flex items-center justify-between mb-1.5 px-1">
           <span className="text-xs font-semibold text-foreground">{filter.label}</span>
-          {isActive && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClear}
-              className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground"
-            >
-              <XIcon data-icon="inline-start" /> Clear
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            {onSelectAll && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => allSelected ? onClear() : onSelectAll(allValues)}
+                className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground"
+              >
+                {allSelected ? "None" : "All"}
+              </Button>
+            )}
+            {isActive && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClear}
+                className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground"
+              >
+                <XIcon data-icon="inline-start" /> Clear
+              </Button>
+            )}
+          </div>
         </div>
         <div className="flex flex-col gap-0.5">
           {(() => {
@@ -112,6 +127,7 @@ interface FilterBarProps {
   onToggle: (key: string, value: string) => void
   onClear: (key: string) => void
   onClearAll: () => void
+  onSelectAll?: (key: string, values: string[]) => void
   visibleCount?: number
   className?: string
   chipClassName?: string
@@ -123,6 +139,7 @@ export function FilterBar({
   onToggle,
   onClear,
   onClearAll,
+  onSelectAll,
   visibleCount = 4,
   className,
   chipClassName,
@@ -141,6 +158,7 @@ export function FilterBar({
           selected={active[f.key] ?? []}
           onToggle={(v) => onToggle(f.key, v)}
           onClear={() => onClear(f.key)}
+          onSelectAll={onSelectAll ? (vals) => onSelectAll(f.key, vals) : undefined}
           triggerClassName={chipClassName}
         />
       ))}
@@ -174,6 +192,7 @@ export function MobileFilterSheet({
   onToggle,
   onClear,
   onClearAll,
+  onSelectAll,
 }: Omit<FilterBarProps, "visibleCount" | "className" | "chipClassName">) {
   const activeCount = Object.values(active).reduce((s, v) => s + v.length, 0)
   const hasAny = activeCount > 0
@@ -205,11 +224,19 @@ export function MobileFilterSheet({
               <div key={f.key}>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-semibold">{f.label}</span>
-                  {selected.length > 0 && (
-                    <Button variant="ghost" size="sm" className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground" onClick={() => onClear(f.key)}>
-                      Clear
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {onSelectAll && (
+                      <Button variant="ghost" size="sm" className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground"
+                        onClick={() => f.options.every(o => selected.includes(o.value)) ? onClear(f.key) : onSelectAll(f.key, f.options.map(o => o.value))}>
+                        {f.options.every(o => selected.includes(o.value)) ? "None" : "All"}
+                      </Button>
+                    )}
+                    {selected.length > 0 && (
+                      <Button variant="ghost" size="sm" className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground" onClick={() => onClear(f.key)}>
+                        Clear
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {f.options.map(opt => {
