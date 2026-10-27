@@ -1,1 +1,0 @@
-import{$ as e,X as t}from"./button-nW-JVPKq.js";var n=e(t(),1),r=[];function i(e){n.useEffect(e,r)}export{i as t};
