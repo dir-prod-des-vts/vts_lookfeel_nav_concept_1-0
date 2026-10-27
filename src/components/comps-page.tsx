@@ -192,7 +192,7 @@ const ALL_COLUMNS: ColDef[] = [
   { id: "status",         label: "Status",              sortable: false, defaultVisible: true  },
   { id: "label",          label: "Label",               sortable: true,  defaultVisible: false },
   { id: "tenant",         label: "Tenant",              sortable: true,  defaultVisible: true  },
-  { id: "currentAddress", label: "Building",            sortable: true,  defaultVisible: true  },
+  { id: "currentAddress", label: "Building",            sortable: true,  defaultVisible: false },
   { id: "city",           label: "Market",              sortable: false, defaultVisible: true  },
   { id: "submarket",      label: "Submarket",           sortable: false, defaultVisible: true  },
   { id: "sector",         label: "Sector",              sortable: false, defaultVisible: true  },
