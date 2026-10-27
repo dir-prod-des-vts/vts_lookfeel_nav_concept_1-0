@@ -772,7 +772,6 @@ export default function App() {
   const [overviewInsightCards, setOverviewInsightCards] = React.useState<Array<"asset-valuation" | "leasing-strategy">>([])
   const [insightCardsNew, setInsightCardsNew] = React.useState(false)
   const portfolioViews = usePortfolioViews()
-  const [pipelineToast, setPipelineToast] = React.useState(() => parseHash().dealId === "d00")
   const [selectedSpace, setSelectedSpace] = React.useState<SpaceRef | null>(null)
   const [selectedSpaceStatus, setSelectedSpaceStatus] = React.useState<SpaceStatus>("Available")
   const [selectedLease, setSelectedLease] = React.useState<Lease | null>(null)
@@ -798,13 +797,6 @@ export default function App() {
   }, [currentPage, selectedAssetId, selectedDeal, agentView])
 
   React.useEffect(() => {
-    if (pipelineToast) {
-      const t = setTimeout(() => setPipelineToast(false), 3000)
-      return () => clearTimeout(t)
-    }
-  }, [pipelineToast])
-
-  React.useEffect(() => {
     const onHashChange = () => {
       if (programmaticNav.current) { programmaticNav.current = false; return }
       const { page, asset, dealId, agentId, comp } = parseHash()
@@ -817,7 +809,7 @@ export default function App() {
       if (dealId) {
         const deal = DEALS.find(d => d.id === dealId) ?? null
         setSelectedDeal(deal)
-        if (dealId === "d00") setPipelineToast(true)
+        if (dealId === "d00") toast.success("Deal added", { description: "Amazon.com · VTS Tower added to your pipeline.", duration: 5000 })
       } else {
         setSelectedDeal(null)
       }
@@ -1018,11 +1010,6 @@ export default function App() {
       } : pagedHeaderProps
       return (
         <div className="space-y-4">
-          {pipelineToast && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg bg-foreground text-background text-sm font-medium shadow-lg pointer-events-none animate-in fade-in slide-in-from-bottom-2">
-              Amazon deal added to your pipeline.
-            </div>
-          )}
           <BuildingHeader {...dealHeaderProps} />
           {selectedDeal && (
             <PageBreadcrumb crumbs={[

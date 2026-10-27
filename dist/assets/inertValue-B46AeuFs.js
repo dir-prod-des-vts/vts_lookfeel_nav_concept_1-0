@@ -1,0 +1,1 @@
+import{v as e}from"./button-B4_-7r6o.js";function t(t){return e(19)?t:t?`true`:void 0}export{t};

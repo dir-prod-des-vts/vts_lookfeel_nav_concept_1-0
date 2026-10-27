@@ -1,0 +1,1 @@
+import{$ as e,K as t,X as n,y as r}from"./button-B4_-7r6o.js";var i=e(n(),1);function a(e,n){let a=i.useRef(e),o=r(n);t(()=>{a.current!==e&&o(a.current)},[e,o]),t(()=>{a.current=e},[e])}export{a as t};
