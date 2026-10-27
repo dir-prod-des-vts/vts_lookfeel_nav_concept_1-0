@@ -592,7 +592,10 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
       case "currentAddress": return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{c.currentAddress || <span className="text-muted-foreground/40">—</span>}</TableCell>
       case "city": {
         const city = c.citySubmarket.split(" / ")[0] ?? c.citySubmarket
-        return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{city || <span className="text-muted-foreground/40">—</span>}</TableCell>
+        const notOwned = ownedMarkets?.length && !ownedMarkets.includes(city)
+        return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">
+          {city ? <>{city}{notOwned && <span className="text-muted-foreground/50"> (Not owned)</span>}</> : <span className="text-muted-foreground/40">—</span>}
+        </TableCell>
       }
       case "submarket": {
         const submarket = c.citySubmarket.split(" / ")[1] ?? ""
