@@ -1333,7 +1333,7 @@ export default function App() {
       return (
         <div className="space-y-4">
           <BuildingHeader {...pagedHeaderProps} />
-          <CompsPage cityFilter={cityFilter} />
+          <CompsPage cityFilter={cityFilter} ownedMarkets={[...new Set(Object.values(ASSET_MARKET))]} />
         </div>
       )
     }

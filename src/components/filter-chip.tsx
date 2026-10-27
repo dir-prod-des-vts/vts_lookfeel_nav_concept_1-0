@@ -12,6 +12,7 @@ import { cn, TOGGLE_INACTIVE, TOGGLE_HOVER } from "@/lib/utils"
 export interface FilterOption {
   label: string
   value: string
+  group?: string
 }
 
 export interface FilterDef {
@@ -68,19 +69,33 @@ export function FilterChip({ filter, selected, onToggle, onClear, triggerClassNa
           )}
         </div>
         <div className="flex flex-col gap-0.5">
-          {filter.options.map((opt) => (
-            <label
-              key={opt.value}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer text-sm"
-            >
-              <Checkbox
-                checked={selected.includes(opt.value)}
-                onCheckedChange={() => onToggle(opt.value)}
-                className="size-3.5"
-              />
-              {opt.label}
-            </label>
-          ))}
+          {(() => {
+            const hasGroups = filter.options.some(o => o.group)
+            if (!hasGroups) return filter.options.map((opt) => (
+              <label key={opt.value} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer text-sm">
+                <Checkbox checked={selected.includes(opt.value)} onCheckedChange={() => onToggle(opt.value)} className="size-3.5" />
+                {opt.label}
+              </label>
+            ))
+            const groups: { name: string; opts: FilterOption[] }[] = []
+            for (const opt of filter.options) {
+              const g = opt.group ?? ""
+              const existing = groups.find(x => x.name === g)
+              if (existing) existing.opts.push(opt)
+              else groups.push({ name: g, opts: [opt] })
+            }
+            return groups.map(({ name, opts }) => (
+              <div key={name}>
+                {name && <div className="px-2 pt-2 pb-1 text-xs font-semibold text-muted-foreground uppercase tracking-wide">{name}</div>}
+                {opts.map(opt => (
+                  <label key={opt.value} className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer text-sm">
+                    <Checkbox checked={selected.includes(opt.value)} onCheckedChange={() => onToggle(opt.value)} className="size-3.5" />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+            ))
+          })()}
         </div>
       </PopoverContent>
     </Popover>
