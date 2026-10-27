@@ -416,7 +416,7 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
     return matched.length ? { _market: matched } : {} as Record<string, string[]>
   })
   const [page, setPage] = React.useState(1)
-  const [chartView, setChartView] = React.useState<"year" | "market" | "submarket">("year")
+  const [chartView, setChartView] = React.useState<"executed" | "year" | "market" | "submarket">("executed")
   const [chartVisible, setChartVisible] = React.useState(true)
 
   function handleSort(key: SortKey) { _handleSort(key); setPage(1) }
@@ -543,8 +543,10 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
   const chartGroups = React.useMemo(() => {
     const map = new Map<string, Comp[]>()
     filtered.forEach(c => {
-      const key = chartView === "year"
+      const key = chartView === "executed"
         ? `20${c.executedDate.slice(-2)}`
+        : chartView === "year"
+        ? `20${c.lcd.slice(-2)}`
         : chartView === "market"
           ? (c.citySubmarket.split(" / ")[0] ?? c.citySubmarket)
           : (c.citySubmarket.split(" / ")[1] ?? c.citySubmarket)
@@ -771,13 +773,14 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
           <div>
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Comps</p>
             <h2 className="text-xl font-semibold text-foreground">
-              {chartView === "year" ? "By commencement year" : chartView === "market" ? "By market" : "By submarket"}
+              {chartView === "executed" ? "By execution year" : chartView === "year" ? "By LCD" : chartView === "market" ? "By market" : "By submarket"}
             </h2>
           </div>
           <ToggleGroup type="single" value={chartView}
-            onValueChange={v => { if (v) setChartView(v as "year" | "market" | "submarket") }}
+            onValueChange={v => { if (v) setChartView(v as "executed" | "year" | "market" | "submarket") }}
             className={FILTER_TAB_GROUP_CLS}>
-            <ToggleGroupItem value="year" size="sm" className={FILTER_TAB_ITEM_CLS}>Year</ToggleGroupItem>
+            <ToggleGroupItem value="executed" size="sm" className={FILTER_TAB_ITEM_CLS}>Executed</ToggleGroupItem>
+            <ToggleGroupItem value="year" size="sm" className={FILTER_TAB_ITEM_CLS}>LCD</ToggleGroupItem>
             <ToggleGroupItem value="market" size="sm" className={FILTER_TAB_ITEM_CLS}>Market</ToggleGroupItem>
             <ToggleGroupItem value="submarket" size="sm" className={FILTER_TAB_ITEM_CLS}>Submarket</ToggleGroupItem>
           </ToggleGroup>
