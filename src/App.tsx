@@ -38,6 +38,7 @@ import { CompsPage } from "@/components/comps-page"
 import { PlanningPage } from "@/components/planning-page"
 import { DealTasksPage } from "@/components/deal-tasks-page"
 import { ChatPatternProvider, type ChatCommand } from "@/contexts/chat-pattern"
+import { Toaster } from "@/components/ui/sonner"
 import { ChatSideOver } from "@/components/chat-side-over"
 import { ChatSidePush, SIDE_PUSH_WIDTH } from "@/components/chat-side-push"
 import { useChatPattern } from "@/contexts/chat-pattern"
@@ -749,12 +750,13 @@ export default function App() {
     const page = parts[0] || "dashboard"
     const asset = parts[1] || "vts-tower"
     const params = new URLSearchParams(queryPart ?? "")
-    return { page, asset, dealId: params.get("deal"), agentId: params.get("agent"), view: params.get("view") }
+    return { page, asset, dealId: params.get("deal"), agentId: params.get("agent"), view: params.get("view"), comp: params.get("comp") }
   }
 
   const programmaticNav = React.useRef(false)
   const [selectedAssetId, setSelectedAssetId] = React.useState(() => parseHash().asset)
   const [currentPage, setCurrentPage] = React.useState(() => parseHash().page)
+  const [compAdded, setCompAdded] = React.useState(() => parseHash().comp === "added")
   const [defaultAgentId, setDefaultAgentId] = React.useState(() => parseHash().agentId ?? undefined)
   const [agentView, setAgentView] = React.useState<"list" | "grid">(() => parseHash().view === "grid" ? "grid" : "list")
   const [selectedDeal, setSelectedDeal] = React.useState<DealsPageDeal | null>(() => {
@@ -805,12 +807,13 @@ export default function App() {
   React.useEffect(() => {
     const onHashChange = () => {
       if (programmaticNav.current) { programmaticNav.current = false; return }
-      const { page, asset, dealId, agentId } = parseHash()
+      const { page, asset, dealId, agentId, comp } = parseHash()
       setCurrentPage(page)
       if (page === "spaces") setSelectedSpace(null)
       if (page === "leases") setSelectedLease(null)
       setSelectedAssetId(asset)
       setDefaultAgentId(agentId ?? undefined)
+      if (comp === "added") setCompAdded(true)
       if (dealId) {
         const deal = DEALS.find(d => d.id === dealId) ?? null
         setSelectedDeal(deal)
@@ -1335,7 +1338,7 @@ export default function App() {
       return (
         <div className="space-y-4">
           <BuildingHeader {...pagedHeaderProps} />
-          <CompsPage cityFilter={cityFilter} />
+          <CompsPage cityFilter={cityFilter} compAdded={compAdded} onCompAddedShown={() => setCompAdded(false)} />
         </div>
       )
     }
@@ -1501,23 +1504,26 @@ export default function App() {
   }
 
   return (
-    <ChatPatternProvider onOpenChat={goAskVts} onInsightTrigger={currentPage === "dashboard" ? handleInsightTrigger : undefined}>
-      <AppShell
-        navCollapsed={navCollapsed}
-        setNavCollapsed={setNavCollapsed}
-        selectedAssetId={selectedAssetId}
-        setSelectedAssetId={setSelectedAssetId}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        setSelectedDeal={setSelectedDeal}
-        onSpacesNav={() => setSelectedSpace(null)}
-        onLeasesNav={() => setSelectedLease(null)}
-        setAskVtsKey={setAskVtsKey}
-        isDark={isDark}
-        toggleDark={toggleDark}
-        renderPage={renderPage}
-      />
-    </ChatPatternProvider>
+    <>
+      <ChatPatternProvider onOpenChat={goAskVts} onInsightTrigger={currentPage === "dashboard" ? handleInsightTrigger : undefined}>
+        <AppShell
+          navCollapsed={navCollapsed}
+          setNavCollapsed={setNavCollapsed}
+          selectedAssetId={selectedAssetId}
+          setSelectedAssetId={setSelectedAssetId}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          setSelectedDeal={setSelectedDeal}
+          onSpacesNav={() => setSelectedSpace(null)}
+          onLeasesNav={() => setSelectedLease(null)}
+          setAskVtsKey={setAskVtsKey}
+          isDark={isDark}
+          toggleDark={toggleDark}
+          renderPage={renderPage}
+        />
+      </ChatPatternProvider>
+      <Toaster position="bottom-right" />
+    </>
   )
 }
 
