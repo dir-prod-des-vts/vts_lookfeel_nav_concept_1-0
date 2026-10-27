@@ -396,7 +396,7 @@ function OverviewTab({ deal, stageIdx }: { deal: Deal; stageIdx: number }) {
 
 type ProposalRound = {
   label: string
-  party: "landlord" | "tenant" | "agreed" | "prior"
+  party: "landlord" | "tenant" | "agreed" | "prior" | "comp"
   date: string
   rent: number
   ti: number
@@ -492,10 +492,11 @@ function buildLines(r: ProposalRound, sf: number, measure: ProposalMeasure): Fin
 }
 
 const PARTY_CONFIG: Record<ProposalRound["party"], { divider: string; pill: string; pillText: string }> = {
-  prior:    { divider: "border-b-2 border-b-border",           pill: "bg-muted text-muted-foreground",  pillText: "Budget" },
-  landlord: { divider: "border-b-2 border-b-primary",          pill: "bg-primary/10 text-primary",      pillText: "Landlord"        },
-  tenant:   { divider: "border-b-2 border-b-foreground/30",    pill: "bg-muted text-foreground",        pillText: "Tenant"          },
-  agreed:   { divider: "border-b-2 border-b-success",          pill: "bg-success/10 text-success",      pillText: "Agreed"          },
+  prior:    { divider: "border-b-2 border-b-border",           pill: "bg-muted text-muted-foreground",  pillText: "Budget"   },
+  landlord: { divider: "border-b-2 border-b-primary",          pill: "bg-primary/10 text-primary",      pillText: "Landlord" },
+  tenant:   { divider: "border-b-2 border-b-foreground/30",    pill: "bg-muted text-foreground",        pillText: "Tenant"   },
+  agreed:   { divider: "border-b-2 border-b-success",          pill: "bg-success/10 text-success",      pillText: "Agreed"   },
+  comp:     { divider: "border-b-2 border-b-border",           pill: "bg-muted text-muted-foreground",  pillText: "Comp"     },
 }
 
 function fmtDate(d: string): string {
@@ -627,11 +628,11 @@ const REFERENCE_POOL: ReferenceCardDef[] = [
   },
   {
     id: "comp-1", group: "Market comp", label: "Comp: 250 Park Ave",
-    round: { label: "250 Park Ave", party: "prior", date: "2025-03-10", rent: 76.00, ti: 80, freeRent: 5, term: 96, escalation: "3.0% fixed", options: "None" },
+    round: { label: "250 Park Ave", party: "comp", date: "2025-03-10", rent: 76.00, ti: 80, freeRent: 5, term: 96, escalation: "3.0% fixed", options: "None" },
   },
   {
     id: "comp-2", group: "Market comp", label: "Comp: 1 Vanderbilt",
-    round: { label: "1 Vanderbilt", party: "prior", date: "2025-01-20", rent: 88.50, ti: 90, freeRent: 6, term: 120, escalation: "3.5% fixed", options: "1x5yr @ FMV" },
+    round: { label: "1 Vanderbilt", party: "comp", date: "2025-01-20", rent: 88.50, ti: 90, freeRent: 6, term: 120, escalation: "3.5% fixed", options: "1x5yr @ FMV" },
   },
   {
     id: "appraisal-2025", group: "Appraisal", label: "Appraisal (Q1 2025)",
