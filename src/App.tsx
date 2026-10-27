@@ -1480,7 +1480,7 @@ export default function App() {
     setTimeout(() => setInsightCardsNew(false), 2200)
   }, [])
 
-  const standalonePages = ["theme", "principles", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm", "comp-email", "comp-email-forward", "comp-email-confirm"]
+  const standalonePages = ["theme", "principles", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm", "comp-email", "comp-email-forward", "comp-email-confirm", "deal-monitor", "deal-monitor-email-am", "deal-monitor-email-broker", "deal-monitor-email-tenant", "deal-monitor-email-lawyer", "deal-monitor-email-owner", "document-agent", "proposal-builder"]
   if (standalonePages.includes(currentPage)) {
     return (
       <ChatPatternProvider onOpenChat={goAskVts}>
