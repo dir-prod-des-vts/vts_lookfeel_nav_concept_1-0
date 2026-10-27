@@ -249,4 +249,16 @@ export const TENANT_DOMAIN: Record<string, string> = {
   "T-Mobile":                 "t-mobile.com",
   "Nordstrom":                "nordstrom.com",
   "REI Co-op":                "rei.com",
+  // Comps-page tenants
+  "AIG":                      "aig.com",
+  "Bank of America":          "bankofamerica.com",
+  "Boeing":                   "boeing.com",
+  "Brown University":         "brown.edu",
+  "CVS Health":               "cvshealth.com",
+  "Citadel":                  "citadel.com",
+  "Credit Suisse":            "credit-suisse.com",
+  "Davis Polk & Wardwell":    "davispolk.com",
+  "Home Depot":               "homedepot.com",
+  "Textron":                  "textron.com",
+  "Warner Media":             "warnermedia.com",
 }

@@ -168,6 +168,16 @@ export const TENANT_LOGO: Record<string, string> = {
   "Palantir":                      `${BASE}palantir.png`,
   "Workday Inc.":                  `${BASE}workday.png`,
   "Workday":                       `${BASE}workday.png`,
+  // Comps-page tenants
+  "AIG":                           `${BASE}aig.png`,
+  "Bank of America":               `${BASE}bankofamerica.png`,
+  "Boeing":                        `${BASE}boeing.png`,
+  "Citadel":                       `${BASE}citadel.png`,
+  "Credit Suisse":                 `${BASE}creditsuisse.png`,
+  "Davis Polk & Wardwell":         `${BASE}davispolk.png`,
+  "Home Depot":                    `${BASE}homedepot.png`,
+  "Textron":                       `${BASE}textron.png`,
+  "Warner Media":                  `${BASE}warnermedia.png`,
 }
 
 export function TenantAvatar({ name }: { name: string }) {

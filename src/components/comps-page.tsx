@@ -15,6 +15,7 @@ import {
   MoreHorizontal, Plus, Settings2, GripVertical, Eye, EyeOff, X,
 } from "lucide-react"
 import { AgentBtn } from "@/components/agent-btn"
+import { TenantAvatar } from "@/components/tenant-avatar"
 import {
   Table, TableHeader, TableBody, TableRow, TableCell,
   SortableHead, useSortState,
@@ -351,7 +352,14 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
         </TableCell>
       )
       case "label":          return <TableCell key={col.id} className="py-3 text-sm text-foreground whitespace-nowrap">{c.label || <span className="text-muted-foreground/40">—</span>}</TableCell>
-      case "tenant":         return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{c.tenant}</TableCell>
+      case "tenant":         return (
+        <TableCell key={col.id} className="py-3 whitespace-nowrap">
+          <div className="flex items-center gap-2">
+            <TenantAvatar name={c.tenant} />
+            <span className="text-sm text-muted-foreground">{c.tenant}</span>
+          </div>
+        </TableCell>
+      )
       case "currentAddress": return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{c.currentAddress || <span className="text-muted-foreground/40">—</span>}</TableCell>
       case "citySubmarket":  return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{c.citySubmarket || <span className="text-muted-foreground/40">—</span>}</TableCell>
       case "sf":             return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{fmtSf(c.sf)}</TableCell>
