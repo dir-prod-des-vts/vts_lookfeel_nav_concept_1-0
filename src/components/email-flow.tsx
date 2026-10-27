@@ -310,7 +310,7 @@ function ConfirmDetail({ onBack }: { onBack?: () => void }) {
 
               {/* Actions */}
               <div className="flex flex-col gap-2">
-                <Button className="w-full" size="lg" onClick={() => { window.location.hash = "#/deals?deal=d00" }}>
+                <Button className="w-full" size="lg" onClick={() => { window.location.hash = "#/deals?deal=d00&nav=collapsed" }}>
                   Add to Deal Pipeline
                 </Button>
                 <Button variant="outline" className="w-full" size="lg" onClick={onBack}>

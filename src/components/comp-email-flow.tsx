@@ -311,7 +311,7 @@ function ConfirmDetail({ onBack }: { onBack?: () => void }) {
               </div>
 
               <div className="flex flex-col gap-2">
-                <Button className="w-full" size="lg" onClick={() => { window.location.hash = "#/comps?comp=added" }}>
+                <Button className="w-full" size="lg" onClick={() => { window.location.hash = "#/comps?comp=added&nav=collapsed" }}>
                   Add to comps
                 </Button>
                 <Button variant="outline" className="w-full" size="lg" onClick={onBack}>

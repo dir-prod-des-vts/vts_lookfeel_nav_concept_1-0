@@ -756,7 +756,7 @@ export default function App() {
     const page = parts[0] || "dashboard"
     const asset = parts[1] || "vts-tower"
     const params = new URLSearchParams(queryPart ?? "")
-    return { page, asset, dealId: params.get("deal"), agentId: params.get("agent"), view: params.get("view"), comp: params.get("comp") }
+    return { page, asset, dealId: params.get("deal"), agentId: params.get("agent"), view: params.get("view"), comp: params.get("comp"), nav: params.get("nav") }
   }
 
   const programmaticNav = React.useRef(false)
@@ -805,7 +805,9 @@ export default function App() {
   React.useEffect(() => {
     const onHashChange = () => {
       if (programmaticNav.current) { programmaticNav.current = false; return }
-      const { page, asset, dealId, agentId, comp } = parseHash()
+      const { page, asset, dealId, agentId, comp, nav } = parseHash()
+      if (nav === "collapsed") setNavCollapsed(true)
+      else if (nav === "expanded") setNavCollapsed(false)
       setCurrentPage(page)
       if (page === "spaces") setSelectedSpace(null)
       if (page === "leases") setSelectedLease(null)
