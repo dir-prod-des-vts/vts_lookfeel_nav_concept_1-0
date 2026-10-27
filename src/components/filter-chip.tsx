@@ -61,14 +61,14 @@ export function FilterChip({ filter, selected, onToggle, onClear, onSelectAll, t
         <div className="flex items-center justify-between mb-1.5 px-1">
           <span className="text-xs font-semibold text-foreground">{filter.label}</span>
           <div className="flex items-center gap-1">
-            {onSelectAll && (
+            {onSelectAll && !allSelected && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => allSelected ? onClear() : onSelectAll(allValues)}
+                onClick={() => onSelectAll(allValues)}
                 className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground"
               >
-                {allSelected ? "None" : "All"}
+                All
               </Button>
             )}
             {isActive && (
@@ -225,10 +225,10 @@ export function MobileFilterSheet({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-semibold">{f.label}</span>
                   <div className="flex items-center gap-1">
-                    {onSelectAll && (
+                    {onSelectAll && !f.options.every(o => selected.includes(o.value)) && (
                       <Button variant="ghost" size="sm" className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground"
-                        onClick={() => f.options.every(o => selected.includes(o.value)) ? onClear(f.key) : onSelectAll(f.key, f.options.map(o => o.value))}>
-                        {f.options.every(o => selected.includes(o.value)) ? "None" : "All"}
+                        onClick={() => onSelectAll(f.key, f.options.map(o => o.value))}>
+                        All
                       </Button>
                     )}
                     {selected.length > 0 && (
