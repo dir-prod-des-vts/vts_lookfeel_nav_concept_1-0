@@ -405,7 +405,7 @@ const ALL_DEAL_TYPES    = Array.from(new Set(COMPS.map(c => c.dealType))).sort()
 const PAGE_SIZE = 15
 
 export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[]; ownedMarkets?: string[] }) {
-  const { sortKey, sortDir, handleSort: _handleSort } = useSortState<SortKey>("lcd")
+  const { sortKey, sortDir, handleSort: _handleSort } = useSortState<SortKey>("executedDate", "desc")
   const [search, setSearch] = React.useState("")
   const [viewFilter, setViewFilter] = React.useState<ViewFilter>("active")
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
@@ -504,10 +504,17 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
       if (key === "_leaseType")  { r = r.filter(c => values.includes(COMP_META[c.id]?.leaseType ?? "")); continue }
       r = r.filter(c => values.includes(String(c[key as keyof Comp] ?? "")))
     }
+    const dateKeys = new Set(["lcd", "executedDate", "createdDate"])
+    const toDateNum = (v: string) => {
+      const [m, d, y] = v.split("/")
+      return Number(`20${y}${m}${d}`)
+    }
     r.sort((a, b) => {
       const av = a[sortKey] ?? ""
       const bv = b[sortKey] ?? ""
-      const cmp = av < bv ? -1 : av > bv ? 1 : 0
+      const cmp = dateKeys.has(sortKey)
+        ? toDateNum(String(av)) - toDateNum(String(bv))
+        : av < bv ? -1 : av > bv ? 1 : 0
       return sortDir === "asc" ? cmp : -cmp
     })
     return r
