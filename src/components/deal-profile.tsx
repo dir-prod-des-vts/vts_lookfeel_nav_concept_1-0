@@ -496,7 +496,7 @@ const PARTY_CONFIG: Record<ProposalRound["party"], { divider: string; pill: stri
   landlord:    { divider: "border-b-2 border-b-primary",       pill: "bg-primary/10 text-primary",      pillText: "Landlord"    },
   tenant:      { divider: "border-b-2 border-b-foreground/30", pill: "bg-muted text-foreground",        pillText: "Tenant"      },
   agreed:      { divider: "border-b-2 border-b-success",       pill: "bg-success/10 text-success",      pillText: "Agreed"      },
-  comp:        { divider: "border-b-2 border-b-primary",        pill: "bg-primary/10 text-primary",        pillText: "Comp"        },
+  comp:        { divider: "border-b-2 border-b-primary",        pill: "bg-primary/10 text-primary",        pillText: "Market comp" },
   "prior-lease": { divider: "border-b-2 border-b-warning",     pill: "bg-warning/10 text-warning",        pillText: "Prior lease" },
   appraisal:   { divider: "border-b-2 border-b-declined",      pill: "bg-declined/10 text-declined",      pillText: "Appraisal"   },
 }
