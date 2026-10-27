@@ -414,14 +414,19 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
     () => cityFilter?.length ? COMPS.filter(c => cityFilter.some(city => c.citySubmarket.toLowerCase().includes(city.toLowerCase()))) : COMPS,
     [cityFilter]
   )
-  const FILTER_DEFS = React.useMemo(() => [
+  const FILTER_DEFS = React.useMemo(() => {
+    const selectedMarkets = activeFilters["_market"] ?? []
+    const marketFilteredComps = selectedMarkets.length
+      ? scopedComps.filter(c => selectedMarkets.includes(c.citySubmarket.split(" / ")[0] ?? c.citySubmarket))
+      : scopedComps
+    return [
     { key: "_market",    label: "Market",     options: Array.from(new Set(scopedComps.map(c => c.citySubmarket.split(" / ")[0]))).sort().map(v => ({ label: v, value: v })) },
-    { key: "_submarket", label: "Submarket",  options: Array.from(new Set(scopedComps.map(c => c.citySubmarket.split(" / ")[1]).filter(Boolean))).sort().map(v => ({ label: v, value: v })) },
+    { key: "_submarket", label: "Submarket",  options: Array.from(new Set(marketFilteredComps.map(c => c.citySubmarket.split(" / ")[1]).filter(Boolean))).sort().map(v => ({ label: v, value: v })) },
     { key: "_sfBucket",  label: "SF",         options: SF_BUCKETS.map(v => ({ label: v, value: v })) },
     { key: "_lcdYear",   label: "LCD",        options: Array.from(new Set(scopedComps.map(c => `20${c.lcd.slice(-2)}`))).sort().map(v => ({ label: v, value: v })) },
     { key: "dealType",   label: "Deal type",  options: ALL_DEAL_TYPES.map(v => ({ label: v, value: v })) },
     { key: "_leaseType", label: "Lease type", options: ALL_LEASE_TYPES.map(v => ({ label: v, value: v })) },
-  ], [scopedComps])
+  ]}, [scopedComps, activeFilters])
 
   const [visible, setVisible] = React.useState<Set<string>>(
     () => new Set(ALL_COLUMNS.filter(c => c.defaultVisible).map(c => c.id))
