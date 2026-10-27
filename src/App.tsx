@@ -742,11 +742,13 @@ const VACANT_SPACES: VacantSpace[] = [
   { space: "Floors 9–10", sf: 88000, daysVacant: 30  },
 ]
 
+// Captured before React mounts so StrictMode double-mount doesn't read a cleaned URL
+const _initNavClosed = new URLSearchParams(
+  window.location.hash.replace(/^[^?]*/, "").slice(1)
+).get("nav") === "closed"
+
 export default function App() {
-  const [navCollapsed, setNavCollapsed] = React.useState(() => {
-    const params = new URLSearchParams(window.location.hash.replace(/^[^?]*/, "").slice(1))
-    return params.get("nav") === "closed"
-  })
+  const [navCollapsed, setNavCollapsed] = React.useState(_initNavClosed)
   function parseHash() {
     const raw = window.location.hash.replace(/^#\//, "")
     const [pathPart, queryPart] = raw.split("?")
