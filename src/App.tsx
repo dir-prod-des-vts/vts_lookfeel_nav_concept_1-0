@@ -794,7 +794,7 @@ export default function App() {
     const params: string[] = []
     if (selectedDeal) params.push(`deal=${selectedDeal.id}`)
     if (currentPage === "ai" && agentView === "grid") params.push("view=grid")
-    if (navCollapsed) params.push("nav=closed")
+    params.push(navCollapsed ? "nav=closed" : "nav=open")
     if (params.length) base += `?${params.join("&")}`
     if (window.location.hash !== `#${base}`) {
       programmaticNav.current = true
