@@ -451,7 +451,7 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
       const assetMarkets = cityFilter?.length
         ? allMarkets.filter(m => cityFilter.some(f => m.toLowerCase().includes(f.toLowerCase()) || f.toLowerCase().includes(m.toLowerCase())))
         : []
-      if (!assetMarkets.length) return allMarkets.map(v => ({ label: v, value: v }))
+      if (!assetMarkets.length) return allMarkets.map(v => ({ label: ownedMarkets?.includes(v) ? v : `${v} (Not owned)`, value: v }))
       const other = allMarkets.filter(m => !assetMarkets.includes(m))
       return [
         ...assetMarkets.map(v => ({ label: v, value: v, group: "This asset" })),
