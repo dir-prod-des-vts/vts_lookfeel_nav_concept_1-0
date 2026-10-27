@@ -745,7 +745,7 @@ const VACANT_SPACES: VacantSpace[] = [
 // Captured before React mounts so StrictMode double-mount doesn't read a cleaned URL
 const _initNavClosed = new URLSearchParams(
   window.location.hash.replace(/^[^?]*/, "").slice(1)
-).get("nav") === "closed"
+).get("nav") === "collapsed"
 
 export default function App() {
   const [navCollapsed, setNavCollapsed] = React.useState(_initNavClosed)
@@ -794,7 +794,7 @@ export default function App() {
     const params: string[] = []
     if (selectedDeal) params.push(`deal=${selectedDeal.id}`)
     if (currentPage === "ai" && agentView === "grid") params.push("view=grid")
-    params.push(navCollapsed ? "nav=closed" : "nav=open")
+    params.push(navCollapsed ? "nav=collapsed" : "nav=expanded")
     if (params.length) base += `?${params.join("&")}`
     if (window.location.hash !== `#${base}`) {
       programmaticNav.current = true
