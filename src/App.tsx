@@ -1447,6 +1447,13 @@ export default function App() {
     )
   }
 
+  const handleInsightTrigger = React.useCallback(() => {
+    setOverviewInsightCards(["asset-valuation"])
+    setInsightCardsNew(true)
+    setTimeout(() => setOverviewInsightCards(["asset-valuation", "leasing-strategy"]), 350)
+    setTimeout(() => setInsightCardsNew(false), 2200)
+  }, [])
+
   if (currentPage === "document-agent") {
     return (
       <ChatPatternProvider onOpenChat={goAskVts}>
@@ -1472,13 +1479,6 @@ export default function App() {
   if (currentPage === "deal-monitor-email-tenant")  return <TenantFollowupEmailPage />
   if (currentPage === "deal-monitor-email-lawyer")  return <LawyerLeaseEmailPage />
   if (currentPage === "deal-monitor-email-owner")   return <OwnerUpdateEmailPage />
-
-  const handleInsightTrigger = React.useCallback(() => {
-    setOverviewInsightCards(["asset-valuation"])
-    setInsightCardsNew(true)
-    setTimeout(() => setOverviewInsightCards(["asset-valuation", "leasing-strategy"]), 350)
-    setTimeout(() => setInsightCardsNew(false), 2200)
-  }, [])
 
   const standalonePages = ["theme", "principles", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm", "comp-email", "comp-email-forward", "comp-email-confirm", "deal-monitor", "deal-monitor-email-am", "deal-monitor-email-broker", "deal-monitor-email-tenant", "deal-monitor-email-lawyer", "deal-monitor-email-owner", "document-agent", "proposal-builder"]
   if (standalonePages.includes(currentPage)) {
