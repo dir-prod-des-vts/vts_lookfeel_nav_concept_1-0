@@ -1,0 +1,1 @@
+import{$ as e,X as t}from"./button-Cq_W6IGu.js";var n=e(t(),1),r=[];function i(e){n.useEffect(e,r)}export{i as t};

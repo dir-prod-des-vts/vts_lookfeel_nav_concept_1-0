@@ -1,9 +1,10 @@
 import * as React from "react"
-import { ChevronDownIcon, XIcon } from "lucide-react"
+import { ChevronDownIcon, XIcon, SlidersHorizontal } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { cn, TOGGLE_INACTIVE, TOGGLE_HOVER } from "@/lib/utils"
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -146,6 +147,80 @@ export function FilterBar({
         </Button>
       )}
     </div>
+  )
+}
+
+// ── MobileFilterSheet ─────────────────────────────────────────────────────────
+// On small screens: single pill button → bottom sheet with all filter sections.
+
+export function MobileFilterSheet({
+  filters,
+  active,
+  onToggle,
+  onClear,
+  onClearAll,
+}: Omit<FilterBarProps, "visibleCount" | "className" | "chipClassName">) {
+  const activeCount = Object.values(active).reduce((s, v) => s + v.length, 0)
+  const hasAny = activeCount > 0
+
+  return (
+    <Sheet>
+      <SheetTrigger render={<Button variant="outline" size="sm" className={cn("h-8 gap-1.5 font-medium", hasAny && "border-primary bg-primary/10 text-primary")} />}>
+        <SlidersHorizontal className="h-3.5 w-3.5" />
+        Filters
+        {hasAny && (
+          <Badge className="size-4 rounded-full p-0 flex items-center justify-center text-[10px]">{activeCount}</Badge>
+        )}
+      </SheetTrigger>
+      <SheetContent side="bottom" className="max-h-[80vh] rounded-t-2xl flex flex-col overflow-hidden">
+        <SheetHeader className="flex-none">
+          <div className="flex items-center justify-between">
+            <SheetTitle>Filters</SheetTitle>
+            {hasAny && (
+              <Button variant="ghost" size="sm" className="text-sm font-medium text-muted-foreground mr-8" onClick={onClearAll}>
+                Clear all
+              </Button>
+            )}
+          </div>
+        </SheetHeader>
+        <div className="flex flex-col gap-5 overflow-y-auto px-4 pb-8 pt-2">
+          {filters.map(f => {
+            const selected = active[f.key] ?? []
+            return (
+              <div key={f.key}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold">{f.label}</span>
+                  {selected.length > 0 && (
+                    <Button variant="ghost" size="sm" className="h-auto px-1.5 py-0.5 text-xs text-muted-foreground" onClick={() => onClear(f.key)}>
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {f.options.map(opt => {
+                    const on = selected.includes(opt.value)
+                    return (
+                      <button
+                        key={opt.value}
+                        onClick={() => onToggle(f.key, opt.value)}
+                        className={cn(
+                          "h-8 px-3 rounded-full border text-sm font-medium transition-colors",
+                          on
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background text-foreground hover:bg-muted"
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </SheetContent>
+    </Sheet>
   )
 }
 

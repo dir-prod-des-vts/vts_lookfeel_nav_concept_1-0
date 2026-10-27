@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { FilterBar, toggleFilterValue, clearFilterKey, FILTER_TAB_GROUP_CLS, FILTER_TAB_ITEM_CLS } from "@/components/filter-chip"
+import { FilterBar, MobileFilterSheet, toggleFilterValue, clearFilterKey, FILTER_TAB_GROUP_CLS, FILTER_TAB_ITEM_CLS } from "@/components/filter-chip"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
@@ -394,6 +394,7 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
   const [activeFilters, setActiveFilters] = React.useState<Record<string, string[]>>({})
   const [page, setPage] = React.useState(1)
   const [chartView, setChartView] = React.useState<"year" | "market" | "submarket">("year")
+  const [chartVisible, setChartVisible] = React.useState(true)
 
   function handleSort(key: SortKey) { _handleSort(key); setPage(1) }
   function onToggle(key: string, value: string) { setActiveFilters(prev => toggleFilterValue(prev, key, value)); setPage(1) }
@@ -650,6 +651,7 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {/* Desktop filters */}
         <FilterBar
           filters={FILTER_DEFS}
           active={activeFilters}
@@ -657,28 +659,52 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
           onClear={onClear}
           onClearAll={onClearAll}
           visibleCount={6}
+          className="hidden md:flex"
         />
 
-        <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium ml-auto shrink-0" />}>
-            <Download className="h-3.5 w-3.5" />
-            Export
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuItem className="gap-2 text-sm">
-              <FileType2 className="h-3.5 w-3.5" />Download as PDF
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 text-sm">
-              <FileSpreadsheet className="h-3.5 w-3.5" />Download as Excel
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Mobile filters */}
+        <div className="md:hidden">
+          <MobileFilterSheet
+            filters={FILTER_DEFS}
+            active={activeFilters}
+            onToggle={onToggle}
+            onClear={onClear}
+            onClearAll={onClearAll}
+          />
+        </div>
+
+        <div className="flex items-center gap-2 ml-auto shrink-0">
+          <Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium"
+            onClick={() => setChartVisible(v => !v)}>
+            {chartVisible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+            {chartVisible ? "Hide chart" : "Show chart"}
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium" />}>
+              <Download className="h-3.5 w-3.5" />
+              Export
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem className="gap-2 text-sm">
+                <FileType2 className="h-3.5 w-3.5" />Download as PDF
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="gap-2 text-sm">
+                <FileSpreadsheet className="h-3.5 w-3.5" />Download as Excel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button size="sm" className="h-8 gap-1.5 text-sm font-medium">
+            <Plus className="h-3.5 w-3.5" />
+            Add comp
+          </Button>
+        </div>
       </div>
 
       {/* Analytics KPIs */}
       <KpiBar kpis={[
+        { label: "Comps",              value: String(filtered.length) },
         { label: "Avg $/SF/yr",        value: `$${avgRent.toFixed(2)}` },
         { label: "Avg NER/SF/yr",      value: `$${avgNer.toFixed(2)}` },
         { label: "Avg TI/SF",          value: `$${avgTi.toFixed(2)}` },
@@ -687,7 +713,9 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
       ]} />
 
       {/* Chart card */}
-      <div className={cn(cardBase, "min-w-0")}>
+      <div className={cn("grid transition-all duration-300 ease-in-out", chartVisible ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
+      <div className="overflow-hidden">
+      <div className={cn(cardBase, "min-w-0 mb-0")}>
         {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 mb-5">
           <div>
@@ -705,13 +733,23 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
           </ToggleGroup>
         </div>
 
-        <ResponsiveContainer width="100%" height={182}>
-          <ComposedChart data={chartGroups} margin={{ top: 20, right: 40, left: 4, bottom: 0 }} barCategoryGap="35%">
+        <ResponsiveContainer width="100%" height={200} className="[&>svg]:overflow-visible">
+          <ComposedChart data={chartGroups} margin={{ top: 48, right: 40, left: 4, bottom: 4 }} barCategoryGap="35%">
             <CartesianGrid vertical={false} stroke="var(--color-border)" strokeOpacity={0.5} />
             <XAxis
               dataKey="label"
-              tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }}
-              axisLine={false} tickLine={false} dy={6}
+              tick={(props: unknown) => {
+                const { x, y, payload } = props as { x: number; y: number; payload: { value: string } }
+                const entry = chartGroups.find(g => g.label === payload.value)
+                return (
+                  <g>
+                    <text x={x} y={y + 10} textAnchor="middle" fontSize={11} fill="var(--color-muted-foreground)">{payload.value}</text>
+                    <text x={x} y={y + 22} textAnchor="middle" fontSize={10} fill="var(--color-muted-foreground)" opacity={0.7}>({entry?.count ?? ""})</text>
+                  </g>
+                )
+              }}
+              height={36}
+              axisLine={false} tickLine={false}
             />
             <YAxis
               yAxisId="left"
@@ -728,14 +766,15 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
               cursor={{ fill: "var(--color-muted)", opacity: 0.5 }}
               content={({ active, payload, label }) => {
                 if (!active || !payload?.length) return null
-                const order = ["$/SF/yr", "Count", "NER/SF/yr", "TI/SF"]
-                const sorted = [...payload].sort((a, b) => order.indexOf(a.name as string) - order.indexOf(b.name as string))
+                const entry = chartGroups.find(g => g.label === label)
+                const order = ["$/SF/yr", "NER/SF/yr", "TI/SF"]
+                const sorted = [...payload].filter(e => e.name !== "Count").sort((a, b) => order.indexOf(a.name as string) - order.indexOf(b.name as string))
                 return (
                   <div style={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12, color: "var(--color-popover-foreground)", boxShadow: "0 4px 12px rgba(0,0,0,0.12)", padding: "10px 14px" }}>
-                    <p style={{ fontWeight: 600, marginBottom: 6 }}>{label}</p>
-                    {sorted.map(entry => (
-                      <p key={entry.name as string} style={{ color: entry.color, margin: "2px 0" }}>
-                        {entry.name} : {entry.name === "Count" ? String(entry.value) : `$${Number(entry.value).toFixed(2)}`}
+                    <p style={{ fontWeight: 600, marginBottom: 6 }}>{label}{entry ? ` (${entry.count})` : ""}</p>
+                    {sorted.map(e => (
+                      <p key={e.name as string} style={{ color: e.color, margin: "2px 0" }}>
+                        {e.name} : ${Number(e.value).toFixed(2)}
                       </p>
                     ))}
                   </div>
@@ -743,30 +782,39 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
               }}
             />
             <Bar yAxisId="right" dataKey="count" name="Count"
-              fill="var(--color-muted-foreground)" fillOpacity={0.25} radius={[4, 4, 0, 0]} maxBarSize={72} minPointSize={6}>
-              <LabelList dataKey="count" position="top"
-                style={{ fontSize: 11, fill: "var(--color-muted-foreground)", fontWeight: 600 }} />
-            </Bar>
+              fill="var(--color-muted-foreground)" fillOpacity={0.25} radius={[4, 4, 0, 0]} maxBarSize={72} minPointSize={6} />
             <Line yAxisId="left" type="monotone" dataKey="rent" name="$/SF/yr"
               stroke="var(--color-chart-1)" strokeWidth={2.5}
               dot={{ r: 5, fill: "var(--color-chart-1)", stroke: "var(--color-card)", strokeWidth: 2 }}
               activeDot={{ r: 6, strokeWidth: 0 }}>
-              <LabelList dataKey="rent" position="top" formatter={(v: unknown) => `$${Number(v).toFixed(2)}`}
-                style={{ fontSize: 10, fill: "var(--color-chart-1)", fontWeight: 600 }} offset={10} />
+              <LabelList dataKey="rent" position="top" formatter={(v: unknown) => `$${Number(v).toFixed(0)}`}
+                content={(props: unknown) => {
+                  const { x, y, value } = props as { x: number; y: number; value: number }
+                  const text = `$${Number(value).toFixed(0)}`
+                  return <g><rect x={x - 18} y={y - 22} width={36} height={16} rx={3} fill="var(--color-card)" opacity={0.85} /><text x={x} y={y - 10} textAnchor="middle" fontSize={10} fontWeight={600} fill="var(--color-chart-1)">{text}</text></g>
+                }} />
             </Line>
             <Line yAxisId="left" type="monotone" dataKey="ner" name="NER/SF/yr"
               stroke="var(--color-chart-3)" strokeWidth={2.5}
               dot={{ r: 5, fill: "var(--color-chart-3)", stroke: "var(--color-card)", strokeWidth: 2 }}
               activeDot={{ r: 6, strokeWidth: 0 }}>
-              <LabelList dataKey="ner" position="insideBottom" formatter={(v: unknown) => `$${Number(v).toFixed(2)}`}
-                style={{ fontSize: 10, fill: "var(--color-chart-3)", fontWeight: 600 }} offset={-14} />
+              <LabelList dataKey="ner" position="bottom" formatter={(v: unknown) => `$${Number(v).toFixed(0)}`}
+                content={(props: unknown) => {
+                  const { x, y, value } = props as { x: number; y: number; value: number }
+                  const text = `$${Number(value).toFixed(0)}`
+                  return <g><rect x={x - 18} y={y + 8} width={36} height={16} rx={3} fill="var(--color-card)" opacity={0.85} /><text x={x} y={y + 20} textAnchor="middle" fontSize={10} fontWeight={600} fill="var(--color-chart-3)">{text}</text></g>
+                }} />
             </Line>
             <Line yAxisId="left" type="monotone" dataKey="ti" name="TI/SF"
               stroke="var(--color-chart-2)" strokeWidth={2.5}
               dot={{ r: 5, fill: "var(--color-chart-2)", stroke: "var(--color-card)", strokeWidth: 2 }}
               activeDot={{ r: 6, strokeWidth: 0 }}>
-              <LabelList dataKey="ti" position="right" formatter={(v: unknown) => `$${Number(v).toFixed(2)}`}
-                style={{ fontSize: 10, fill: "var(--color-chart-2)", fontWeight: 600 }} />
+              <LabelList dataKey="ti" position="top" formatter={(v: unknown) => `$${Number(v).toFixed(0)}`}
+                content={(props: unknown) => {
+                  const { x, y, value } = props as { x: number; y: number; value: number }
+                  const text = `$${Number(value).toFixed(0)}`
+                  return <g><rect x={x - 18} y={y - 40} width={36} height={16} rx={3} fill="var(--color-card)" opacity={0.85} /><text x={x} y={y - 28} textAnchor="middle" fontSize={10} fontWeight={600} fill="var(--color-chart-2)">{text}</text></g>
+                }} />
             </Line>
           </ComposedChart>
         </ResponsiveContainer>
@@ -791,6 +839,8 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
           </div>
         </div>
       </div>
+      </div>
+      </div>
 
       <div className={cardBase}>
         {/* Toolbar */}
@@ -813,10 +863,6 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
               onToggle={toggleCol}
               onReorder={setColOrder}
             />
-            <Button size="sm" className="h-8 gap-1.5 text-sm">
-              <Plus className="h-3.5 w-3.5" />
-              Add comp
-            </Button>
           </div>
         </div>
 
