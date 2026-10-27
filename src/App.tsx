@@ -792,13 +792,12 @@ export default function App() {
     const params: string[] = []
     if (selectedDeal) params.push(`deal=${selectedDeal.id}`)
     if (currentPage === "ai" && agentView === "grid") params.push("view=grid")
-    if (navCollapsed) params.push("nav=closed")
     if (params.length) base += `?${params.join("&")}`
     if (window.location.hash !== `#${base}`) {
       programmaticNav.current = true
       window.location.hash = base
     }
-  }, [currentPage, selectedAssetId, selectedDeal, agentView, navCollapsed])
+  }, [currentPage, selectedAssetId, selectedDeal, agentView])
 
   React.useEffect(() => {
     const onHashChange = () => {
