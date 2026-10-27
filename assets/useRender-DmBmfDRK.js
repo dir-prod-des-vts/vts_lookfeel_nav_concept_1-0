@@ -1,1 +1,0 @@
-import{h as e}from"./button-Cq_W6IGu.js";function t(t){return e(t.defaultTagName??`div`,t,t)}export{t};
