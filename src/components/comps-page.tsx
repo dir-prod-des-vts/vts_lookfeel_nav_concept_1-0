@@ -1,5 +1,4 @@
 import * as React from "react"
-import { toast } from "sonner"
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, LabelList,
@@ -387,7 +386,7 @@ const ALL_DEAL_TYPES    = Array.from(new Set(COMPS.map(c => c.dealType))).sort()
 
 const PAGE_SIZE = 15
 
-export function CompsPage({ cityFilter, compAdded, onCompAddedShown }: { cityFilter?: string[]; compAdded?: boolean; onCompAddedShown?: () => void }) {
+export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
   const { sortKey, sortDir, handleSort: _handleSort } = useSortState<SortKey>("lcd")
   const [search, setSearch] = React.useState("")
   const [viewFilter, setViewFilter] = React.useState<ViewFilter>("active")
@@ -401,16 +400,6 @@ export function CompsPage({ cityFilter, compAdded, onCompAddedShown }: { cityFil
   function onToggle(key: string, value: string) { setActiveFilters(prev => toggleFilterValue(prev, key, value)); setPage(1) }
   function onClear(key: string) { setActiveFilters(prev => clearFilterKey(prev, key)); setPage(1) }
   function onClearAll() { setActiveFilters({}); setPage(1) }
-
-  React.useEffect(() => {
-    if (compAdded) {
-      toast.success("Comp added", {
-        description: "Salesforce · One Vanderbilt added to your comps database.",
-        duration: 5000,
-      })
-      onCompAddedShown?.()
-    }
-  }, [compAdded])
 
   // Reset filters when the asset selection changes
   const prevCityFilter = React.useRef(cityFilter)

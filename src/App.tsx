@@ -39,6 +39,7 @@ import { PlanningPage } from "@/components/planning-page"
 import { DealTasksPage } from "@/components/deal-tasks-page"
 import { ChatPatternProvider, type ChatCommand } from "@/contexts/chat-pattern"
 import { Toaster } from "@/components/ui/sonner"
+import { toast } from "sonner"
 import { ChatSideOver } from "@/components/chat-side-over"
 import { ChatSidePush, SIDE_PUSH_WIDTH } from "@/components/chat-side-push"
 import { useChatPattern } from "@/contexts/chat-pattern"
@@ -756,7 +757,6 @@ export default function App() {
   const programmaticNav = React.useRef(false)
   const [selectedAssetId, setSelectedAssetId] = React.useState(() => parseHash().asset)
   const [currentPage, setCurrentPage] = React.useState(() => parseHash().page)
-  const [compAdded, setCompAdded] = React.useState(() => parseHash().comp === "added")
   const [defaultAgentId, setDefaultAgentId] = React.useState(() => parseHash().agentId ?? undefined)
   const [agentView, setAgentView] = React.useState<"list" | "grid">(() => parseHash().view === "grid" ? "grid" : "list")
   const [selectedDeal, setSelectedDeal] = React.useState<DealsPageDeal | null>(() => {
@@ -813,7 +813,7 @@ export default function App() {
       if (page === "leases") setSelectedLease(null)
       setSelectedAssetId(asset)
       setDefaultAgentId(agentId ?? undefined)
-      if (comp === "added") setCompAdded(true)
+      if (comp === "added") toast.success("Comp added", { description: "Salesforce · One Vanderbilt added to your comps database.", duration: 5000 })
       if (dealId) {
         const deal = DEALS.find(d => d.id === dealId) ?? null
         setSelectedDeal(deal)
@@ -1338,7 +1338,7 @@ export default function App() {
       return (
         <div className="space-y-4">
           <BuildingHeader {...pagedHeaderProps} />
-          <CompsPage cityFilter={cityFilter} compAdded={compAdded} onCompAddedShown={() => setCompAdded(false)} />
+          <CompsPage cityFilter={cityFilter} />
         </div>
       )
     }
