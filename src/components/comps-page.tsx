@@ -721,7 +721,7 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
           <div>
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Comps</p>
             <h2 className="text-xl font-semibold text-foreground">
-              {chartView === "year" ? "By LCD year" : chartView === "market" ? "By market" : "By submarket"}
+              {chartView === "year" ? "By commencement year" : chartView === "market" ? "By market" : "By submarket"}
             </h2>
           </div>
           <ToggleGroup type="single" value={chartView}
