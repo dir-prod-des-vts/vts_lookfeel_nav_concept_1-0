@@ -422,12 +422,14 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
     return [
     { key: "_market",    label: "Market",     options: (() => {
       const allMarkets = Array.from(new Set(COMPS.map(c => c.citySubmarket.split(" / ")[0]))).sort()
-      if (!ownedMarkets?.length) return allMarkets.map(v => ({ label: v, value: v }))
-      const owned = allMarkets.filter(m => ownedMarkets.includes(m))
-      const other = allMarkets.filter(m => !ownedMarkets.includes(m))
+      const assetMarkets = cityFilter?.length
+        ? allMarkets.filter(m => cityFilter.some(f => m.toLowerCase().includes(f.toLowerCase()) || f.toLowerCase().includes(m.toLowerCase())))
+        : []
+      if (!assetMarkets.length) return allMarkets.map(v => ({ label: v, value: v }))
+      const other = allMarkets.filter(m => !assetMarkets.includes(m))
       return [
-        ...owned.map(v => ({ label: v, value: v, group: "For this asset" })),
-        ...other.map(v => ({ label: `${v} (Not owned)`, value: v, group: "Other markets" })),
+        ...assetMarkets.map(v => ({ label: v, value: v, group: "For this asset" })),
+        ...other.map(v => ({ label: ownedMarkets?.includes(v) ? v : `${v} (Not owned)`, value: v, group: "Other markets" })),
       ]
     })() },
     { key: "_submarket", label: "Submarket",  options: Array.from(new Set(marketFilteredComps.map(c => c.citySubmarket.split(" / ")[1]).filter(Boolean))).sort().map(v => ({ label: v, value: v })) },
@@ -435,7 +437,7 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
     { key: "_lcdYear",   label: "LCD",        options: Array.from(new Set(scopedComps.map(c => `20${c.lcd.slice(-2)}`))).sort().map(v => ({ label: v, value: v })) },
     { key: "dealType",   label: "Deal type",  options: ALL_DEAL_TYPES.map(v => ({ label: v, value: v })) },
     { key: "_leaseType", label: "Lease type", options: ALL_LEASE_TYPES.map(v => ({ label: v, value: v })) },
-  ]}, [scopedComps, activeFilters, ownedMarkets])
+  ]}, [scopedComps, activeFilters, ownedMarkets, cityFilter])
 
   const [visible, setVisible] = React.useState<Set<string>>(
     () => new Set(ALL_COLUMNS.filter(c => c.defaultVisible).map(c => c.id))
