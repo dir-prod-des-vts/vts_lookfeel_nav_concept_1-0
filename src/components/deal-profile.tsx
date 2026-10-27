@@ -396,7 +396,7 @@ function OverviewTab({ deal, stageIdx }: { deal: Deal; stageIdx: number }) {
 
 type ProposalRound = {
   label: string
-  party: "landlord" | "tenant" | "agreed" | "prior" | "comp"
+  party: "landlord" | "tenant" | "agreed" | "prior" | "comp" | "prior-lease" | "appraisal"
   date: string
   rent: number
   ti: number
@@ -492,11 +492,13 @@ function buildLines(r: ProposalRound, sf: number, measure: ProposalMeasure): Fin
 }
 
 const PARTY_CONFIG: Record<ProposalRound["party"], { divider: string; pill: string; pillText: string }> = {
-  prior:    { divider: "border-b-2 border-b-border",           pill: "bg-muted text-muted-foreground",  pillText: "Budget"   },
-  landlord: { divider: "border-b-2 border-b-primary",          pill: "bg-primary/10 text-primary",      pillText: "Landlord" },
-  tenant:   { divider: "border-b-2 border-b-foreground/30",    pill: "bg-muted text-foreground",        pillText: "Tenant"   },
-  agreed:   { divider: "border-b-2 border-b-success",          pill: "bg-success/10 text-success",      pillText: "Agreed"   },
-  comp:     { divider: "border-b-2 border-b-border",           pill: "bg-muted text-muted-foreground",  pillText: "Comp"     },
+  prior:       { divider: "border-b-2 border-b-border",        pill: "bg-muted text-muted-foreground",  pillText: "Budget"      },
+  landlord:    { divider: "border-b-2 border-b-primary",       pill: "bg-primary/10 text-primary",      pillText: "Landlord"    },
+  tenant:      { divider: "border-b-2 border-b-foreground/30", pill: "bg-muted text-foreground",        pillText: "Tenant"      },
+  agreed:      { divider: "border-b-2 border-b-success",       pill: "bg-success/10 text-success",      pillText: "Agreed"      },
+  comp:        { divider: "border-b-2 border-b-border",        pill: "bg-muted text-muted-foreground",  pillText: "Comp"        },
+  "prior-lease": { divider: "border-b-2 border-b-border",      pill: "bg-muted text-muted-foreground",  pillText: "Prior lease" },
+  appraisal:   { divider: "border-b-2 border-b-border",        pill: "bg-muted text-muted-foreground",  pillText: "Appraisal"   },
 }
 
 function fmtDate(d: string): string {
@@ -620,11 +622,11 @@ const REFERENCE_POOL: ReferenceCardDef[] = [
   },
   {
     id: "prev-lease-2019", group: "Prior lease", label: "Prior lease (2019)",
-    round: { label: "Prior lease (2019)", party: "prior", date: "2019-06-01", rent: 52.00, ti: 45, freeRent: 6, term: 120, escalation: "2.5% fixed", options: "1x5yr @ FMV" },
+    round: { label: "Prior lease (2019)", party: "prior-lease", date: "2019-06-01", rent: 52.00, ti: 45, freeRent: 6, term: 120, escalation: "2.5% fixed", options: "1x5yr @ FMV" },
   },
   {
     id: "prev-lease-2012", group: "Prior lease", label: "Prior lease (2012)",
-    round: { label: "Prior lease (2012)", party: "prior", date: "2012-01-15", rent: 38.50, ti: 30, freeRent: 4, term: 120, escalation: "2.0% fixed", options: "None" },
+    round: { label: "Prior lease (2012)", party: "prior-lease", date: "2012-01-15", rent: 38.50, ti: 30, freeRent: 4, term: 120, escalation: "2.0% fixed", options: "None" },
   },
   {
     id: "comp-1", group: "Market comp", label: "Comp: 250 Park Ave",
@@ -636,11 +638,11 @@ const REFERENCE_POOL: ReferenceCardDef[] = [
   },
   {
     id: "appraisal-2025", group: "Appraisal", label: "Appraisal (Q1 2025)",
-    round: { label: "Appraisal Q1 2025", party: "prior", date: "2025-02-01", rent: 74.00, ti: 75, freeRent: 4, term: 96, escalation: "3.0% fixed", options: "None" },
+    round: { label: "Appraisal Q1 2025", party: "appraisal", date: "2025-02-01", rent: 74.00, ti: 75, freeRent: 4, term: 96, escalation: "3.0% fixed", options: "None" },
   },
   {
     id: "appraisal-2023", group: "Appraisal", label: "Appraisal (Q2 2023)",
-    round: { label: "Appraisal Q2 2023", party: "prior", date: "2023-05-15", rent: 67.50, ti: 68, freeRent: 3, term: 96, escalation: "2.75% fixed", options: "None" },
+    round: { label: "Appraisal Q2 2023", party: "appraisal", date: "2023-05-15", rent: 67.50, ti: 68, freeRent: 3, term: 96, escalation: "2.75% fixed", options: "None" },
   },
 ]
 
@@ -2509,7 +2511,7 @@ export function DealProfile({ deal, onBack: _onBack, status: statusProp, onStatu
           <div className={cn(cardBase, "overflow-hidden h-full", rightCollapsed && "lg:!px-3 lg:!py-3")}>
             <Tabs value={rightTab} onValueChange={v => setRightTab(v)} className="w-full">
               {/* Header: toggle left of tabs, always visible */}
-              <div className="flex items-center border-b border-border mb-4">
+              <div className="flex items-center mb-4">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger render={<div className="hidden lg:block shrink-0 pb-1 mr-1" />}>
