@@ -391,7 +391,12 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
   const [search, setSearch] = React.useState("")
   const [viewFilter, setViewFilter] = React.useState<ViewFilter>("active")
   const [selected, setSelected] = React.useState<Set<string>>(new Set())
-  const [activeFilters, setActiveFilters] = React.useState<Record<string, string[]>>({})
+  const [activeFilters, setActiveFilters] = React.useState<Record<string, string[]>>(() => {
+    if (!cityFilter?.length) return {}
+    const allMarkets = Array.from(new Set(COMPS.map(c => c.citySubmarket.split(" / ")[0])))
+    const matched = allMarkets.filter(m => cityFilter.some(f => m.toLowerCase().includes(f.toLowerCase()) || f.toLowerCase().includes(m.toLowerCase())))
+    return matched.length ? { _market: matched } : {} as Record<string, string[]>
+  })
   const [page, setPage] = React.useState(1)
   const [chartView, setChartView] = React.useState<"year" | "market" | "submarket">("year")
   const [chartVisible, setChartVisible] = React.useState(true)
@@ -401,11 +406,15 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
   function onClear(key: string) { setActiveFilters(prev => clearFilterKey(prev, key)); setPage(1) }
   function onClearAll() { setActiveFilters({}); setPage(1) }
 
-  // Reset filters when the asset selection changes
+  // Reset filters and pre-select asset markets when the asset selection changes
   const prevCityFilter = React.useRef(cityFilter)
   if (prevCityFilter.current !== cityFilter) {
     prevCityFilter.current = cityFilter
-    setActiveFilters({})
+    const allMarkets = Array.from(new Set(COMPS.map(c => c.citySubmarket.split(" / ")[0])))
+    const matched = cityFilter?.length
+      ? allMarkets.filter(m => cityFilter.some(f => m.toLowerCase().includes(f.toLowerCase()) || f.toLowerCase().includes(m.toLowerCase())))
+      : []
+    setActiveFilters(matched.length ? { _market: matched } : {})
     setPage(1)
   }
 
