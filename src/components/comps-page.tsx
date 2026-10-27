@@ -43,6 +43,67 @@ export interface Comp {
   archived: boolean
 }
 
+type Sector    = "Office" | "Industrial" | "Retail"
+type LeaseType = "Gross full service" | "Modified gross" | "Triple net" | "Percentage lease"
+
+interface CompMeta {
+  sector: Sector
+  leaseType: LeaseType
+  recoveries: number | null
+  tenantRep: string | null
+  leasingBroker: string | null
+  discountRate: number
+}
+
+const COMP_META: Record<string, CompMeta> = {
+  c01: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "CBRE",                leasingBroker: "Newmark",              discountRate: 8.0 },
+  c02: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 8.0 },
+  c03: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Cushman & Wakefield", leasingBroker: "JLL",                  discountRate: 7.5 },
+  c04: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Newmark",             leasingBroker: "Cushman & Wakefield",  discountRate: 8.0 },
+  c05: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Savills",             leasingBroker: "JLL",                  discountRate: 8.5 },
+  c06: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 8.0 },
+  c07: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Eastdil Secured",     leasingBroker: "Newmark",              discountRate: 9.0 },
+  c08: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "CBRE",                leasingBroker: "JLL",                  discountRate: 8.0 },
+  c09: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Cushman & Wakefield", leasingBroker: "Newmark",              discountRate: 8.5 },
+  c10: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Newmark",             leasingBroker: "JLL",                  discountRate: 8.0 },
+  c11: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 7.5 },
+  c12: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "Cushman & Wakefield", leasingBroker: "CBRE",                 discountRate: 8.0 },
+  c13: { sector: "Office", leaseType: "Gross full service", recoveries: null, tenantRep: "JLL",                 leasingBroker: "Newmark",              discountRate: 8.0 },
+  c14: { sector: "Office", leaseType: "Modified gross",     recoveries: 14,   tenantRep: "CBRE",                leasingBroker: "JLL",                  discountRate: 8.0 },
+  c15: { sector: "Office", leaseType: "Modified gross",     recoveries: 12,   tenantRep: "Avison Young",        leasingBroker: "Cushman & Wakefield",  discountRate: 7.5 },
+  c16: { sector: "Office", leaseType: "Modified gross",     recoveries: 13,   tenantRep: "Newmark",             leasingBroker: "CBRE",                 discountRate: 7.5 },
+  c17: { sector: "Office", leaseType: "Modified gross",     recoveries: 16,   tenantRep: "JLL",                 leasingBroker: "Cushman & Wakefield",  discountRate: 8.0 },
+  c18: { sector: "Office", leaseType: "Modified gross",     recoveries: 18,   tenantRep: "CBRE",                leasingBroker: "JLL",                  discountRate: 8.0 },
+  c19: { sector: "Office", leaseType: "Modified gross",     recoveries: 16,   tenantRep: "Savills",             leasingBroker: "Cushman & Wakefield",  discountRate: 8.5 },
+  c20: { sector: "Office", leaseType: "Modified gross",     recoveries: 17,   tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 8.0 },
+  c21: { sector: "Office", leaseType: "Modified gross",     recoveries: 19,   tenantRep: "Newmark",             leasingBroker: "JLL",                  discountRate: 8.0 },
+  c22: { sector: "Office", leaseType: "Modified gross",     recoveries: 12,   tenantRep: "CBRE",                leasingBroker: "JLL",                  discountRate: 7.5 },
+  c23: { sector: "Office", leaseType: "Modified gross",     recoveries: 10,   tenantRep: "Cushman & Wakefield", leasingBroker: "CBRE",                 discountRate: 7.5 },
+  c24: { sector: "Office", leaseType: "Modified gross",     recoveries: 11,   tenantRep: "JLL",                 leasingBroker: "Newmark",              discountRate: 7.5 },
+  c25: { sector: "Office", leaseType: "Modified gross",     recoveries: 13,   tenantRep: "Newmark",             leasingBroker: "Cushman & Wakefield",  discountRate: 8.0 },
+  c26: { sector: "Office", leaseType: "Triple net",         recoveries: 20,   tenantRep: "CBRE",                leasingBroker: "JLL",                  discountRate: 7.5 },
+  c27: { sector: "Office", leaseType: "Triple net",         recoveries: 18,   tenantRep: "Cushman & Wakefield", leasingBroker: "Newmark",              discountRate: 7.5 },
+  c28: { sector: "Office", leaseType: "Triple net",         recoveries: 22,   tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 7.5 },
+  c29: { sector: "Office", leaseType: "Triple net",         recoveries: 19,   tenantRep: "Avison Young",        leasingBroker: "JLL",                  discountRate: 7.5 },
+  c30: { sector: "Office", leaseType: "Modified gross",     recoveries: 10,   tenantRep: "CBRE",                leasingBroker: "Cushman & Wakefield",  discountRate: 7.5 },
+  c31: { sector: "Office", leaseType: "Modified gross",     recoveries: 9,    tenantRep: "JLL",                 leasingBroker: "CBRE",                 discountRate: 7.5 },
+  c32: { sector: "Office", leaseType: "Modified gross",     recoveries: 11,   tenantRep: "Newmark",             leasingBroker: "JLL",                  discountRate: 7.5 },
+  c33: { sector: "Office", leaseType: "Modified gross",     recoveries: 8,    tenantRep: "Savills",             leasingBroker: "Cushman & Wakefield",  discountRate: 7.5 },
+}
+
+function calcNer(c: Comp): number {
+  const termYrs = c.term / 12
+  return (c.rent * (c.term - c.freeRent) / 12 - c.ti) / termYrs
+}
+
+function calcNerDiscounted(c: Comp, discountRate: number): number {
+  const ner = calcNer(c)
+  const termYrs = c.term / 12
+  const r = discountRate / 100
+  const pvFactor = r > 0 ? (1 - Math.pow(1 + r, -termYrs)) / r / termYrs : 1
+  return ner * pvFactor
+}
+
 // Bucket helpers — used for range filters
 function sfBucket(sf: number) {
   if (sf < 5_000)  return "< 5,000 SF"
@@ -83,21 +144,33 @@ interface ColDef {
 // ── Column definitions ────────────────────────────────────────────────────────
 
 const ALL_COLUMNS: ColDef[] = [
-  { id: "status",         label: "Status",           sortable: false, defaultVisible: true  },
-  { id: "label",          label: "Label",            sortable: true,  defaultVisible: true  },
-  { id: "tenant",         label: "Tenant",           sortable: true,  defaultVisible: true  },
-  { id: "currentAddress", label: "Current address",  sortable: true,  defaultVisible: true  },
-  { id: "citySubmarket",  label: "City/submarket",   sortable: true,  defaultVisible: true  },
-  { id: "sf",             label: "SF",               sortable: true,  right: true, defaultVisible: true  },
-  { id: "term",           label: "Term (Mo.)",       sortable: true,  right: true, defaultVisible: true  },
-  { id: "rent",           label: "Rent",             sortable: true,  right: true, defaultVisible: true  },
-  { id: "esca",           label: "ESCA",             sortable: true,  defaultVisible: false },
-  { id: "ti",             label: "TI",               sortable: true,  right: true, defaultVisible: true  },
-  { id: "freeRent",       label: "FR",               sortable: true,  right: true, defaultVisible: true  },
-  { id: "lcd",            label: "LCD",              sortable: true,  defaultVisible: true  },
-  { id: "createdDate",    label: "Created date",     sortable: true,  defaultVisible: false },
-  { id: "note",           label: "Note",             sortable: false, defaultVisible: false },
-  { id: "actions",        label: "",                 sortable: false, defaultVisible: true  },
+  { id: "status",         label: "Status",              sortable: false, defaultVisible: false },
+  { id: "label",          label: "Label",               sortable: true,  defaultVisible: false },
+  { id: "tenant",         label: "Tenant name",         sortable: true,  defaultVisible: true  },
+  { id: "currentAddress", label: "Building",            sortable: true,  defaultVisible: true  },
+  { id: "citySubmarket",  label: "Market / submarket",  sortable: true,  defaultVisible: true  },
+  { id: "sector",         label: "Sector",              sortable: false, defaultVisible: true  },
+  { id: "sf",             label: "SF",                  sortable: true,  right: true, defaultVisible: true  },
+  { id: "lcd",            label: "Lease start date",    sortable: true,  defaultVisible: true  },
+  { id: "term",           label: "Lease term (mo.)",    sortable: true,  right: true, defaultVisible: true  },
+  { id: "freeRent",       label: "Free rent (mo.)",     sortable: true,  right: true, defaultVisible: true  },
+  { id: "dealType",       label: "Lease classification",sortable: true,  defaultVisible: true  },
+  { id: "leaseType",      label: "Lease type",          sortable: false, defaultVisible: true  },
+  { id: "rent",           label: "Annual base rent/SF", sortable: true,  right: true, defaultVisible: true  },
+  { id: "esca",           label: "Annual escalation %", sortable: true,  defaultVisible: true  },
+  { id: "recoveries",     label: "Recoveries/SF",       sortable: false, right: true, defaultVisible: true  },
+  { id: "grossRent",      label: "Annual gross rent/SF",sortable: false, right: true, defaultVisible: true  },
+  { id: "ti",             label: "TI & LLW/SF",         sortable: true,  right: true, defaultVisible: true  },
+  { id: "tiPerYear",      label: "TI/lease year",       sortable: false, right: true, defaultVisible: true  },
+  { id: "tenantRep",      label: "Tenant rep",          sortable: false, defaultVisible: true  },
+  { id: "leasingBroker",  label: "Leasing broker",      sortable: false, defaultVisible: true  },
+  { id: "payback",        label: "Payback (yrs)",       sortable: false, right: true, defaultVisible: true  },
+  { id: "ner",            label: "NER/SF/yr",           sortable: false, right: true, defaultVisible: true  },
+  { id: "discountRate",   label: "Discount rate",       sortable: false, right: true, defaultVisible: true  },
+  { id: "nerDiscounted",  label: "NER/SF/yr (disc.)",   sortable: false, right: true, defaultVisible: true  },
+  { id: "note",           label: "Deal note",           sortable: false, defaultVisible: true  },
+  { id: "createdDate",    label: "Created date",        sortable: true,  defaultVisible: false },
+  { id: "actions",        label: "",                    sortable: false, defaultVisible: true  },
 ]
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
@@ -370,7 +443,56 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
       case "freeRent":       return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{c.freeRent}</TableCell>
       case "lcd":            return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{c.lcd}</TableCell>
       case "createdDate":    return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{c.createdDate}</TableCell>
-      case "note":           return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{c.note ?? <span className="text-muted-foreground/40">—</span>}</TableCell>
+      case "note":           return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap max-w-48 truncate">{c.note ?? <span className="text-muted-foreground/40">—</span>}</TableCell>
+      case "dealType":       return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{c.dealType}</TableCell>
+      case "sector": {
+        const meta = COMP_META[c.id]
+        return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{meta?.sector ?? "Office"}</TableCell>
+      }
+      case "leaseType": {
+        const meta = COMP_META[c.id]
+        return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{meta?.leaseType ?? <span className="text-muted-foreground/40">—</span>}</TableCell>
+      }
+      case "recoveries": {
+        const meta = COMP_META[c.id]
+        return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{meta?.recoveries != null ? fmtRent(meta.recoveries) : <span className="text-muted-foreground/40">—</span>}</TableCell>
+      }
+      case "grossRent": {
+        const meta = COMP_META[c.id]
+        const gross = c.rent + (meta?.recoveries ?? 0)
+        return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{fmtRent(gross)}</TableCell>
+      }
+      case "tiPerYear": {
+        const termYrs = c.term / 12
+        return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{fmtRent(c.ti / termYrs)}</TableCell>
+      }
+      case "tenantRep": {
+        const meta = COMP_META[c.id]
+        return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{meta?.tenantRep ?? <span className="text-muted-foreground/40">—</span>}</TableCell>
+      }
+      case "leasingBroker": {
+        const meta = COMP_META[c.id]
+        return <TableCell key={col.id} className="py-3 text-sm text-muted-foreground whitespace-nowrap">{meta?.leasingBroker ?? <span className="text-muted-foreground/40">—</span>}</TableCell>
+      }
+      case "payback": {
+        const payback = c.ti / c.rent
+        return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{payback.toFixed(1)}</TableCell>
+      }
+      case "ner": {
+        const ner = calcNer(c)
+        return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{fmtRent(ner)}</TableCell>
+      }
+      case "discountRate": {
+        const meta = COMP_META[c.id]
+        const dr = meta?.discountRate ?? 8.0
+        return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{dr.toFixed(1)}%</TableCell>
+      }
+      case "nerDiscounted": {
+        const meta = COMP_META[c.id]
+        const dr = meta?.discountRate ?? 8.0
+        const nerD = calcNerDiscounted(c, dr)
+        return <TableCell key={col.id} className="py-3 text-right tabular-nums text-sm text-muted-foreground whitespace-nowrap">{fmtRent(nerD)}</TableCell>
+      }
       case "actions": return (
         <TableCell key={col.id} className="py-3 pl-1">
           <div className="flex items-center gap-1">
@@ -467,8 +589,8 @@ export function CompsPage({ cityFilter }: { cityFilter?: string[] }) {
                 </th>
                 {orderedCols.map(col => col.id === "actions" ? (
                   <th key="actions" className="pb-2 pt-0 w-8" />
-                ) : col.id === "status" ? (
-                  <th key="status" className="pb-2 pt-0 text-xs font-medium text-muted-foreground text-left pr-4">Status</th>
+                ) : (col.id === "status" || col.id === "sector" || col.id === "leaseType" || col.id === "recoveries" || col.id === "grossRent" || col.id === "tiPerYear" || col.id === "tenantRep" || col.id === "leasingBroker" || col.id === "payback" || col.id === "ner" || col.id === "discountRate" || col.id === "nerDiscounted" || col.id === "dealType") ? (
+                  <th key={col.id} className={`pb-2 pt-0 text-xs font-medium text-muted-foreground text-left pr-4 whitespace-nowrap${col.right ? " text-right" : ""}`}>{col.label}</th>
                 ) : (
                   <SortableHead
                     key={col.id}
