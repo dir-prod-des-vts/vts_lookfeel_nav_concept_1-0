@@ -773,14 +773,14 @@ export function CompsPage({ cityFilter, ownedMarkets }: { cityFilter?: string[];
           <div>
             <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">Comps</p>
             <h2 className="text-xl font-semibold text-foreground">
-              {chartView === "executed" ? "By execution year" : chartView === "year" ? "By LCD" : chartView === "market" ? "By market" : "By submarket"}
+              {chartView === "executed" ? "By execution year" : chartView === "year" ? "By commencement year" : chartView === "market" ? "By market" : "By submarket"}
             </h2>
           </div>
           <ToggleGroup type="single" value={chartView}
             onValueChange={v => { if (v) setChartView(v as "executed" | "year" | "market" | "submarket") }}
             className={FILTER_TAB_GROUP_CLS}>
             <ToggleGroupItem value="executed" size="sm" className={FILTER_TAB_ITEM_CLS}>Executed</ToggleGroupItem>
-            <ToggleGroupItem value="year" size="sm" className={FILTER_TAB_ITEM_CLS}>LCD</ToggleGroupItem>
+            <ToggleGroupItem value="year" size="sm" className={FILTER_TAB_ITEM_CLS}>Commencement</ToggleGroupItem>
             <ToggleGroupItem value="market" size="sm" className={FILTER_TAB_ITEM_CLS}>Market</ToggleGroupItem>
             <ToggleGroupItem value="submarket" size="sm" className={FILTER_TAB_ITEM_CLS}>Submarket</ToggleGroupItem>
           </ToggleGroup>
