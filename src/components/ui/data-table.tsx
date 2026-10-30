@@ -27,7 +27,6 @@ import {
   ArrowDown,
   ChevronDown,
   ChevronRight,
-  ChevronsUpDown,
   Eye,
   EyeOff,
   Pin,
@@ -324,7 +323,7 @@ export function DataTable<TData, TValue = unknown>({
               table.getIsAllPageRowsSelected()
                 ? true
                 : table.getIsSomePageRowsSelected()
-                ? "indeterminate"
+                ? ("indeterminate" as unknown as boolean)
                 : false
             }
             onCheckedChange={v => table.toggleAllPageRowsSelected(!!v)}

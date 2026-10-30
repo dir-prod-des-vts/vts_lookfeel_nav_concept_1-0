@@ -4,7 +4,7 @@ import "./index.css"
 import { DataTable, DataTableColumnHeader, type ColumnDef } from "@/components/ui/data-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Sun, Moon } from "lucide-react"
+import { Sun, Moon, Pin, PinOff } from "lucide-react"
 
 // ── Sample data ───────────────────────────────────────────────────────────────
 
@@ -256,7 +256,7 @@ function App() {
         {/* 9 — Sub-rows / expanding */}
         <Section title="Expanding rows" description="Rows with sub-content expose a chevron toggle. renderSubRow controls what appears below.">
           <DataTable
-            columns={columns.filter(c => ["tenant", "building", "market", "rent", "status"].includes(c.accessorKey as string))}
+            columns={columns.filter(c => ["tenant", "building", "market", "rent", "status"].includes((c as { accessorKey?: string }).accessorKey ?? ""))}
             data={LEASES.slice(0, 5)}
             enableExpanding
             renderSubRow={row => (
@@ -294,25 +294,35 @@ function App() {
 // ── Row pinning demo wrapper ──────────────────────────────────────────────────
 
 function DataTableWithRowPinning() {
-  const [pinned, setPinned] = React.useState<string[]>(["L-005", "L-001"])
-  const cols = columns.filter(c => ["tenant", "building", "sf", "rent", "status"].includes(c.accessorKey as string))
+  const cols = columns.filter(c => ["tenant", "building", "sf", "rent", "status"].includes((c as { accessorKey?: string }).accessorKey ?? ""))
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-xs text-muted-foreground">Rows L-005 and L-001 are pinned to the top.</p>
+      <p className="text-xs text-muted-foreground">
+        Click any row's pin button (use the toolbar column settings to show the pin column) — or use the <code className="text-xs bg-muted px-1 rounded">row.pin()</code> API. Pinned rows appear sticky at top or bottom.
+      </p>
       <DataTable
-        columns={cols}
+        columns={[
+          {
+            id: "__pin__",
+            header: () => <span className="text-xs text-muted-foreground">Pin</span>,
+            cell: ({ row }) => (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-6"
+                onClick={() => row.getIsPinned() ? row.pin(false) : row.pin("top")}
+                title={row.getIsPinned() ? "Unpin" : "Pin to top"}
+              >
+                {row.getIsPinned() ? <PinOff className="size-3.5 text-primary" /> : <Pin className="size-3.5 text-muted-foreground" />}
+              </Button>
+            ),
+            size: 48,
+            enableSorting: false,
+          },
+          ...cols,
+        ]}
         data={LEASES.slice(0, 8)}
         enableRowPinning
-        toolbar={() => (
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-8 text-sm font-normal"
-            onClick={() => setPinned(p => p.length ? [] : ["L-005", "L-001"])}
-          >
-            {pinned.length ? "Unpin rows" : "Pin L-005 + L-001"}
-          </Button>
-        )}
       />
     </div>
   )
