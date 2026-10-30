@@ -62,6 +62,7 @@ export default defineConfig({
         'spinner-showcase': path.resolve(__dirname, 'spinner-showcase.html'),
         'switch-showcase': path.resolve(__dirname, 'switch-showcase.html'),
         'table-showcase': path.resolve(__dirname, 'table-showcase.html'),
+        'data-table-showcase': path.resolve(__dirname, 'data-table-showcase.html'),
         'tabs-showcase': path.resolve(__dirname, 'tabs-showcase.html'),
         'textarea-showcase': path.resolve(__dirname, 'textarea-showcase.html'),
         'toast-showcase': path.resolve(__dirname, 'toast-showcase.html'),

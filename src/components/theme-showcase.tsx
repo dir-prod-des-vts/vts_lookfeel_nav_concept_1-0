@@ -684,6 +684,7 @@ export function ThemeShowcase({ isDark, onToggleDark }: ThemeShowcaseProps) {
             { label: "Spinner", href: "/vts_lookfeel_nav_concept_1-0/spinner-showcase.html" },
             { label: "Switch", href: "/vts_lookfeel_nav_concept_1-0/switch-showcase.html" },
             { label: "Table", href: "/vts_lookfeel_nav_concept_1-0/table-showcase.html" },
+            { label: "Data table (TanStack)", href: "/vts_lookfeel_nav_concept_1-0/data-table-showcase.html" },
             { label: "Tabs", href: "/vts_lookfeel_nav_concept_1-0/tabs-showcase.html" },
             { label: "Textarea", href: "/vts_lookfeel_nav_concept_1-0/textarea-showcase.html" },
             { label: "Toast", href: "/vts_lookfeel_nav_concept_1-0/toast-showcase.html" },
