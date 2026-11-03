@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { FilterBar, toggleFilterValue, clearFilterKey } from "@/components/filter-chip"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   Search, ChevronLeft, ChevronRight, Settings2, GripVertical, Eye, EyeOff,
-  AlertTriangle, CheckCircle2,
+  AlertTriangle, CheckCircle2, Download, FileType2, FileSpreadsheet, ChevronDown,
 } from "lucide-react"
 import { AgentBtn } from "@/components/agent-btn"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -349,6 +350,30 @@ export function DealTasksPage({ onTaskClick, assetContext }: { onTaskClick?: (de
 
   return (
     <div className="space-y-4">
+      {/* Toolbar above KPIs */}
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterBar
+          filters={FILTER_DEFS}
+          active={activeFilters}
+          onToggle={onToggle}
+          onClear={onClear}
+          onClearAll={onClearAll}
+          visibleCount={4}
+        />
+        <div className="ml-auto flex items-center gap-2 shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium" />}>
+              <Download className="h-3.5 w-3.5" />Export<ChevronDown className="h-3 w-3 opacity-60" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem><FileType2 className="h-3.5 w-3.5 mr-2" />Export as PDF</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem><FileSpreadsheet className="h-3.5 w-3.5 mr-2" />Export as Excel</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
       <DealTasksKpi rows={ALL_ROWS} />
 
       <div className={cardBase}>
@@ -362,14 +387,6 @@ export function DealTasksPage({ onTaskClick, assetContext }: { onTaskClick?: (de
               className="pl-8 h-8 text-sm w-48"
             />
           </div>
-          <FilterBar
-            filters={FILTER_DEFS}
-            active={activeFilters}
-            onToggle={onToggle}
-            onClear={onClear}
-            onClearAll={onClearAll}
-            visibleCount={4}
-          />
           <div className="ml-auto">
             <ColumnManager columns={ALL_COLUMNS} visible={visible} order={colOrder} onToggle={toggleCol} onReorder={setColOrder} />
           </div>

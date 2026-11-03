@@ -13,6 +13,7 @@ import { FilterBar, toggleFilterValue, clearFilterKey } from "@/components/filte
 import {
   Search, ChevronLeft, ChevronRight, Settings2, GripVertical, Eye, EyeOff,
   AlertTriangle, Clock, Bell, CheckCircle2, FileText, History, MoreHorizontal, ExternalLink,
+  Download, FileType2, FileSpreadsheet, ChevronDown,
 } from "lucide-react"
 import { TenantAvatar } from "@/components/tenant-avatar"
 import { ADDITIONAL_CRITICAL_DATES } from "@/lib/critical-dates-new"
@@ -606,10 +607,37 @@ export function CriticalDatesPage({ assets, onRowClick }: { assets?: AssetRef[];
 
   return (
     <div className="space-y-4">
+      {/* Filter bar above KPIs */}
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterBar
+          filters={FILTER_DEFS}
+          active={activeFilters}
+          onToggle={onToggle}
+          onClear={onClear}
+          onClearAll={onClearAll}
+          visibleCount={4}
+        />
+        <div className="ml-auto flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium" />}>
+              <Download className="h-3.5 w-3.5" />
+              Export
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem className="gap-2 text-sm"><FileType2 className="h-3.5 w-3.5" />Download as PDF</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="gap-2 text-sm"><FileSpreadsheet className="h-3.5 w-3.5" />Download as Excel</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
       <CriticalDatesKpi rows={ROWS.filter(r => !assetNames?.length || assetNames.includes(r.asset)).map(r => ({ ...r, status: rowStatus[r.id] ?? r.status }))} />
 
       <div className={cardBase}>
-        <div className="flex flex-wrap items-center gap-2 mb-4">
+        {/* Search + columns inside card */}
+        <div className="flex items-center gap-2 mb-4">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
             <Input
@@ -619,14 +647,6 @@ export function CriticalDatesPage({ assets, onRowClick }: { assets?: AssetRef[];
               className="pl-8 h-8 text-sm w-48"
             />
           </div>
-          <FilterBar
-            filters={FILTER_DEFS}
-            active={activeFilters}
-            onToggle={onToggle}
-            onClear={onClear}
-            onClearAll={onClearAll}
-            visibleCount={4}
-          />
           <div className="ml-auto">
             <ColumnManager columns={COLUMNS} visible={visible} order={colOrder} onToggle={toggleCol} onReorder={setColOrder} />
           </div>

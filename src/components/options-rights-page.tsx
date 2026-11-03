@@ -6,8 +6,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { FilterBar, toggleFilterValue, clearFilterKey } from "@/components/filter-chip"
 import {
   Search, ChevronLeft, ChevronRight, Settings2, GripVertical, Eye, EyeOff,
-  AlertTriangle,
+  AlertTriangle, Download, FileType2, FileSpreadsheet, ChevronDown,
 } from "lucide-react"
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { AgentBtn } from "@/components/agent-btn"
 import { TenantAvatar } from "@/components/tenant-avatar"
 import {
@@ -324,10 +328,37 @@ export function OptionsRightsPage({ assets, assetId, onRowClick }: { assets?: As
 
   return (
     <div className="space-y-4">
+      {/* Filter bar above KPIs */}
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterBar
+          filters={FILTER_DEFS}
+          active={activeFilters}
+          onToggle={onToggle}
+          onClear={onClear}
+          onClearAll={onClearAll}
+          visibleCount={3}
+        />
+        <div className="ml-auto flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium" />}>
+              <Download className="h-3.5 w-3.5" />
+              Export
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem className="gap-2 text-sm"><FileType2 className="h-3.5 w-3.5" />Download as PDF</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="gap-2 text-sm"><FileSpreadsheet className="h-3.5 w-3.5" />Download as Excel</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
       <OptionsKpi rows={ROWS} />
 
       <div className={cardBase}>
-        <div className="flex flex-wrap items-center gap-2 mb-4">
+        {/* Search + columns inside card */}
+        <div className="flex items-center gap-2 mb-4">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
             <Input
@@ -337,14 +368,6 @@ export function OptionsRightsPage({ assets, assetId, onRowClick }: { assets?: As
               className="pl-8 h-8 text-sm w-48"
             />
           </div>
-          <FilterBar
-            filters={FILTER_DEFS}
-            active={activeFilters}
-            onToggle={onToggle}
-            onClear={onClear}
-            onClearAll={onClearAll}
-            visibleCount={3}
-          />
           <div className="ml-auto">
             <ColumnManager columns={COLUMNS} visible={visible} order={colOrder} onToggle={toggleCol} onReorder={setColOrder} />
           </div>

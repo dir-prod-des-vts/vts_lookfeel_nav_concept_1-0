@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn, cardBase } from "@/lib/utils"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { FilterBar, toggleFilterValue, clearFilterKey } from "@/components/filter-chip"
@@ -10,6 +10,7 @@ import {
   Sparkle, Search, Settings2, GripVertical, Eye, EyeOff,
   ChevronLeft, ChevronRight, AlertTriangle, Clock,
   CheckCircle2, ChevronDown, HeartPulse, Dot, X, Plus, MoreHorizontal,
+  Download, FileType2, FileSpreadsheet,
 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { AgentBtn } from "@/components/agent-btn"
@@ -937,6 +938,32 @@ export function DealsPage({ onDealClick, assetContext, allowedAssets }: { onDeal
     <>
     <CardCtx.Provider value={card}>
     <div className="space-y-4">
+      {/* Toolbar above KPIs */}
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterBar
+          filters={filterDefs}
+          active={activeFilters}
+          onToggle={onFilterToggle}
+          onClear={onFilterClear}
+          onClearAll={onClearAll}
+          visibleCount={4}
+        />
+        <div className="ml-auto flex items-center gap-2 shrink-0">
+          <CardManager visible={visibleCards} order={cardOrder} onToggle={toggleCard} onReorder={updateCardOrder} />
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium" />}>
+              <Download className="h-3.5 w-3.5" />Export<ChevronDown className="h-3 w-3 opacity-60" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuItem><FileType2 className="h-3.5 w-3.5 mr-2" />Export as PDF</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem><FileSpreadsheet className="h-3.5 w-3.5 mr-2" />Export as Excel</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button size="sm" className="h-8 gap-1.5 text-sm font-medium"><Plus className="h-3.5 w-3.5" />Add deal</Button>
+        </div>
+      </div>
+
       <KpiSummary deals={scopedDeals} />
 
       {/* Insight cards */}
@@ -985,7 +1012,7 @@ export function DealsPage({ onDealClick, assetContext, allowedAssets }: { onDeal
           </div>
         )}
 
-        {/* Filters row */}
+        {/* Search + columns row */}
         <div className={cn("flex flex-wrap items-center gap-2 mb-4", selected.size > 0 && "hidden")}>
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
@@ -996,16 +1023,7 @@ export function DealsPage({ onDealClick, assetContext, allowedAssets }: { onDeal
               className="pl-8 h-8 text-sm w-48"
             />
           </div>
-          <FilterBar
-            filters={filterDefs}
-            active={activeFilters}
-            onToggle={onFilterToggle}
-            onClear={onFilterClear}
-            onClearAll={onClearAll}
-            visibleCount={4}
-          />
           <div className="ml-auto flex items-center gap-2 shrink-0">
-            <CardManager visible={visibleCards} order={cardOrder} onToggle={toggleCard} onReorder={updateCardOrder} />
             <ColumnManager
               columns={ALL_COLUMNS}
               visible={visible}
@@ -1013,7 +1031,6 @@ export function DealsPage({ onDealClick, assetContext, allowedAssets }: { onDeal
               onToggle={toggleCol}
               onReorder={setColOrder}
             />
-            <Button size="sm" className="h-8 gap-1.5 text-sm"><Plus className="h-3.5 w-3.5" />Add deal</Button>
           </div>
         </div>
 

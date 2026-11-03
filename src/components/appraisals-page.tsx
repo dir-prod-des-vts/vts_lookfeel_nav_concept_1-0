@@ -13,7 +13,9 @@ import {
 import {
   Search, ChevronLeft, ChevronRight, ChevronDown, Check,
   MoreHorizontal, Plus, Settings2, GripVertical, Eye, EyeOff, X,
+  Download, FileType2, FileSpreadsheet,
 } from "lucide-react"
+import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { AgentBtn } from "@/components/agent-btn"
 import {
   Table, TableHeader, TableBody, TableRow, TableCell,
@@ -360,24 +362,52 @@ export function AppraisalsPage({ assetFilter }: { assetFilter?: string[] }) {
 
   return (
     <div className="space-y-4">
+      {/* Filter bar above KPIs */}
+      <div className="flex flex-wrap items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium">{VIEW_LABELS[viewFilter]}<ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /></Button>} />
+          <DropdownMenuContent align="start" className="w-52">
+            {(["active", "archived", "all"] as ViewFilter[]).map(v => (
+              <DropdownMenuItem key={v} onClick={() => { setViewFilter(v); setPage(1) }}
+                className="flex items-center justify-between">
+                {VIEW_LABELS[v]}
+                {viewFilter === v && <Check className="h-3.5 w-3.5 text-primary" />}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <FilterBar
+          filters={FILTER_DEFS}
+          active={activeFilters}
+          onToggle={onToggle}
+          onClear={onClear}
+          onClearAll={onClearAll}
+          visibleCount={3}
+        />
+        <div className="ml-auto flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium" />}>
+              <Download className="h-3.5 w-3.5" />
+              Export
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem className="gap-2 text-sm"><FileType2 className="h-3.5 w-3.5" />Download as PDF</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="gap-2 text-sm"><FileSpreadsheet className="h-3.5 w-3.5" />Download as Excel</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button size="sm" className="h-8 gap-1.5 text-sm font-medium">
+            <Plus className="h-3.5 w-3.5" />Add appraisal
+          </Button>
+        </div>
+      </div>
+
       <KpiBar kpis={kpis} />
 
       <div className={cardBase}>
-        {/* Toolbar */}
-        <div className={cn("flex flex-wrap items-center gap-2 mb-4", selected.size > 0 && "hidden")}>
-          <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium">{VIEW_LABELS[viewFilter]}<ChevronDown className="h-3.5 w-3.5 text-muted-foreground" /></Button>} />
-            <DropdownMenuContent align="start" className="w-52">
-              {(["active", "archived", "all"] as ViewFilter[]).map(v => (
-                <DropdownMenuItem key={v} onClick={() => { setViewFilter(v); setPage(1) }}
-                  className="flex items-center justify-between">
-                  {VIEW_LABELS[v]}
-                  {viewFilter === v && <Check className="h-3.5 w-3.5 text-primary" />}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
+        {/* Search + columns inside card */}
+        <div className={cn("flex items-center gap-2 mb-4", selected.size > 0 && "hidden")}>
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
             <Input
@@ -387,28 +417,8 @@ export function AppraisalsPage({ assetFilter }: { assetFilter?: string[] }) {
               className="pl-8 h-8 text-sm w-48"
             />
           </div>
-
-          <FilterBar
-            filters={FILTER_DEFS}
-            active={activeFilters}
-            onToggle={onToggle}
-            onClear={onClear}
-            onClearAll={onClearAll}
-            visibleCount={3}
-          />
-
-          <div className="ml-auto flex items-center gap-2">
-            <ColumnManager
-              columns={ALL_COLUMNS}
-              visible={visible}
-              order={colOrder}
-              onToggle={toggleCol}
-              onReorder={setColOrder}
-            />
-            <Button size="sm" className="h-8 gap-1.5 text-sm">
-              <Plus className="h-3.5 w-3.5" />
-              Add appraisal
-            </Button>
+          <div className="ml-auto">
+            <ColumnManager columns={ALL_COLUMNS} visible={visible} order={colOrder} onToggle={toggleCol} onReorder={setColOrder} />
           </div>
         </div>
 

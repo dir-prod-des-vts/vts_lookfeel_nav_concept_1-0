@@ -89,11 +89,11 @@ function SidePushMain({ children, navCollapsed }: { children: React.ReactNode; n
   )
 }
 import { cn, cardBase } from "@/lib/utils"
-import { type LucideIcon, UserCircle, BellRing, Activity, Plus, Pencil, Trash2, Bookmark, ChevronDownIcon, Sparkles, AlertTriangle, Clock, Download, Share2, MoreHorizontal } from "lucide-react"
+import { type LucideIcon, UserCircle, BellRing, Activity, Plus, Pencil, Trash2, Bookmark, ChevronDownIcon, Sparkles, AlertTriangle, Clock, Download, Share2, FileType2, FileSpreadsheet, ChevronDown } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import buildingImg from "@/assets/building.jpg"
 
 // ── Overview view switcher ─────────────────────────────────────────────────────
@@ -1106,21 +1106,17 @@ export default function App() {
               />
             )}
             <div className="ml-auto flex items-center gap-2">
-              <div className="hidden md:flex items-center gap-2">
-                <Button variant="outline" size="sm" className="h-8"><Download className="size-4" />Export</Button>
-                <Button variant="outline" size="sm" className="h-8"><Share2 className="size-4" />Share</Button>
-              </div>
-              <div className="md:hidden">
-                <DropdownMenu>
-                  <DropdownMenuTrigger render={<Button variant="outline" size="icon" className="h-8 w-8" />}>
-                    <MoreHorizontal className="size-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem><Download className="size-4" />Export</DropdownMenuItem>
-                    <DropdownMenuItem><Share2 className="size-4" />Share</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium" />}>
+                  <Download className="h-3.5 w-3.5" />Export<ChevronDown className="h-3 w-3 opacity-60" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem><FileType2 className="h-3.5 w-3.5 mr-2" />Export as PDF</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem><FileSpreadsheet className="h-3.5 w-3.5 mr-2" />Export as Excel</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium"><Share2 className="h-3.5 w-3.5" />Share</Button>
             </div>
           </div>
 
@@ -1374,21 +1370,17 @@ export default function App() {
             onReorder={next => overviewViews.reorderCards(next.filter(id => overviewViews.liveCards.includes(id as OverviewCardId)) as OverviewCardId[])}
           />
           <div className="ml-auto flex items-center gap-2">
-            <div className="hidden md:flex items-center gap-2">
-              <Button variant="outline" size="sm" className="h-8"><Download className="size-4" />Export</Button>
-              <Button variant="outline" size="sm" className="h-8"><Share2 className="size-4" />Share</Button>
-            </div>
-            <div className="md:hidden">
-              <DropdownMenu>
-                <DropdownMenuTrigger render={<Button variant="outline" size="icon" className="h-8 w-8" />}>
-                  <MoreHorizontal className="size-4" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem><Download className="size-4" />Export</DropdownMenuItem>
-                  <DropdownMenuItem><Share2 className="size-4" />Share</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium" />}>
+                <Download className="h-3.5 w-3.5" />Export<ChevronDown className="h-3 w-3 opacity-60" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem><FileType2 className="h-3.5 w-3.5 mr-2" />Export as PDF</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem><FileSpreadsheet className="h-3.5 w-3.5 mr-2" />Export as Excel</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium"><Share2 className="h-3.5 w-3.5" />Share</Button>
           </div>
         </div>
         {(() => {

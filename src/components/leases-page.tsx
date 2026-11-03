@@ -4,12 +4,15 @@ import { KpiBar } from "@/components/kpi-bar"
 import { FilterBar, toggleFilterValue, clearFilterKey } from "@/components/filter-chip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Settings2, ChevronLeft, ChevronRight, GripVertical, Eye, EyeOff, Plus, X } from "lucide-react"
+import { Search, Settings2, ChevronLeft, ChevronRight, GripVertical, Eye, EyeOff, Plus, X, Download, FileType2, FileSpreadsheet, ChevronDown } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { AgentBtn } from "@/components/agent-btn"
 import { TenantAvatar } from "@/components/tenant-avatar"
 import { ADDITIONAL_LEASES } from "@/lib/lease-data-new"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Table, TableHeader, TableBody, TableRow, TableCell, TableHead,
   SortableHead, useSortState,
@@ -328,6 +331,32 @@ export function LeasesPage({ onLeaseClick, assetContext, allowedAssets }: { onLe
 
   return (
     <div className="space-y-4">
+      {/* Filter bar above KPIs */}
+      <div className="flex flex-wrap items-center gap-2">
+        <FilterBar filters={filterDefs} active={activeFilters} onToggle={onToggle} onClear={onClear} onClearAll={onClearAll} visibleCount={3} />
+        <div className="ml-auto flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium" />}>
+              <Download className="h-3.5 w-3.5" />
+              Export
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem className="gap-2 text-sm">
+                <FileType2 className="h-3.5 w-3.5" />Download as PDF
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="gap-2 text-sm">
+                <FileSpreadsheet className="h-3.5 w-3.5" />Download as Excel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button size="sm" className="h-8 gap-1.5 text-sm font-medium">
+            <Plus className="h-3.5 w-3.5" />Add lease
+          </Button>
+        </div>
+      </div>
+
       <KpiBar kpis={kpis} />
 
       <div className={cardBase}>
@@ -343,15 +372,14 @@ export function LeasesPage({ onLeaseClick, assetContext, allowedAssets }: { onLe
           </div>
         )}
 
-        <div className={cn("flex flex-wrap items-center gap-2 mb-4", selected.size > 0 && "hidden")}>
+        {/* Search + columns inside card */}
+        <div className={cn("flex items-center gap-2 mb-4", selected.size > 0 && "hidden")}>
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
             <Input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search leases…" className="pl-8 h-8 text-sm w-44" />
           </div>
-          <FilterBar filters={filterDefs} active={activeFilters} onToggle={onToggle} onClear={onClear} onClearAll={onClearAll} visibleCount={3} />
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto">
             <ColumnManager columns={ALL_COLS} visible={visibleCols} order={colOrder} onToggle={toggleCol} onReorder={setColOrder} />
-            <Button size="sm" className="h-8 gap-1.5 text-sm"><Plus className="h-3.5 w-3.5" />Add lease</Button>
           </div>
         </div>
 
