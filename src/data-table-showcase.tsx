@@ -375,10 +375,39 @@ function App() {
           </div>
         </Section>
 
+        {/* Column resizing */}
+        <Section
+          title="Column resizing"
+          description="Drag the right edge of any column header to resize it. The resize handle appears on hover."
+        >
+          <DataTable
+            columns={COLUMNS}
+            data={DATA.slice(0, 8)}
+            enableColumnResizing
+            enablePagination={false}
+            enableRowSelection={false}
+          />
+        </Section>
+
+        {/* Column pinning */}
+        <Section
+          title="Column pinning"
+          description="Use the Pin columns button to pin any column to the left or right. Pinned columns stay visible while scrolling horizontally."
+        >
+          <DataTable
+            columns={COLUMNS}
+            data={DATA}
+            enableColumnPinning
+            enablePagination
+            pageSize={8}
+            enableRowSelection={false}
+          />
+        </Section>
+
         {/* Full-featured */}
         <Section
           title="Full-featured table"
-          description="All features enabled: sorting, search, column visibility, row selection, expansion, and pagination."
+          description="All features enabled: sorting, search, column visibility, row selection, expansion, pagination, resizing, and pinning."
         >
           <DataTable
             columns={COLUMNS}
@@ -387,6 +416,8 @@ function App() {
             enableMultiRowSelection
             enableExpanding
             enablePagination
+            enableColumnResizing
+            enableColumnPinning
             pageSize={10}
             pageSizeOptions={[5, 10, 20, 50]}
             getRowCanExpand={(row) => row.original.subtenants.length > 0}

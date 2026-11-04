@@ -33,6 +33,15 @@ import { DataTableEmptyState } from "./data-table-empty-state"
 import { DataTableLoadingState } from "./data-table-loading-state"
 import type { DataTableProps } from "./types"
 
+function getPinStyles(
+  isPinned: false | "left" | "right",
+  left: number,
+  right: number
+): React.CSSProperties | undefined {
+  if (!isPinned) return undefined
+  return isPinned === "left" ? { left } : { right }
+}
+
 export function DataTable<TData>({
   columns,
   data,
@@ -174,11 +183,12 @@ export function DataTable<TData>({
 
   return (
     <div className="flex flex-col gap-3">
-      {(enableGlobalFilter || enableColumnVisibility || toolbar) && (
+      {(enableGlobalFilter || enableColumnVisibility || enableColumnPinning || toolbar) && (
         <DataTableToolbar
           table={table}
           enableGlobalFilter={enableGlobalFilter}
           enableColumnVisibility={enableColumnVisibility}
+          enableColumnPinning={enableColumnPinning}
         >
           {toolbar?.(table)}
         </DataTableToolbar>
@@ -193,19 +203,28 @@ export function DataTable<TData>({
                   key={headerGroup.id}
                   className="border-b border-border/60 hover:bg-transparent"
                 >
-                  {headerGroup.headers.map((header) => (
+                  {headerGroup.headers.map((header) => {
+                    const pinned = header.column.getIsPinned()
+                    const pinStyle = getPinStyles(
+                      pinned,
+                      header.column.getStart("left"),
+                      header.column.getAfter("right")
+                    )
+                    return (
                     <TableHead
                       key={header.id}
                       colSpan={header.colSpan}
-                      style={
-                        enableColumnResizing
-                          ? { width: header.getSize() }
-                          : undefined
-                      }
+                      style={{
+                        ...(enableColumnResizing ? { width: header.getSize() } : {}),
+                        ...pinStyle,
+                      }}
                       className={cn(
-                        "h-10 px-3 text-xs font-medium text-muted-foreground",
+                        "relative h-10 px-3 text-xs font-medium text-muted-foreground",
                         header.column.id === "__select__" && "w-9 px-2",
-                        header.column.id === "__expand__" && "w-9 px-2"
+                        header.column.id === "__expand__" && "w-9 px-2",
+                        pinned && "sticky z-10 bg-card",
+                        pinned === "left" && "shadow-[1px_0_0_0_hsl(var(--border))]",
+                        pinned === "right" && "shadow-[-1px_0_0_0_hsl(var(--border))]",
                       )}
                     >
                       {header.isPlaceholder
@@ -225,7 +244,8 @@ export function DataTable<TData>({
                         />
                       )}
                     </TableHead>
-                  ))}
+                    )
+                  })}
                 </TableRow>
               ))}
             </TableHeader>
@@ -268,18 +288,27 @@ export function DataTable<TData>({
                         row.getIsSelected() && "bg-primary/5"
                       )}
                     >
-                      {row.getVisibleCells().map((cell) => (
+                      {row.getVisibleCells().map((cell) => {
+                        const pinned = cell.column.getIsPinned()
+                        const pinStyle = getPinStyles(
+                          pinned,
+                          cell.column.getStart("left"),
+                          cell.column.getAfter("right")
+                        )
+                        return (
                         <TableCell
                           key={cell.id}
-                          style={
-                            enableColumnResizing
-                              ? { width: cell.column.getSize() }
-                              : undefined
-                          }
+                          style={{
+                            ...(enableColumnResizing ? { width: cell.column.getSize() } : {}),
+                            ...pinStyle,
+                          }}
                           className={cn(
                             "px-3 py-2.5 text-sm",
                             cell.column.id === "__select__" && "px-2",
-                            cell.column.id === "__expand__" && "px-2"
+                            cell.column.id === "__expand__" && "px-2",
+                            pinned && "sticky z-10 bg-card",
+                            pinned === "left" && "shadow-[1px_0_0_0_hsl(var(--border))]",
+                            pinned === "right" && "shadow-[-1px_0_0_0_hsl(var(--border))]",
                           )}
                         >
                           {flexRender(
@@ -287,7 +316,8 @@ export function DataTable<TData>({
                             cell.getContext()
                           )}
                         </TableCell>
-                      ))}
+                        )
+                      })}
                     </TableRow>
                     {row.getIsExpanded() && renderSubComponent && (
                       <TableRow className="border-t border-border/40 bg-muted/30 hover:bg-muted/30">
