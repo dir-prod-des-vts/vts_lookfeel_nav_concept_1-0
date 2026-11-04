@@ -199,7 +199,7 @@ export function DataTable<TData>({
     getExpandedRowModel: getExpandedRowModel(),
     ...(enableGrouping ? { getGroupedRowModel: getGroupedRowModel() } : {}),
     ...(enablePagination ? { getPaginationRowModel: getPaginationRowModel() } : {}),
-    ...(enableFaceting
+    ...(enableFaceting && !enableGrouping
       ? {
           getFacetedRowModel: getFacetedRowModel(),
           getFacetedUniqueValues: getFacetedUniqueValues(),
@@ -440,9 +440,15 @@ export function DataTable<TData>({
                     <TableRow className="border-b border-border/40 hover:bg-transparent">
                       {headerGroup.headers.map((header) => {
                         const canFilter = header.column.getCanFilter()
-                        const facets = enableFaceting
-                          ? header.column.getFacetedUniqueValues()
-                          : undefined
+                        const facets = (() => {
+                          if (!enableFaceting) return undefined
+                          try {
+                            const f = header.column.getFacetedUniqueValues?.()
+                            return f instanceof Map ? f : undefined
+                          } catch {
+                            return undefined
+                          }
+                        })()
                         return (
                           <TableHead
                             key={`filter-${header.id}`}
