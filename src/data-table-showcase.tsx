@@ -301,6 +301,7 @@ function App() {
 
   React.useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark)
+    document.documentElement.classList.add("bg-background")
   }, [isDark])
 
   return (
