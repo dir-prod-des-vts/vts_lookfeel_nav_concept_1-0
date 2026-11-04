@@ -189,7 +189,15 @@ export function DataTable<TData>({
     },
     onGlobalFilterChange: setGlobalFilter,
     onExpandedChange: setExpanded,
-    onColumnOrderChange: setColumnOrder,
+    onColumnOrderChange: (updater) => {
+      setColumnOrder((old) => {
+        const next = typeof updater === "function" ? updater(old) : updater
+        const FIXED = ["__select__", "__expand__"]
+        const fixed = next.filter((id) => FIXED.includes(id))
+        const rest = next.filter((id) => !FIXED.includes(id))
+        return [...fixed, ...rest]
+      })
+    },
     onGroupingChange: setGrouping,
     onRowPinningChange: setRowPinning,
     globalFilterFn: "includesString",
