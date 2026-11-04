@@ -293,15 +293,14 @@ export function AppraisalsPage({ assetFilter }: { assetFilter?: string[] }) {
     setSelected(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })
   }
 
-  const base               = assetFilter?.length ? APPRAISALS.filter(a => assetFilter.includes(a.asset)) : APPRAISALS
-  const activeAppraisals   = base.filter(a => !a.archived)
-  const archivedAppraisals = base.filter(a => a.archived)
+  const activeAppraisals   = filtered.filter(a => !a.archived)
+  const archivedAppraisals = filtered.filter(a => a.archived)
   const avgNer = activeAppraisals.length ? activeAppraisals.reduce((s, a) => s + a.nerSizeYr, 0) / activeAppraisals.length : 0
 
   const kpis = [
     { label: "Active appraisals",  value: String(activeAppraisals.length) },
     { label: "Archived",           value: String(archivedAppraisals.length) },
-    { label: "Total spaces",       value: String(base.length) },
+    { label: "Total spaces",       value: String(filtered.length) },
     { label: "Avg NER/sf/yr",      value: activeAppraisals.length ? fmtNer(avgNer) : "$–" },
   ]
 

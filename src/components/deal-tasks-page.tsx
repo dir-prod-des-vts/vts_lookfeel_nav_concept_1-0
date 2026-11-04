@@ -374,7 +374,7 @@ export function DealTasksPage({ onTaskClick, assetContext }: { onTaskClick?: (de
         </div>
       </div>
 
-      <DealTasksKpi rows={ALL_ROWS} />
+      <DealTasksKpi rows={filtered} />
 
       <div className={cardBase}>
         <div className="flex flex-wrap items-center gap-2 mb-4">

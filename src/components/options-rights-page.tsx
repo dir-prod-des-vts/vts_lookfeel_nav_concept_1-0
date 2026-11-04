@@ -354,7 +354,7 @@ export function OptionsRightsPage({ assets, assetId, onRowClick }: { assets?: As
         </div>
       </div>
 
-      <OptionsKpi rows={ROWS} />
+      <OptionsKpi rows={filtered} />
 
       <div className={cardBase}>
         {/* Search + columns inside card */}

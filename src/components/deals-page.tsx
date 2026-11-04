@@ -964,17 +964,17 @@ export function DealsPage({ onDealClick, assetContext, allowedAssets }: { onDeal
         </div>
       </div>
 
-      <KpiSummary deals={scopedDeals} />
+      <KpiSummary deals={filtered} />
 
       {/* Insight cards */}
       {(() => {
         const active = cardOrder.filter(id => visibleCards.has(id))
         if (!active.length) return null
         const CARD_MAP: Record<string, React.ReactNode> = {
-          attention: <ActionQueue key="attention" deals={scopedDeals} onDealClick={(d, tab) => onDealClick?.(d, tab)} />,
-          ner:       <NerBoard   key="ner"       deals={scopedDeals} onDealClick={d => onDealClick?.(d, undefined)} />,
-          agents:    <AiInsightCard key="agents" deals={scopedDeals} />,
-          pipeline:  <PipelineViz  key="pipeline" deals={scopedDeals} />,
+          attention: <ActionQueue key="attention" deals={filtered} onDealClick={(d, tab) => onDealClick?.(d, tab)} />,
+          ner:       <NerBoard   key="ner"       deals={filtered} onDealClick={d => onDealClick?.(d, undefined)} />,
+          agents:    <AiInsightCard key="agents" deals={filtered} />,
+          pipeline:  <PipelineViz  key="pipeline" deals={filtered} />,
         }
         const cols = active.length
         return (

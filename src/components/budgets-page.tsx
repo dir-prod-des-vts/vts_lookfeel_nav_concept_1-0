@@ -300,15 +300,14 @@ export function BudgetsPage({ assetFilter }: { assetFilter?: string[] }) {
     setSelected(prev => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next })
   }
 
-  const base            = assetFilter?.length ? BUDGETS.filter(b => assetFilter.includes(b.asset)) : BUDGETS
-  const activeBudgets   = base.filter(b => !b.archived)
-  const archivedBudgets = base.filter(b => b.archived)
+  const activeBudgets   = filtered.filter(b => !b.archived)
+  const archivedBudgets = filtered.filter(b => b.archived)
 
   const kpis = [
     { label: "Active budgets",   value: String(activeBudgets.length) },
     { label: "Archived budgets", value: String(archivedBudgets.length) },
-    { label: "Total spaces",     value: String(base.length) },
-    { label: "Avg NER/sf/yr",    value: base.length ? fmtNer(base.reduce((a, b) => a + b.nerSizeYr, 0) / base.length) : "$–" },
+    { label: "Total spaces",     value: String(filtered.length) },
+    { label: "Avg NER/sf/yr",    value: filtered.length ? fmtNer(filtered.reduce((a, b) => a + b.nerSizeYr, 0) / filtered.length) : "$–" },
   ]
 
   const VIEW_LABELS: Record<ViewFilter, string> = {

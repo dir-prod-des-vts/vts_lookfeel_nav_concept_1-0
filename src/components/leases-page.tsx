@@ -296,12 +296,11 @@ export function LeasesPage({ onLeaseClick, assetContext, allowedAssets }: { onLe
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
-  const scopedLeases = assetContext ? LEASES.filter(l => l.asset === assetContext) : LEASES
-  const totalLeases  = scopedLeases.length
-  const leasedSf     = scopedLeases.filter(l => l.status !== "Expired").reduce((a, l) => a + l.sf, 0)
-  const activeLeases = scopedLeases.filter(l => l.status === "Active" || l.status === "Expiring soon")
+  const totalLeases  = filtered.length
+  const leasedSf     = filtered.filter(l => l.status !== "Expired").reduce((a, l) => a + l.sf, 0)
+  const activeLeases = filtered.filter(l => l.status === "Active" || l.status === "Expiring soon")
   const avgBaseRent  = activeLeases.reduce((a, l) => a + l.baseRent * l.sf, 0) / (activeLeases.reduce((a, l) => a + l.sf, 0) || 1)
-  const expiring12mo = scopedLeases.filter(l => l.remaining > 0 && l.remaining <= 12).length
+  const expiring12mo = filtered.filter(l => l.remaining > 0 && l.remaining <= 12).length
 
   const kpis = [
     { label: "Total leases",    value: String(totalLeases) },

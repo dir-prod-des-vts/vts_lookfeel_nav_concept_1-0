@@ -373,7 +373,7 @@ export function SpacesPage({ assets, onSpaceClick }: { assets?: AssetRef[], onSp
         </div>
       </div>
 
-      <SpacesKpi spaces={SPACES} />
+      <SpacesKpi spaces={filtered} />
 
       <div className={cardBase}>
         {/* Search + columns inside card */}

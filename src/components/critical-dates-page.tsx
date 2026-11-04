@@ -633,7 +633,7 @@ export function CriticalDatesPage({ assets, onRowClick }: { assets?: AssetRef[];
         </div>
       </div>
 
-      <CriticalDatesKpi rows={ROWS.filter(r => !assetNames?.length || assetNames.includes(r.asset)).map(r => ({ ...r, status: rowStatus[r.id] ?? r.status }))} />
+      <CriticalDatesKpi rows={filtered} />
 
       <div className={cardBase}>
         {/* Search + columns inside card */}
