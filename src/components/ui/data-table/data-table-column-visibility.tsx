@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -100,9 +101,10 @@ export function DataTableColumnVisibility<TData>({
 
       <DropdownMenuContent align="end" className="w-64 p-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 pt-3 pb-2">
-          <span className="text-sm font-medium text-foreground">Columns</span>
-          <div className="flex items-center gap-0.5">
+        <DropdownMenuGroup>
+          <div className="flex items-center justify-between px-3 pt-3 pb-2">
+            <DropdownMenuLabel className="p-0 text-sm font-medium text-foreground">Columns</DropdownMenuLabel>
+            <div className="flex items-center gap-0.5">
             <Button
               variant="ghost"
               size="sm"
@@ -129,7 +131,8 @@ export function DataTableColumnVisibility<TData>({
               Hide all
             </Button>
           </div>
-        </div>
+          </div>
+        </DropdownMenuGroup>
 
         <DropdownMenuSeparator className="mx-0 my-0" />
 
