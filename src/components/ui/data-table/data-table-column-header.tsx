@@ -31,8 +31,13 @@ interface DataTableColumnHeaderProps<TData, TValue> {
   enableColumnOrdering?: boolean
 }
 
+const FIXED_LEFT_IDS = ["__select__", "__expand__"]
+
 function moveColumn<TData>(table: Table<TData>, columnId: string, direction: "left" | "right" | "first" | "last") {
-  const cols = table.getAllLeafColumns().filter((c) => !c.getIsPinned())
+  const pinned = table.getState().columnPinning
+  const cols = table.getAllLeafColumns().filter(
+    (c) => !c.getIsPinned() && !FIXED_LEFT_IDS.includes(c.id)
+  )
   const ids = cols.map((c) => c.id)
   const idx = ids.indexOf(columnId)
   if (idx === -1) return
@@ -43,14 +48,15 @@ function moveColumn<TData>(table: Table<TData>, columnId: string, direction: "le
   else if (direction === "left" && idx > 0) newIds.splice(idx - 1, 0, columnId)
   else if (direction === "right" && idx < ids.length - 1) newIds.splice(idx + 1, 0, columnId)
   else return
-  // Merge with pinned columns order (they stay at their edges)
-  const pinned = table.getState().columnPinning
-  const allIds = [
+  const fixedIds = table.getAllLeafColumns()
+    .filter((c) => FIXED_LEFT_IDS.includes(c.id))
+    .map((c) => c.id)
+  table.setColumnOrder([
+    ...fixedIds,
     ...(pinned.left ?? []),
     ...newIds,
     ...(pinned.right ?? []),
-  ]
-  table.setColumnOrder(allIds)
+  ])
 }
 
 export function DataTableColumnHeader<TData, TValue>({
@@ -67,7 +73,7 @@ export function DataTableColumnHeader<TData, TValue>({
 
   const pinned = column.getIsPinned()
 
-  const unpinnedCols = table?.getAllLeafColumns().filter((c) => !c.getIsPinned()) ?? []
+  const unpinnedCols = table?.getAllLeafColumns().filter((c) => !c.getIsPinned() && !FIXED_LEFT_IDS.includes(c.id)) ?? []
   const unpinnedIds = unpinnedCols.map((c) => c.id)
   const colIdx = unpinnedIds.indexOf(column.id)
   const isFirst = colIdx === 0

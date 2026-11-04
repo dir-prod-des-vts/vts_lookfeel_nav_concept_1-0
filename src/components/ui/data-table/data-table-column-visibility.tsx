@@ -50,21 +50,27 @@ export function DataTableColumnVisibility<TData>({
     const sourceId = e.dataTransfer.getData("text/plain")
     if (!sourceId || sourceId === targetId) return
 
+    const FIXED = ["__select__", "__expand__"]
     const pinned = table.getState().columnPinning
-    const unpinnedIds = table
+    const reorderableIds = table
       .getAllLeafColumns()
-      .filter((c) => !c.getIsPinned())
+      .filter((c) => !c.getIsPinned() && !FIXED.includes(c.id))
       .map((c) => c.id)
 
-    const fromIdx = unpinnedIds.indexOf(sourceId)
-    const toIdx = unpinnedIds.indexOf(targetId)
+    const fromIdx = reorderableIds.indexOf(sourceId)
+    const toIdx = reorderableIds.indexOf(targetId)
     if (fromIdx === -1 || toIdx === -1) return
 
-    const newIds = [...unpinnedIds]
+    const newIds = [...reorderableIds]
     newIds.splice(fromIdx, 1)
     newIds.splice(toIdx, 0, sourceId)
 
+    const fixedIds = table.getAllLeafColumns()
+      .filter((c) => FIXED.includes(c.id))
+      .map((c) => c.id)
+
     table.setColumnOrder([
+      ...fixedIds,
       ...(pinned.left ?? []),
       ...newIds,
       ...(pinned.right ?? []),
