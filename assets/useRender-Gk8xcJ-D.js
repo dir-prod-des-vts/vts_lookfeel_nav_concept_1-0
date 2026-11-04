@@ -1,0 +1,1 @@
+import{h as e}from"./button-4i3mPYf1.js";function t(t){return e(t.defaultTagName??`div`,t,t)}export{t};
