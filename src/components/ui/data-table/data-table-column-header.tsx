@@ -1,5 +1,17 @@
-import type { Column } from "@tanstack/react-table"
-import { ArrowDown, ArrowUp, ArrowUpDown, EyeOff } from "lucide-react"
+import type { Column, Table } from "@tanstack/react-table"
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  EyeOff,
+  AlignStartVertical,
+  AlignEndVertical,
+  Pin,
+  ChevronsLeft,
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
@@ -12,18 +24,54 @@ import {
 
 interface DataTableColumnHeaderProps<TData, TValue> {
   column: Column<TData, TValue>
+  table?: Table<TData>
   title: string
   className?: string
+  enableColumnPinning?: boolean
+  enableColumnOrdering?: boolean
+}
+
+function moveColumn<TData>(table: Table<TData>, columnId: string, direction: "left" | "right" | "first" | "last") {
+  const cols = table.getAllLeafColumns().filter((c) => !c.getIsPinned())
+  const ids = cols.map((c) => c.id)
+  const idx = ids.indexOf(columnId)
+  if (idx === -1) return
+  const newIds = [...ids]
+  newIds.splice(idx, 1)
+  if (direction === "first") newIds.unshift(columnId)
+  else if (direction === "last") newIds.push(columnId)
+  else if (direction === "left" && idx > 0) newIds.splice(idx - 1, 0, columnId)
+  else if (direction === "right" && idx < ids.length - 1) newIds.splice(idx + 1, 0, columnId)
+  else return
+  // Merge with pinned columns order (they stay at their edges)
+  const pinned = table.getState().columnPinning
+  const allIds = [
+    ...(pinned.left ?? []),
+    ...newIds,
+    ...(pinned.right ?? []),
+  ]
+  table.setColumnOrder(allIds)
 }
 
 export function DataTableColumnHeader<TData, TValue>({
   column,
+  table,
   title,
   className,
+  enableColumnPinning = false,
+  enableColumnOrdering = false,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort()) {
     return <div className={cn("text-sm font-medium", className)}>{title}</div>
   }
+
+  const pinned = column.getIsPinned()
+
+  const unpinnedCols = table?.getAllLeafColumns().filter((c) => !c.getIsPinned()) ?? []
+  const unpinnedIds = unpinnedCols.map((c) => c.id)
+  const colIdx = unpinnedIds.indexOf(column.id)
+  const isFirst = colIdx === 0
+  const isLast = colIdx === unpinnedIds.length - 1
 
   return (
     <div className={cn("flex items-center gap-1", className)}>
@@ -55,6 +103,61 @@ export function DataTableColumnHeader<TData, TValue>({
             <ArrowDown className="size-3.5 text-muted-foreground" />
             Desc
           </DropdownMenuItem>
+
+          {enableColumnPinning && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => column.pin(pinned === "left" ? false : "left")}>
+                <AlignStartVertical className="size-3.5 text-muted-foreground" />
+                {pinned === "left" ? "Unpin" : "Pin left"}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => column.pin(pinned === "right" ? false : "right")}>
+                <AlignEndVertical className="size-3.5 text-muted-foreground" />
+                {pinned === "right" ? "Unpin" : "Pin right"}
+              </DropdownMenuItem>
+              {pinned && (
+                <DropdownMenuItem onClick={() => column.pin(false)}>
+                  <Pin className="size-3.5 text-muted-foreground" />
+                  Unpin
+                </DropdownMenuItem>
+              )}
+            </>
+          )}
+
+          {enableColumnOrdering && table && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                disabled={isFirst}
+                onClick={() => moveColumn(table, column.id, "first")}
+              >
+                <ChevronsLeft className="size-3.5 text-muted-foreground" />
+                Move to start
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={isFirst}
+                onClick={() => moveColumn(table, column.id, "left")}
+              >
+                <ChevronLeft className="size-3.5 text-muted-foreground" />
+                Move left
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={isLast}
+                onClick={() => moveColumn(table, column.id, "right")}
+              >
+                <ChevronRight className="size-3.5 text-muted-foreground" />
+                Move right
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={isLast}
+                onClick={() => moveColumn(table, column.id, "last")}
+              >
+                <ChevronsRight className="size-3.5 text-muted-foreground" />
+                Move to end
+              </DropdownMenuItem>
+            </>
+          )}
+
           {column.getCanHide() && (
             <>
               <DropdownMenuSeparator />

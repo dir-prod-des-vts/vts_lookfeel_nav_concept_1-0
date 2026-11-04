@@ -77,27 +77,27 @@ const ROW_ACTIONS: RowAction<LeaseRow>[] = [
 const COLUMNS: ColumnDef<LeaseRow>[] = [
   {
     accessorKey: "id",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="ID" />,
+    header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="ID" enableColumnPinning enableColumnOrdering />,
     cell: ({ row }) => <span className="font-mono text-xs text-muted-foreground">{row.getValue("id")}</span>,
     size: 80,
   },
   {
     accessorKey: "tenant",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Tenant" />,
+    header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="Tenant" enableColumnPinning enableColumnOrdering />,
     cell: ({ row }) => <span className="font-medium">{row.getValue("tenant")}</span>,
   },
   {
     accessorKey: "building",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Building" />,
+    header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="Building" enableColumnPinning enableColumnOrdering />,
   },
   {
     accessorKey: "market",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Market" />,
+    header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="Market" enableColumnPinning enableColumnOrdering />,
     filterFn: "includesString",
   },
   {
     accessorKey: "sf",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="SF" className="justify-end" />,
+    header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="SF" className="justify-end" enableColumnPinning enableColumnOrdering />,
     cell: ({ row }) => (
       <span className="tabular-nums text-right block">
         {(row.getValue("sf") as number).toLocaleString()}
@@ -112,7 +112,7 @@ const COLUMNS: ColumnDef<LeaseRow>[] = [
   },
   {
     accessorKey: "ner",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="NER/sf/yr" className="justify-end" />,
+    header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="NER/sf/yr" className="justify-end" enableColumnPinning enableColumnOrdering />,
     cell: ({ row }) => (
       <span className="tabular-nums text-right block">${row.getValue("ner")}</span>
     ),
@@ -125,21 +125,21 @@ const COLUMNS: ColumnDef<LeaseRow>[] = [
   },
   {
     accessorKey: "start",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Start" />,
+    header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="Start" enableColumnPinning enableColumnOrdering />,
   },
   {
     accessorKey: "expiry",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Expiry" />,
+    header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="Expiry" enableColumnPinning enableColumnOrdering />,
   },
   {
     accessorKey: "status",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+    header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="Status" enableColumnPinning enableColumnOrdering />,
     cell: ({ row }) => <StatusBadge status={row.getValue("status")} />,
     filterFn: "includesString",
   },
   {
     accessorKey: "type",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Type" />,
+    header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="Type" enableColumnPinning enableColumnOrdering />,
     filterFn: "includesString",
   },
   {
