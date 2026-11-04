@@ -230,7 +230,7 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
                     <div className="px-3">
                       <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">WALT</p>
                       <p className="text-sm font-semibold text-foreground">{kpi.walt}</p>
-                      <p className="text-xs font-medium text-muted-foreground">Wtd. avg lease term</p>
+                      <p className="text-xs font-medium text-muted-foreground">Wtd. avg lease</p>
                     </div>
                     <div className="pl-3">
                       <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Need attention</p>

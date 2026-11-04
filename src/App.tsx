@@ -712,7 +712,7 @@ const KPIS = [
     subtitle: `$${(_lateStageNer / 1000).toFixed(0)}K/mo projected NER`,
     trend: "up" as const,
   },
-  { label: "WALT", value: "4.2 yrs", subtitle: "Wtd. avg lease term" },
+  { label: "WALT", value: "4.2 yrs", subtitle: "Wtd. avg lease" },
 ]
 
 
@@ -1113,7 +1113,7 @@ export default function App() {
           <KpiBar kpis={[
             { label: "Avg portfolio NER",  value: "$62/sf",  subtitle: "+4.2% vs budget",  trend: "up" as const },
             { label: "Occupancy",          value: "91.4%",  subtitle: "+0.8% vs budget",  trend: "up" as const },
-            { label: "WALT", value: "3.8 yrs", subtitle: "Wtd. avg lease term" },
+            { label: "WALT", value: "3.8 yrs", subtitle: "Wtd. avg lease" },
             {
               label: "Need attention",
               value: `${portfolioNeedAttention} deal${portfolioNeedAttention !== 1 ? "s" : ""}`,
