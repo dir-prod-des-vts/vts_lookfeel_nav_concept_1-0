@@ -1,4 +1,5 @@
 import type { Column, Table } from "@tanstack/react-table"
+import { FIXED_LEFT_COLUMN_IDS } from "./types"
 import {
   ArrowDown,
   ArrowUp,
@@ -31,12 +32,10 @@ interface DataTableColumnHeaderProps<TData, TValue> {
   enableColumnOrdering?: boolean
 }
 
-const FIXED_LEFT_IDS = ["__select__", "__expand__"]
-
 function moveColumn<TData>(table: Table<TData>, columnId: string, direction: "left" | "right" | "first" | "last") {
   const pinned = table.getState().columnPinning
   const cols = table.getAllLeafColumns().filter(
-    (c) => !c.getIsPinned() && !FIXED_LEFT_IDS.includes(c.id)
+    (c) => !c.getIsPinned() && !(FIXED_LEFT_COLUMN_IDS as readonly string[]).includes(c.id)
   )
   const ids = cols.map((c) => c.id)
   const idx = ids.indexOf(columnId)
@@ -49,7 +48,7 @@ function moveColumn<TData>(table: Table<TData>, columnId: string, direction: "le
   else if (direction === "right" && idx < ids.length - 1) newIds.splice(idx + 1, 0, columnId)
   else return
   const fixedIds = table.getAllLeafColumns()
-    .filter((c) => FIXED_LEFT_IDS.includes(c.id))
+    .filter((c) => (FIXED_LEFT_COLUMN_IDS as readonly string[]).includes(c.id))
     .map((c) => c.id)
   table.setColumnOrder([
     ...fixedIds,
@@ -73,7 +72,9 @@ export function DataTableColumnHeader<TData, TValue>({
 
   const pinned = column.getIsPinned()
 
-  const unpinnedCols = table?.getAllLeafColumns().filter((c) => !c.getIsPinned() && !FIXED_LEFT_IDS.includes(c.id)) ?? []
+  const unpinnedCols = table?.getAllLeafColumns().filter(
+    (c) => !c.getIsPinned() && !(FIXED_LEFT_COLUMN_IDS as readonly string[]).includes(c.id)
+  ) ?? []
   const unpinnedIds = unpinnedCols.map((c) => c.id)
   const colIdx = unpinnedIds.indexOf(column.id)
   const isFirst = colIdx === 0
@@ -113,24 +114,27 @@ export function DataTableColumnHeader<TData, TValue>({
           {enableColumnPinning && (
             <>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => column.pin(pinned === "left" ? false : "left")}>
-                <AlignStartVertical className="size-3.5 text-muted-foreground" />
-                {pinned === "left" ? "Unpin" : "Pin left"}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => column.pin(pinned === "right" ? false : "right")}>
-                <AlignEndVertical className="size-3.5 text-muted-foreground" />
-                {pinned === "right" ? "Unpin" : "Pin right"}
-              </DropdownMenuItem>
-              {pinned && (
+              {pinned ? (
                 <DropdownMenuItem onClick={() => column.pin(false)}>
                   <Pin className="size-3.5 text-muted-foreground" />
                   Unpin
                 </DropdownMenuItem>
+              ) : (
+                <>
+                  <DropdownMenuItem onClick={() => column.pin("left")}>
+                    <AlignStartVertical className="size-3.5 text-muted-foreground" />
+                    Pin left
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => column.pin("right")}>
+                    <AlignEndVertical className="size-3.5 text-muted-foreground" />
+                    Pin right
+                  </DropdownMenuItem>
+                </>
               )}
             </>
           )}
 
-          {enableColumnOrdering && table && (
+          {enableColumnOrdering && table && !pinned && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuItem

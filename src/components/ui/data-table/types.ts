@@ -1,6 +1,9 @@
 import type { ColumnDef, Row, SortingState, Table } from "@tanstack/react-table"
 
-export type { ColumnDef, Row, Table }
+export type { ColumnDef, Row, SortingState, Table }
+
+/** Column IDs that must always remain at the leftmost positions, regardless of reordering. */
+export const FIXED_LEFT_COLUMN_IDS = ["__select__", "__expand__"] as const
 
 export interface DataTableProps<TData> {
   columns: ColumnDef<TData, unknown>[]
