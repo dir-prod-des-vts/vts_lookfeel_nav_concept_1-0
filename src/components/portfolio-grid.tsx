@@ -16,7 +16,7 @@ import { ASSET_KPIS, ASSET_DETAILS } from "@/App"
 import { getDealHealth } from "@/components/deal-profile"
 import type { Deal } from "@/components/deals-page"
 
-type SortKey = "name" | "occupancy" | "avgNer" | "nerBudgetDelta" | "expiring12mo" | "needAttention" | "atRisk" | "caution" | "activeDeals"
+type SortKey = "name" | "occupancy" | "avgNer" | "nerBudgetDelta" | "walt" | "needAttention" | "atRisk" | "caution" | "activeDeals"
 
 const TABLE_FILTERS: FilterDef[] = [
   {
@@ -71,7 +71,7 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
   { key: "occupancy",      label: "Occupancy" },
   { key: "avgNer",         label: "Avg NER" },
   { key: "nerBudgetDelta", label: "NER vs budget" },
-  { key: "expiring12mo",   label: "Expiring < 12 mo" },
+  { key: "walt",            label: "WALT" },
   { key: "needAttention",  label: "Need attention" },
   { key: "activeDeals",    label: "Active deals" },
 ]
@@ -109,7 +109,7 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
       case "occupancy":      av = ak.occupancy;               bv = bk.occupancy; break
       case "avgNer":         av = parseNer(ak.avgNer);        bv = parseNer(bk.avgNer); break
       case "nerBudgetDelta": av = parseDelta(ak.nerBudgetDelta); bv = parseDelta(bk.nerBudgetDelta); break
-      case "expiring12mo":   av = ak.expiring12mo;            bv = bk.expiring12mo; break
+      case "walt":           av = parseFloat(ak.walt);        bv = parseFloat(bk.walt); break
       case "needAttention":  av = a.needAttention;            bv = b.needAttention; break
       case "atRisk":         av = a.atRisk.length;            bv = b.atRisk.length; break
       case "caution":        av = a.caution.length;           bv = b.caution.length; break
@@ -135,8 +135,9 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
     }
     const exp = activeFilters.expiring ?? []
     if (exp.length > 0) {
-      const hasExp = kpi.expiring12mo > 0
-      if (!exp.some(e => (e === "yes" && hasExp) || (e === "no" && !hasExp))) return false
+      const waltVal = parseFloat(kpi.walt) || 0
+      const hasLowWalt = waltVal < 3
+      if (!exp.some(e => (e === "yes" && hasLowWalt) || (e === "no" && !hasLowWalt))) return false
     }
     const ner = activeFilters.nerVsBudget ?? []
     if (ner.length > 0) {
@@ -227,11 +228,9 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
                       <p className={cn("text-xs font-medium", kpi.nerBudgetUp ? "text-success" : "text-destructive")}>{kpi.nerBudgetDelta} vs budget</p>
                     </div>
                     <div className="px-3">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Expiring</p>
-                      <p className="text-sm font-semibold text-foreground">{kpi.expiring12mo} lease{kpi.expiring12mo !== 1 ? "s" : ""}</p>
-                      <p className={cn("text-xs font-medium", kpi.expiring12mo > 3 ? "text-destructive" : kpi.expiring12mo > 0 ? "text-warning" : "text-muted-foreground")}>
-                        {kpi.expiring12mo === 0 ? "None" : kpi.expiring12mo > 3 ? "Action needed" : "12-month"}
-                      </p>
+                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">WALT</p>
+                      <p className="text-sm font-semibold text-foreground">{kpi.walt}</p>
+                      <p className="text-xs font-medium text-muted-foreground">Weighted avg lease</p>
                     </div>
                     <div className="pl-3">
                       <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Need attention</p>
@@ -265,7 +264,7 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
                 <SortableHead col="occupancy"      sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="pl-4">Occupancy</SortableHead>
                 <SortableHead col="avgNer"         sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="pl-4" right>Avg NER</SortableHead>
                 <SortableHead col="nerBudgetDelta" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="pl-4" right>vs budget</SortableHead>
-                <SortableHead col="expiring12mo"   sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="pl-4" right>Expiring &lt; 12 mo</SortableHead>
+                <SortableHead col="walt"            sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="pl-4" right>WALT</SortableHead>
                 <SortableHead col="atRisk"         sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="pl-4" right>At risk</SortableHead>
                 <SortableHead col="caution"        sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="pl-4" right>Critical</SortableHead>
                 <SortableHead col="activeDeals"    sortKey={sortKey} sortDir={sortDir} onSort={handleSort} className="pl-4" right>Active deals</SortableHead>
@@ -304,8 +303,8 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
                     <TableCell className={cn("py-3 pl-4 text-right tabular-nums font-medium", kpi.nerBudgetUp ? "text-success" : "text-destructive")}>
                       {kpi.nerBudgetDelta}
                     </TableCell>
-                    <TableCell className={cn("py-3 pl-4 text-right tabular-nums", kpi.expiring12mo > 3 ? "text-destructive font-medium" : kpi.expiring12mo > 0 ? "text-warning" : "text-muted-foreground")}>
-                      {kpi.expiring12mo === 0 ? "—" : kpi.expiring12mo}
+                    <TableCell className={cn("py-3 pl-4 text-right tabular-nums", (parseFloat(kpi.walt) || 0) < 2 ? "text-destructive font-medium" : (parseFloat(kpi.walt) || 0) < 3 ? "text-warning" : "text-foreground")}>
+                      {kpi.walt}
                     </TableCell>
                     <TableCell className="py-3 pl-4 text-right">
                       {atRisk.length > 0
