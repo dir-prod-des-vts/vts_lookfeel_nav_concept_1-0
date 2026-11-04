@@ -1,7 +1,9 @@
 import * as React from "react"
 import type { Table } from "@tanstack/react-table"
-import { AlignStartVertical, AlignEndVertical, Columns3, Check, GripVertical } from "lucide-react"
+import { FIXED_LEFT_COLUMN_IDS } from "./types"
+import { AlignStartVertical, AlignEndVertical, Columns3, GripVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,11 +52,10 @@ export function DataTableColumnVisibility<TData>({
     const sourceId = e.dataTransfer.getData("text/plain")
     if (!sourceId || sourceId === targetId) return
 
-    const FIXED = ["__select__", "__expand__"]
     const pinned = table.getState().columnPinning
     const reorderableIds = table
       .getAllLeafColumns()
-      .filter((c) => !c.getIsPinned() && !FIXED.includes(c.id))
+      .filter((c) => !c.getIsPinned() && !(FIXED_LEFT_COLUMN_IDS as readonly string[]).includes(c.id))
       .map((c) => c.id)
 
     const fromIdx = reorderableIds.indexOf(sourceId)
@@ -63,10 +64,12 @@ export function DataTableColumnVisibility<TData>({
 
     const newIds = [...reorderableIds]
     newIds.splice(fromIdx, 1)
-    newIds.splice(toIdx, 0, sourceId)
+    // After removing fromIdx, indices after it shift left by 1
+    const insertAt = toIdx > fromIdx ? toIdx - 1 : toIdx
+    newIds.splice(insertAt, 0, sourceId)
 
     const fixedIds = table.getAllLeafColumns()
-      .filter((c) => FIXED.includes(c.id))
+      .filter((c) => (FIXED_LEFT_COLUMN_IDS as readonly string[]).includes(c.id))
       .map((c) => c.id)
 
     table.setColumnOrder([
@@ -100,31 +103,31 @@ export function DataTableColumnVisibility<TData>({
         <div className="flex items-center justify-between px-3 pt-3 pb-2">
           <span className="text-sm font-medium text-foreground">Columns</span>
           <div className="flex items-center gap-0.5">
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               className={cn(
-                "px-1.5 py-0.5 rounded text-xs transition-colors",
-                allVisible
-                  ? "text-muted-foreground/40 cursor-not-allowed"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                "h-auto px-1.5 py-0.5 text-xs",
+                allVisible ? "text-muted-foreground/40" : "text-muted-foreground"
               )}
               onClick={() => table.toggleAllColumnsVisible(true)}
               disabled={allVisible}
             >
               Show all
-            </button>
+            </Button>
             <span className="text-muted-foreground/30 text-xs select-none">·</span>
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               className={cn(
-                "px-1.5 py-0.5 rounded text-xs transition-colors",
-                allHidden
-                  ? "text-muted-foreground/40 cursor-not-allowed"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                "h-auto px-1.5 py-0.5 text-xs",
+                allHidden ? "text-muted-foreground/40" : "text-muted-foreground"
               )}
               onClick={() => table.toggleAllColumnsVisible(false)}
               disabled={allHidden}
             >
               Hide all
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -146,6 +149,7 @@ export function DataTableColumnVisibility<TData>({
                   draggable={enableColumnOrdering}
                   onDragStart={(e) => handleDragStart(e, col.id)}
                   onDragOver={(e) => handleDragOver(e, col.id)}
+                  onDragLeave={() => { dragOverId.current = null; setDragOver(null) }}
                   onDrop={(e) => handleDrop(e, col.id)}
                   onDragEnd={handleDragEnd}
                   className={cn(
@@ -161,17 +165,11 @@ export function DataTableColumnVisibility<TData>({
                   )}
 
                   {/* Visibility checkbox */}
-                  <button
-                    onClick={() => col.toggleVisibility(!isVisible)}
-                    className={cn(
-                      "size-4 shrink-0 rounded border flex items-center justify-center transition-colors",
-                      isVisible
-                        ? "bg-primary border-primary text-primary-foreground"
-                        : "border-border bg-background"
-                    )}
-                  >
-                    {isVisible && <Check className="size-2.5 stroke-[3]" />}
-                  </button>
+                  <Checkbox
+                    checked={isVisible}
+                    onCheckedChange={(checked) => col.toggleVisibility(!!checked)}
+                    className="size-4 shrink-0"
+                  />
 
                   {/* Label */}
                   <span
@@ -187,30 +185,34 @@ export function DataTableColumnVisibility<TData>({
                   {/* Pin controls — always visible */}
                   {enableColumnPinning && (
                     <div className="flex items-center gap-0.5 ml-auto">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "size-5",
+                          pinned === "left"
+                            ? "text-primary bg-primary/10 hover:bg-primary/20"
+                            : "text-muted-foreground/40 hover:text-foreground"
+                        )}
                         onClick={(e) => { e.stopPropagation(); col.pin(pinned === "left" ? false : "left") }}
                         title={pinned === "left" ? "Unpin" : "Pin left"}
-                        className={cn(
-                          "size-5 flex items-center justify-center rounded transition-colors",
-                          pinned === "left"
-                            ? "text-primary bg-primary/10"
-                            : "text-muted-foreground/40 hover:text-foreground hover:bg-muted"
-                        )}
                       >
                         <AlignStartVertical className="size-3" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className={cn(
+                          "size-5",
+                          pinned === "right"
+                            ? "text-primary bg-primary/10 hover:bg-primary/20"
+                            : "text-muted-foreground/40 hover:text-foreground"
+                        )}
                         onClick={(e) => { e.stopPropagation(); col.pin(pinned === "right" ? false : "right") }}
                         title={pinned === "right" ? "Unpin" : "Pin right"}
-                        className={cn(
-                          "size-5 flex items-center justify-center rounded transition-colors",
-                          pinned === "right"
-                            ? "text-primary bg-primary/10"
-                            : "text-muted-foreground/40 hover:text-foreground hover:bg-muted"
-                        )}
                       >
                         <AlignEndVertical className="size-3" />
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -224,12 +226,14 @@ export function DataTableColumnVisibility<TData>({
           <>
             <DropdownMenuSeparator className="mx-0 my-0" />
             <div className="px-2 py-1.5">
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
                 onClick={() => table.resetColumnPinning()}
-                className="w-full text-left px-2 py-1 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
                 Unpin all columns
-              </button>
+              </Button>
             </div>
           </>
         )}

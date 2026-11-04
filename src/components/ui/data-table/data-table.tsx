@@ -27,6 +27,13 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
   Table,
   TableBody,
   TableCell,
@@ -38,6 +45,7 @@ import { DataTableToolbar } from "./data-table-toolbar"
 import { DataTablePagination } from "./data-table-pagination"
 import { DataTableEmptyState } from "./data-table-empty-state"
 import { DataTableLoadingState } from "./data-table-loading-state"
+import { FIXED_LEFT_COLUMN_IDS } from "./types"
 import type { DataTableProps } from "./types"
 
 function getPinStyles(
@@ -193,9 +201,8 @@ export function DataTable<TData>({
     onColumnOrderChange: (updater) => {
       setColumnOrder((old) => {
         const next = typeof updater === "function" ? updater(old) : updater
-        const FIXED = ["__select__", "__expand__"]
-        const fixed = next.filter((id) => FIXED.includes(id))
-        const rest = next.filter((id) => !FIXED.includes(id))
+        const fixed = next.filter((id) => (FIXED_LEFT_COLUMN_IDS as readonly string[]).includes(id))
+        const rest = next.filter((id) => !(FIXED_LEFT_COLUMN_IDS as readonly string[]).includes(id))
         return [...fixed, ...rest]
       })
     },
@@ -305,8 +312,10 @@ export function DataTable<TData>({
                 )}
               >
                 {cell.getIsGrouped() ? (
-                  <button
-                    className="flex items-center gap-1 font-medium"
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-auto gap-1 px-0 py-0 font-medium hover:bg-transparent"
                     onClick={(e) => { e.stopPropagation(); row.toggleExpanded() }}
                   >
                     {row.getIsExpanded() ? (
@@ -318,7 +327,7 @@ export function DataTable<TData>({
                     <span className="ml-1 text-xs text-muted-foreground">
                       ({row.subRows.length})
                     </span>
-                  </button>
+                  </Button>
                 ) : cell.getIsAggregated() ? (
                   flexRender(
                     cell.column.columnDef.aggregatedCell ?? cell.column.columnDef.cell,
@@ -556,19 +565,24 @@ function ColumnFilter<TData>({
   if (facets && facets.size <= 10 && facets.size > 0) {
     // Show a select-style filter for low-cardinality columns
     return (
-      <select
-        className="h-7 w-full rounded border border-border bg-background px-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-        value={value}
-        onChange={(e) => column.setFilterValue(e.target.value || undefined)}
-        aria-label={`Filter by ${column.id}`}
+      <Select
+        value={value || "__all__"}
+        onValueChange={(val) => column.setFilterValue(val === "__all__" ? undefined : val)}
       >
-        <option value="">All {sortedFacets.length > 0 ? `(${facets.size})` : ""}</option>
-        {sortedFacets.map(([v, count]) => (
-          <option key={String(v)} value={String(v)}>
-            {String(v)} ({count})
-          </option>
-        ))}
-      </select>
+        <SelectTrigger className="h-7 w-full text-xs" aria-label={`Filter by ${column.id}`}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="__all__">
+            All {sortedFacets.length > 0 ? `(${facets.size})` : ""}
+          </SelectItem>
+          {sortedFacets.map(([v, count]) => (
+            <SelectItem key={String(v)} value={String(v)}>
+              {String(v)} ({count})
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     )
   }
 
