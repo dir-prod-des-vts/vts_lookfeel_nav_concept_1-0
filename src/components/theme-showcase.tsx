@@ -910,7 +910,7 @@ export function ThemeShowcase({ isDark, onToggleDark }: ThemeShowcaseProps) {
 
       {/* Footer */}
       <div className="pb-8 border-t border-border pt-8 mt-16 text-xs text-muted-foreground">
-        VTS Design System foundations reference. Built to be retokenized and extended as the product surface grows.
+        Ian's VTS Design System foundations reference. Built to be retokenized and extended as the product surface grows.
       </div>
 
     </div>
