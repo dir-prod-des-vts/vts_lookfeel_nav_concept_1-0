@@ -2,7 +2,6 @@ import React from "react"
 import ReactDOM from "react-dom/client"
 import "./index.css"
 import { type ColumnDef } from "@tanstack/react-table"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   DataTable,
@@ -55,15 +54,19 @@ const DATA: LeaseRow[] = [
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
-const STATUS_VARIANT: Record<LeaseRow["status"], "default" | "secondary" | "outline" | "destructive"> = {
-  Active: "default",
-  Expiring: "secondary",
-  Expired: "outline",
-  Negotiating: "secondary",
+const STATUS_CLASS: Record<LeaseRow["status"], string> = {
+  Active: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
+  Expiring: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+  Expired: "bg-muted text-muted-foreground",
+  Negotiating: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
 }
 
 function StatusBadge({ status }: { status: LeaseRow["status"] }) {
-  return <Badge variant={STATUS_VARIANT[status]}>{status}</Badge>
+  return (
+    <span className={`inline-flex h-5 items-center rounded-full px-2 text-xs font-medium ${STATUS_CLASS[status]}`}>
+      {status}
+    </span>
+  )
 }
 
 // ─── Column defs ──────────────────────────────────────────────────────────────

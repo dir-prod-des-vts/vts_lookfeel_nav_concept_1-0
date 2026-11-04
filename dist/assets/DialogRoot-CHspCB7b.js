@@ -1,0 +1,1 @@
+import{$ as e,X as t}from"./button-DCU16oos.js";import{c as n,r}from"./DialogTrigger-CdI72_Og.js";var i=e(t(),1);function a(e){return r(e,i.useContext(n)?`drawer`:`dialog`)}export{a as t};
