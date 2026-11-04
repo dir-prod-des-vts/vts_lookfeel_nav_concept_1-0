@@ -1,12 +1,10 @@
 import type { Table } from "@tanstack/react-table"
-import { ArrowLeft, Columns3, PinOff } from "lucide-react"
+import { AlignStartVertical, AlignEndVertical, ArrowLeft, Columns3, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuCheckboxItem,
   DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -26,11 +24,9 @@ export function DataTableColumnVisibility<TData>({
   const hidableColumns = table.getAllColumns().filter((col) => col.getCanHide())
   const allVisible = hidableColumns.every((col) => col.getIsVisible())
   const allHidden = hidableColumns.every((col) => !col.getIsVisible())
+  const anyPinned = enableColumnPinning && hidableColumns.some((col) => col.getIsPinned())
 
-  // For ordering: get current column order (excluding internal columns)
-  const orderedColumns = table
-    .getAllColumns()
-    .filter((col) => col.getCanHide())
+  const orderedColumns = table.getAllColumns().filter((col) => col.getCanHide())
 
   function moveColumn(colId: string, direction: "left" | "right") {
     const currentOrder = table.getState().columnOrder
@@ -55,20 +51,32 @@ export function DataTableColumnVisibility<TData>({
         <Columns3 className="size-3.5" />
         Columns
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <div className="flex items-center justify-between px-3 py-1.5">
-          <span className="text-sm font-medium">Columns</span>
-          <div className="flex items-center gap-1">
+
+      <DropdownMenuContent align="end" className="w-64 p-0">
+        {/* Header */}
+        <div className="flex items-center justify-between px-3 pt-3 pb-2">
+          <span className="text-sm font-medium text-foreground">Columns</span>
+          <div className="flex items-center gap-0.5">
             <button
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className={cn(
+                "px-1.5 py-0.5 rounded text-xs transition-colors",
+                allVisible
+                  ? "text-muted-foreground/40 cursor-not-allowed"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
               onClick={() => table.toggleAllColumnsVisible(true)}
               disabled={allVisible}
             >
               Show all
             </button>
-            <span className="text-muted-foreground/40">·</span>
+            <span className="text-muted-foreground/30 text-xs select-none">·</span>
             <button
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className={cn(
+                "px-1.5 py-0.5 rounded text-xs transition-colors",
+                allHidden
+                  ? "text-muted-foreground/40 cursor-not-allowed"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
               onClick={() => table.toggleAllColumnsVisible(false)}
               disabled={allHidden}
             >
@@ -76,102 +84,137 @@ export function DataTableColumnVisibility<TData>({
             </button>
           </div>
         </div>
-        <DropdownMenuSeparator />
+
+        <DropdownMenuSeparator className="mx-0 my-0" />
+
+        {/* Column list */}
         <DropdownMenuGroup>
-        {hidableColumns.map((col) => {
-          const label =
-            typeof col.columnDef.header === "string"
-              ? col.columnDef.header
-              : col.id
-          const pinned = col.getIsPinned()
-          const colIdx = orderedColumns.indexOf(col)
-          const isFirst = colIdx === 0
-          const isLast = colIdx === orderedColumns.length - 1
+          <div className="max-h-72 overflow-y-auto py-1.5">
+            {hidableColumns.map((col) => {
+              const label =
+                typeof col.columnDef.header === "string" ? col.columnDef.header : col.id
+              const isVisible = col.getIsVisible()
+              const pinned = col.getIsPinned()
+              const colIdx = orderedColumns.indexOf(col)
+              const isFirst = colIdx === 0
+              const isLast = colIdx === orderedColumns.length - 1
 
-          return (
-            <div
-              key={col.id}
-              className="flex items-center justify-between px-1 py-0.5"
-            >
-              <DropdownMenuCheckboxItem
-                checked={col.getIsVisible()}
-                onCheckedChange={(value) => col.toggleVisibility(!!value)}
-                className="flex-1 min-w-0"
-              >
-                <span className="truncate">{label}</span>
-              </DropdownMenuCheckboxItem>
+              return (
+                <div
+                  key={col.id}
+                  className={cn(
+                    "group flex items-center gap-2 px-2 mx-1 rounded-md py-1 cursor-pointer select-none transition-colors",
+                    "hover:bg-accent",
+                    pinned && "bg-primary/5"
+                  )}
+                >
+                  {/* Visibility checkbox */}
+                  <button
+                    onClick={() => col.toggleVisibility(!isVisible)}
+                    className={cn(
+                      "size-4 shrink-0 rounded border flex items-center justify-center transition-colors",
+                      isVisible
+                        ? "bg-primary border-primary text-primary-foreground"
+                        : "border-border bg-background"
+                    )}
+                  >
+                    {isVisible && <Check className="size-2.5 stroke-[3]" />}
+                  </button>
 
-              {(enableColumnPinning || enableColumnOrdering) && (
-                <div className="flex items-center gap-0.5 ml-1 shrink-0">
+                  {/* Label */}
+                  <span
+                    className={cn(
+                      "flex-1 min-w-0 truncate text-sm transition-colors",
+                      isVisible ? "text-foreground" : "text-muted-foreground"
+                    )}
+                    onClick={() => col.toggleVisibility(!isVisible)}
+                  >
+                    {label}
+                  </span>
+
+                  {/* Ordering controls */}
                   {enableColumnOrdering && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn("size-5 text-muted-foreground", isFirst && "opacity-30 pointer-events-none")}
-                        onClick={(e) => { e.preventDefault(); moveColumn(col.id, "left") }}
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); moveColumn(col.id, "left") }}
+                        disabled={isFirst}
+                        className={cn(
+                          "size-5 flex items-center justify-center rounded transition-colors",
+                          isFirst
+                            ? "text-muted-foreground/25 cursor-not-allowed"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        )}
                         aria-label={`Move ${label} left`}
                       >
                         <ArrowLeft className="size-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn("size-5 text-muted-foreground", isLast && "opacity-30 pointer-events-none")}
-                        onClick={(e) => { e.preventDefault(); moveColumn(col.id, "right") }}
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); moveColumn(col.id, "right") }}
+                        disabled={isLast}
+                        className={cn(
+                          "size-5 flex items-center justify-center rounded transition-colors",
+                          isLast
+                            ? "text-muted-foreground/25 cursor-not-allowed"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        )}
                         aria-label={`Move ${label} right`}
                       >
                         <ArrowLeft className="size-3 rotate-180" />
-                      </Button>
-                    </>
+                      </button>
+                    </div>
                   )}
+
+                  {/* Pin controls */}
                   {enableColumnPinning && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn("size-5", pinned === "left" ? "text-primary" : "text-muted-foreground")}
-                        onClick={(e) => { e.preventDefault(); col.pin(pinned === "left" ? false : "left") }}
-                        aria-label={`Pin ${label} left`}
+                    <div className={cn(
+                      "flex items-center gap-0.5 transition-opacity",
+                      !pinned && "opacity-0 group-hover:opacity-100"
+                    )}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); col.pin(pinned === "left" ? false : "left") }}
+                        title={pinned === "left" ? "Unpin" : "Pin left"}
+                        className={cn(
+                          "size-5 flex items-center justify-center rounded transition-colors",
+                          pinned === "left"
+                            ? "text-primary bg-primary/10"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        )}
                       >
-                        <ArrowLeft className="size-3" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className={cn("size-5", pinned === "right" ? "text-primary" : "text-muted-foreground")}
-                        onClick={(e) => { e.preventDefault(); col.pin(pinned === "right" ? false : "right") }}
-                        aria-label={`Pin ${label} right`}
+                        <AlignStartVertical className="size-3" />
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); col.pin(pinned === "right" ? false : "right") }}
+                        title={pinned === "right" ? "Unpin" : "Pin right"}
+                        className={cn(
+                          "size-5 flex items-center justify-center rounded transition-colors",
+                          pinned === "right"
+                            ? "text-primary bg-primary/10"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        )}
                       >
-                        <ArrowLeft className="size-3 rotate-180" />
-                      </Button>
-                      {pinned && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-5 text-muted-foreground"
-                          onClick={(e) => { e.preventDefault(); col.pin(false) }}
-                          aria-label={`Unpin ${label}`}
-                        >
-                          <PinOff className="size-3" />
-                        </Button>
-                      )}
-                    </>
+                        <AlignEndVertical className="size-3" />
+                      </button>
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
-          )
-        })}
+              )
+            })}
+          </div>
         </DropdownMenuGroup>
-        {enableColumnPinning && (
-          <DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => table.resetColumnPinning()}>
-              <PinOff className="size-3.5" />
-              Unpin all
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
+
+        {/* Footer actions */}
+        {anyPinned && (
+          <>
+            <DropdownMenuSeparator className="mx-0 my-0" />
+            <div className="px-2 py-1.5">
+              <button
+                onClick={() => table.resetColumnPinning()}
+                className="w-full text-left px-2 py-1 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                Unpin all columns
+              </button>
+            </div>
+          </>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
