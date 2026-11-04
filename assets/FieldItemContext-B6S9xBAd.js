@@ -1,0 +1,1 @@
+import{$ as e,X as t}from"./button-D_Nx51BM.js";var n=e(t(),1),r=n.createContext({disabled:!1});function i(){return n.useContext(r)}export{i as t};
