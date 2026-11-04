@@ -1,0 +1,1 @@
+import{S as e,f as t}from"./button-4i3mPYf1.js";import{t as n}from"./loader-circle-BJC0B9v3.js";var r=e();function i({className:e,...i}){return(0,r.jsx)(n,{"data-slot":`spinner`,role:`status`,"aria-label":`Loading`,className:t(`size-4 animate-spin`,e),...i})}export{i as t};

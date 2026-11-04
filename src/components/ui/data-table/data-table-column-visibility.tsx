@@ -1,5 +1,5 @@
 import type { Table } from "@tanstack/react-table"
-import { AlignStartVertical, AlignEndVertical, ArrowLeft, Columns3, Check } from "lucide-react"
+import { AlignStartVertical, AlignEndVertical, Columns3, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -13,33 +13,18 @@ import { cn } from "@/lib/utils"
 interface DataTableColumnVisibilityProps<TData> {
   table: Table<TData>
   enableColumnPinning?: boolean
-  enableColumnOrdering?: boolean
+  enableColumnOrdering?: boolean // reserved for drag-to-reorder (not implemented here)
 }
 
 export function DataTableColumnVisibility<TData>({
   table,
   enableColumnPinning = false,
-  enableColumnOrdering = false,
+  enableColumnOrdering: _enableColumnOrdering = false,
 }: DataTableColumnVisibilityProps<TData>) {
   const hidableColumns = table.getAllColumns().filter((col) => col.getCanHide())
   const allVisible = hidableColumns.every((col) => col.getIsVisible())
   const allHidden = hidableColumns.every((col) => !col.getIsVisible())
   const anyPinned = enableColumnPinning && hidableColumns.some((col) => col.getIsPinned())
-
-  const orderedColumns = table.getAllColumns().filter((col) => col.getCanHide())
-
-  function moveColumn(colId: string, direction: "left" | "right") {
-    const currentOrder = table.getState().columnOrder
-    const allIds = table.getAllLeafColumns().map((c) => c.id)
-    const workingOrder = currentOrder.length > 0 ? currentOrder : allIds
-    const idx = workingOrder.indexOf(colId)
-    if (idx === -1) return
-    const newOrder = [...workingOrder]
-    const swapIdx = direction === "left" ? idx - 1 : idx + 1
-    if (swapIdx < 0 || swapIdx >= newOrder.length) return
-    ;[newOrder[idx], newOrder[swapIdx]] = [newOrder[swapIdx], newOrder[idx]]
-    table.setColumnOrder(newOrder)
-  }
 
   return (
     <DropdownMenu>
@@ -95,15 +80,12 @@ export function DataTableColumnVisibility<TData>({
                 typeof col.columnDef.header === "string" ? col.columnDef.header : col.id
               const isVisible = col.getIsVisible()
               const pinned = col.getIsPinned()
-              const colIdx = orderedColumns.indexOf(col)
-              const isFirst = colIdx === 0
-              const isLast = colIdx === orderedColumns.length - 1
 
               return (
                 <div
                   key={col.id}
                   className={cn(
-                    "group flex items-center gap-2 px-2 mx-1 rounded-md py-1 cursor-pointer select-none transition-colors",
+                    "flex items-center gap-2 px-2 mx-1 rounded-md py-1 cursor-pointer select-none transition-colors",
                     "hover:bg-accent",
                     pinned && "bg-primary/5"
                   )}
@@ -132,44 +114,9 @@ export function DataTableColumnVisibility<TData>({
                     {label}
                   </span>
 
-                  {/* Ordering controls */}
-                  {enableColumnOrdering && (
-                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick={(e) => { e.stopPropagation(); moveColumn(col.id, "left") }}
-                        disabled={isFirst}
-                        className={cn(
-                          "size-5 flex items-center justify-center rounded transition-colors",
-                          isFirst
-                            ? "text-muted-foreground/25 cursor-not-allowed"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                        )}
-                        aria-label={`Move ${label} left`}
-                      >
-                        <ArrowLeft className="size-3" />
-                      </button>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); moveColumn(col.id, "right") }}
-                        disabled={isLast}
-                        className={cn(
-                          "size-5 flex items-center justify-center rounded transition-colors",
-                          isLast
-                            ? "text-muted-foreground/25 cursor-not-allowed"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                        )}
-                        aria-label={`Move ${label} right`}
-                      >
-                        <ArrowLeft className="size-3 rotate-180" />
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Pin controls */}
+                  {/* Pin controls — always visible */}
                   {enableColumnPinning && (
-                    <div className={cn(
-                      "flex items-center gap-0.5 transition-opacity",
-                      !pinned && "opacity-0 group-hover:opacity-100"
-                    )}>
+                    <div className="flex items-center gap-0.5 ml-auto">
                       <button
                         onClick={(e) => { e.stopPropagation(); col.pin(pinned === "left" ? false : "left") }}
                         title={pinned === "left" ? "Unpin" : "Pin left"}
@@ -177,7 +124,7 @@ export function DataTableColumnVisibility<TData>({
                           "size-5 flex items-center justify-center rounded transition-colors",
                           pinned === "left"
                             ? "text-primary bg-primary/10"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                            : "text-muted-foreground/40 hover:text-foreground hover:bg-muted"
                         )}
                       >
                         <AlignStartVertical className="size-3" />
@@ -189,7 +136,7 @@ export function DataTableColumnVisibility<TData>({
                           "size-5 flex items-center justify-center rounded transition-colors",
                           pinned === "right"
                             ? "text-primary bg-primary/10"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                            : "text-muted-foreground/40 hover:text-foreground hover:bg-muted"
                         )}
                       >
                         <AlignEndVertical className="size-3" />
