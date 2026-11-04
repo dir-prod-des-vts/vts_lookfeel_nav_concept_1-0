@@ -1,1 +1,0 @@
-import{S as e,f as t}from"./button-4i3mPYf1.js";var n=e();function r({className:e,...r}){return(0,n.jsx)(`div`,{"data-slot":`skeleton`,className:t(`animate-pulse rounded-md bg-muted`,e),...r})}export{r as t};
