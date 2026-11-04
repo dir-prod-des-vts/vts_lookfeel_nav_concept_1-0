@@ -1,7 +1,7 @@
 import type { Table } from "@tanstack/react-table"
 import { Search, X } from "lucide-react"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group"
 
 interface DataTableFiltersProps<TData> {
   table: Table<TData>
@@ -18,15 +18,17 @@ export function DataTableFilters<TData>({
 
   return (
     <div className="flex items-center gap-2">
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-        <Input
+      <InputGroup className="w-48">
+        <InputGroupAddon align="inline-start">
+          <Search className="size-3.5" />
+        </InputGroupAddon>
+        <InputGroupInput
           placeholder={placeholder}
           value={globalFilter ?? ""}
           onChange={(e) => table.setGlobalFilter(e.target.value)}
-          className="h-8 w-48 pl-8 text-sm"
+          className="text-sm"
         />
-      </div>
+      </InputGroup>
       {isFiltered && (
         <Button
           variant="ghost"

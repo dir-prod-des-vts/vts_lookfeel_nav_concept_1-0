@@ -1,4 +1,5 @@
 import { SearchX } from "lucide-react"
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
 
 interface DataTableEmptyStateProps {
   message?: string
@@ -10,16 +11,20 @@ export function DataTableEmptyState({
   isFiltered,
 }: DataTableEmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
-      <SearchX className="size-8 text-muted-foreground/50" />
-      <p className="text-sm font-medium text-foreground">
-        {message ?? (isFiltered ? "No results match your filters" : "No data")}
-      </p>
-      {isFiltered && (
-        <p className="text-xs text-muted-foreground">
-          Try adjusting your search or clearing filters
-        </p>
-      )}
-    </div>
+    <Empty className="border-none py-16">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <SearchX />
+        </EmptyMedia>
+        <EmptyTitle>
+          {message ?? (isFiltered ? "No results match your filters" : "No data")}
+        </EmptyTitle>
+        {isFiltered && (
+          <EmptyDescription>
+            Try adjusting your search or clearing filters
+          </EmptyDescription>
+        )}
+      </EmptyHeader>
+    </Empty>
   )
 }

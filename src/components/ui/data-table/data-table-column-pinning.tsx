@@ -42,8 +42,12 @@ export function DataTableColumnPinning<TData>({
               : col.id
 
           return (
-            <div key={col.id} className="flex items-center justify-between px-2 py-1.5">
-              <span className="text-sm text-foreground truncate max-w-24">{label}</span>
+            <DropdownMenuItem
+              key={col.id}
+              className="flex items-center justify-between gap-2"
+              onSelect={(e) => e.preventDefault()}
+            >
+              <span className="truncate max-w-24">{label}</span>
               <div className="flex items-center gap-0.5">
                 <Button
                   variant={pinned === "left" ? "default" : "ghost"}
@@ -64,7 +68,7 @@ export function DataTableColumnPinning<TData>({
                   Right
                 </Button>
               </div>
-            </div>
+            </DropdownMenuItem>
           )
         })}
         <DropdownMenuSeparator />
