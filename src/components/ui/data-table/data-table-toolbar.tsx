@@ -2,13 +2,13 @@ import * as React from "react"
 import type { Table } from "@tanstack/react-table"
 import { DataTableFilters } from "./data-table-filters"
 import { DataTableColumnVisibility } from "./data-table-column-visibility"
-import { DataTableColumnPinning } from "./data-table-column-pinning"
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
   enableGlobalFilter?: boolean
   enableColumnVisibility?: boolean
   enableColumnPinning?: boolean
+  enableColumnOrdering?: boolean
   searchPlaceholder?: string
   children?: React.ReactNode
 }
@@ -18,6 +18,7 @@ export function DataTableToolbar<TData>({
   enableGlobalFilter = true,
   enableColumnVisibility = true,
   enableColumnPinning = false,
+  enableColumnOrdering = false,
   searchPlaceholder,
   children,
 }: DataTableToolbarProps<TData>) {
@@ -30,8 +31,13 @@ export function DataTableToolbar<TData>({
         {children}
       </div>
       <div className="flex items-center gap-2">
-        {enableColumnPinning && <DataTableColumnPinning table={table} />}
-        {enableColumnVisibility && <DataTableColumnVisibility table={table} />}
+        {enableColumnVisibility && (
+          <DataTableColumnVisibility
+            table={table}
+            enableColumnPinning={enableColumnPinning}
+            enableColumnOrdering={enableColumnOrdering}
+          />
+        )}
       </div>
     </div>
   )

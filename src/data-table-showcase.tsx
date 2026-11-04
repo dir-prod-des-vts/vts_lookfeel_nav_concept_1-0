@@ -11,7 +11,7 @@ import {
   type RowAction,
 } from "@/components/ui/data-table"
 
-// ─── Sample data ────────────────────────────────────────────────────────────
+// ─── Sample data ─────────────────────────────────────────────────────────────
 
 type LeaseRow = {
   id: string
@@ -53,7 +53,7 @@ const DATA: LeaseRow[] = [
   { id: "L-022", tenant: "Strata RE", building: "Salesforce Tower", market: "San Francisco", sf: 15000, ner: 98, start: "Jan 2024", expiry: "Dec 2033", status: "Active", floors: "42", type: "Gross", subtenants: [] },
 ]
 
-// ─── Status badge ────────────────────────────────────────────────────────────
+// ─── Status badge ─────────────────────────────────────────────────────────────
 
 const STATUS_VARIANT: Record<LeaseRow["status"], "default" | "secondary" | "outline" | "destructive"> = {
   Active: "default",
@@ -66,7 +66,7 @@ function StatusBadge({ status }: { status: LeaseRow["status"] }) {
   return <Badge variant={STATUS_VARIANT[status]}>{status}</Badge>
 }
 
-// ─── Column defs ─────────────────────────────────────────────────────────────
+// ─── Column defs ──────────────────────────────────────────────────────────────
 
 const ROW_ACTIONS: RowAction<LeaseRow>[] = [
   { label: "View details", onClick: (row) => alert(`Viewing: ${row.original.tenant}`) },
@@ -103,12 +103,24 @@ const COLUMNS: ColumnDef<LeaseRow>[] = [
         {(row.getValue("sf") as number).toLocaleString()}
       </span>
     ),
+    aggregationFn: "sum",
+    aggregatedCell: ({ getValue }) => (
+      <span className="tabular-nums text-right block font-medium">
+        {(getValue() as number).toLocaleString()} total
+      </span>
+    ),
   },
   {
     accessorKey: "ner",
     header: ({ column }) => <DataTableColumnHeader column={column} title="NER/sf/yr" className="justify-end" />,
     cell: ({ row }) => (
       <span className="tabular-nums text-right block">${row.getValue("ner")}</span>
+    ),
+    aggregationFn: "mean",
+    aggregatedCell: ({ getValue }) => (
+      <span className="tabular-nums text-right block font-medium">
+        ${Math.round(getValue() as number)} avg
+      </span>
     ),
   },
   {
@@ -128,6 +140,7 @@ const COLUMNS: ColumnDef<LeaseRow>[] = [
   {
     accessorKey: "type",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Type" />,
+    filterFn: "includesString",
   },
   {
     id: "actions",
@@ -135,6 +148,7 @@ const COLUMNS: ColumnDef<LeaseRow>[] = [
     cell: ({ row }) => <DataTableRowActions row={row} actions={ROW_ACTIONS} />,
     enableSorting: false,
     enableHiding: false,
+    enableColumnFilter: false,
     size: 48,
   },
 ]
@@ -163,7 +177,7 @@ const BASIC_COLUMNS: ColumnDef<LeaseRow>[] = [
   },
 ]
 
-// ─── Expandable subcomponent ─────────────────────────────────────────────────
+// ─── Expandable subcomponent ──────────────────────────────────────────────────
 
 function SubtenantsPanel({ row }: { row: import("@tanstack/react-table").Row<LeaseRow> }) {
   const { subtenants, tenant } = row.original
@@ -185,7 +199,7 @@ function SubtenantsPanel({ row }: { row: import("@tanstack/react-table").Row<Lea
   )
 }
 
-// ─── Showcase sections ───────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
@@ -226,6 +240,62 @@ function LoadingExample() {
   )
 }
 
+// Columns for grouping demo (need enableGrouping-friendly column defs)
+const GROUPING_COLUMNS: ColumnDef<LeaseRow>[] = [
+  {
+    accessorKey: "market",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Market" />,
+  },
+  {
+    accessorKey: "type",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Type" />,
+  },
+  {
+    accessorKey: "tenant",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Tenant" />,
+    cell: ({ row }) => <span className="font-medium">{row.getValue("tenant")}</span>,
+    enableGrouping: false,
+  },
+  {
+    accessorKey: "sf",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="SF" className="justify-end" />,
+    cell: ({ row }) => (
+      <span className="tabular-nums text-right block">
+        {(row.getValue("sf") as number).toLocaleString()}
+      </span>
+    ),
+    aggregationFn: "sum",
+    aggregatedCell: ({ getValue }) => (
+      <span className="tabular-nums text-right block font-medium">
+        {(getValue() as number).toLocaleString()}
+      </span>
+    ),
+    enableGrouping: false,
+  },
+  {
+    accessorKey: "ner",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="NER/sf/yr" className="justify-end" />,
+    cell: ({ row }) => (
+      <span className="tabular-nums text-right block">${row.getValue("ner")}</span>
+    ),
+    aggregationFn: "mean",
+    aggregatedCell: ({ getValue }) => (
+      <span className="tabular-nums text-right block font-medium">
+        ${Math.round(getValue() as number)} avg
+      </span>
+    ),
+    enableGrouping: false,
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
+    cell: ({ row }) => <StatusBadge status={row.getValue("status")} />,
+    enableGrouping: false,
+  },
+]
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+
 function App() {
   const [isDark, setIsDark] = React.useState(false)
 
@@ -256,7 +326,7 @@ function App() {
           </Button>
         </div>
 
-        {/* Basic read-only */}
+        {/* 1. Basic */}
         <Section
           title="Basic table"
           description="Read-only table with no interactive features. Ideal for simple display."
@@ -268,23 +338,26 @@ function App() {
             enableGlobalFilter={false}
             enableColumnVisibility={false}
             enableSorting={false}
+            enableColumnFilters={false}
           />
         </Section>
 
-        {/* Sorting + search + column visibility */}
+        {/* 2. Sorting & filtering */}
         <Section
-          title="Sorting, search, and column visibility"
-          description="Click column headers to sort. Use the search box to filter globally. Toggle columns from the Columns menu."
+          title="Sorting and filtering"
+          description="Click column headers to sort. Global search filters across all columns. Per-column filter inputs appear below headers. Enable faceting for low-cardinality columns to show value counts as dropdowns."
         >
           <DataTable
             columns={COLUMNS}
             data={DATA}
             enablePagination={false}
             enableRowSelection={false}
+            enableColumnFilters
+            enableFaceting
           />
         </Section>
 
-        {/* Pagination */}
+        {/* 3. Pagination */}
         <Section
           title="Pagination"
           description="Client-side pagination with configurable page sizes."
@@ -296,42 +369,109 @@ function App() {
             pageSize={5}
             pageSizeOptions={[5, 10, 20]}
             enableRowSelection={false}
+            enableColumnFilters={false}
           />
         </Section>
 
-        {/* Row selection */}
+        {/* 4. Column management */}
         <Section
-          title="Row selection"
-          description="Multi-row selection with header checkbox. Selected rows are highlighted."
+          title="Column management"
+          description="Columns button opens a merged panel: toggle visibility, pin left/right, and reorder with arrows. Column resizing is via drag handles on header edges."
+        >
+          <DataTable
+            columns={COLUMNS}
+            data={DATA}
+            enableColumnPinning
+            enableColumnOrdering
+            enableColumnResizing
+            enableColumnVisibility
+            enablePagination
+            pageSize={8}
+            enableRowSelection={false}
+            enableColumnFilters={false}
+          />
+        </Section>
+
+        {/* 5. Row features */}
+        <Section
+          title="Row features"
+          description="Multi-row selection with header checkbox. Rows with subtenants can be expanded. Pin individual rows to top or bottom using the pin icon on hover."
         >
           <DataTable
             columns={COLUMNS}
             data={DATA}
             enableRowSelection
             enableMultiRowSelection
+            enableExpanding
+            enableRowPinning
             enablePagination
             pageSize={8}
+            getRowCanExpand={(row) => row.original.subtenants.length > 0}
+            renderSubComponent={({ row }) => <SubtenantsPanel row={row} />}
             onRowSelectionChange={(rows) => console.log("Selected:", rows.map(r => r.original.id))}
+            enableColumnFilters={false}
           />
         </Section>
 
-        {/* Row expansion */}
+        {/* 6. Grouping & aggregation */}
         <Section
-          title="Row expansion"
-          description="Rows with subtenants can be expanded to show nested data. Only rows with subtenants show the expand control."
+          title="Grouping and aggregation"
+          description="Click the group icon on Market or Type column headers to group rows. Aggregated rows show sum of SF and average NER. Expand groups to see individual rows."
+        >
+          <DataTable
+            columns={GROUPING_COLUMNS}
+            data={DATA}
+            enableGrouping
+            enableExpanding
+            enablePagination
+            pageSize={12}
+            enableColumnFilters={false}
+            getRowCanExpand={() => true}
+          />
+        </Section>
+
+        {/* 7. Cell selection */}
+        <Section
+          title="Cell selection"
+          description="Click any cell to select it. Hold Shift and click another cell to select a rectangular range. Selected cells are highlighted."
+        >
+          <DataTable
+            columns={BASIC_COLUMNS}
+            data={DATA.slice(0, 10)}
+            enableCellSelection
+            enablePagination={false}
+            enableColumnFilters={false}
+            enableGlobalFilter={false}
+            enableColumnVisibility={false}
+          />
+        </Section>
+
+        {/* 8. Full-featured */}
+        <Section
+          title="Full-featured table"
+          description="All features enabled: sorting, search, column filters with faceting, visibility, row selection, expansion, row pinning, pagination, resizing, column pinning, and column ordering."
         >
           <DataTable
             columns={COLUMNS}
             data={DATA}
+            enableRowSelection
+            enableMultiRowSelection
             enableExpanding
+            enableRowPinning
             enablePagination
-            pageSize={8}
+            enableColumnResizing
+            enableColumnPinning
+            enableColumnOrdering
+            enableColumnFilters
+            enableFaceting
+            pageSize={10}
+            pageSizeOptions={[5, 10, 20, 50]}
             getRowCanExpand={(row) => row.original.subtenants.length > 0}
             renderSubComponent={({ row }) => <SubtenantsPanel row={row} />}
           />
         </Section>
 
-        {/* Loading + empty + error */}
+        {/* 9. States */}
         <Section
           title="Loading, empty, and error states"
           description="Trigger the loading skeleton. The empty state appears when no data matches filters."
@@ -349,6 +489,7 @@ function App() {
                 enablePagination={false}
                 enableGlobalFilter={false}
                 enableColumnVisibility={false}
+                enableColumnFilters={false}
                 emptyMessage="No leases found"
               />
             </div>
@@ -361,6 +502,7 @@ function App() {
                 enablePagination={false}
                 enableGlobalFilter={false}
                 enableColumnVisibility={false}
+                enableColumnFilters={false}
               />
             </div>
             <div className="flex flex-col gap-2">
@@ -370,59 +512,10 @@ function App() {
                 data={DATA.slice(0, 5)}
                 enablePagination={false}
                 enableColumnVisibility={false}
+                enableColumnFilters={false}
               />
             </div>
           </div>
-        </Section>
-
-        {/* Column resizing */}
-        <Section
-          title="Column resizing"
-          description="Drag the right edge of any column header to resize it. The resize handle appears on hover."
-        >
-          <DataTable
-            columns={COLUMNS}
-            data={DATA.slice(0, 8)}
-            enableColumnResizing
-            enablePagination={false}
-            enableRowSelection={false}
-          />
-        </Section>
-
-        {/* Column pinning */}
-        <Section
-          title="Column pinning"
-          description="Use the Pin columns button to pin any column to the left or right. Pinned columns stay visible while scrolling horizontally."
-        >
-          <DataTable
-            columns={COLUMNS}
-            data={DATA}
-            enableColumnPinning
-            enablePagination
-            pageSize={8}
-            enableRowSelection={false}
-          />
-        </Section>
-
-        {/* Full-featured */}
-        <Section
-          title="Full-featured table"
-          description="All features enabled: sorting, search, column visibility, row selection, expansion, pagination, resizing, and pinning."
-        >
-          <DataTable
-            columns={COLUMNS}
-            data={DATA}
-            enableRowSelection
-            enableMultiRowSelection
-            enableExpanding
-            enablePagination
-            enableColumnResizing
-            enableColumnPinning
-            pageSize={10}
-            pageSizeOptions={[5, 10, 20, 50]}
-            getRowCanExpand={(row) => row.original.subtenants.length > 0}
-            renderSubComponent={({ row }) => <SubtenantsPanel row={row} />}
-          />
         </Section>
 
       </div>
