@@ -570,7 +570,9 @@ function ColumnFilter<TData>({
         onValueChange={(val) => column.setFilterValue(val === "__all__" ? undefined : val)}
       >
         <SelectTrigger className="h-7 w-full text-xs" aria-label={`Filter by ${column.id}`}>
-          <SelectValue />
+          <SelectValue>
+            {!value ? "All" : value}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="__all__">
