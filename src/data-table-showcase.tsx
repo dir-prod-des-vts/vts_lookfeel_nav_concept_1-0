@@ -350,6 +350,7 @@ function App() {
           <DataTable
             columns={COLUMNS}
             data={DATA}
+            initialSorting={[{ id: "tenant", desc: false }]}
             enablePagination={false}
             enableRowSelection={false}
             enableColumnFilters
@@ -365,6 +366,7 @@ function App() {
           <DataTable
             columns={COLUMNS}
             data={DATA}
+            initialSorting={[{ id: "tenant", desc: false }]}
             enablePagination
             pageSize={5}
             pageSizeOptions={[5, 10, 20]}
@@ -381,6 +383,7 @@ function App() {
           <DataTable
             columns={COLUMNS}
             data={DATA}
+            initialSorting={[{ id: "tenant", desc: false }]}
             enableColumnPinning
             enableColumnOrdering
             enableColumnResizing
@@ -400,6 +403,7 @@ function App() {
           <DataTable
             columns={COLUMNS}
             data={DATA}
+            initialSorting={[{ id: "tenant", desc: false }]}
             enableRowSelection
             enableMultiRowSelection
             enableExpanding
@@ -421,6 +425,7 @@ function App() {
           <DataTable
             columns={GROUPING_COLUMNS}
             data={DATA}
+            initialSorting={[{ id: "tenant", desc: false }]}
             enableGrouping
             enableExpanding
             enablePagination
@@ -454,6 +459,7 @@ function App() {
           <DataTable
             columns={COLUMNS}
             data={DATA}
+            initialSorting={[{ id: "tenant", desc: false }]}
             enableRowSelection
             enableMultiRowSelection
             enableExpanding

@@ -1,4 +1,4 @@
-import type { ColumnDef, Row, Table } from "@tanstack/react-table"
+import type { ColumnDef, Row, SortingState, Table } from "@tanstack/react-table"
 
 export type { ColumnDef, Row, Table }
 
@@ -25,6 +25,8 @@ export interface DataTableProps<TData> {
   enableSorting?: boolean
   enableFaceting?: boolean
   enableCellSelection?: boolean
+  // Sorting
+  initialSorting?: SortingState
   // Pagination
   pageSize?: number
   pageSizeOptions?: number[]

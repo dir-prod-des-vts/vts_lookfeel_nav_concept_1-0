@@ -71,6 +71,7 @@ export function DataTable<TData>({
   enableGrouping = false,
   enableFaceting = false,
   enableCellSelection = false,
+  initialSorting = [],
   pageSize: initialPageSize = 10,
   pageSizeOptions = [10, 20, 30, 50],
   onRowSelectionChange,
@@ -79,7 +80,7 @@ export function DataTable<TData>({
   emptyMessage,
   toolbar,
 }: DataTableProps<TData>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [sorting, setSorting] = React.useState<SortingState>(initialSorting)
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
