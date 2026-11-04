@@ -707,12 +707,6 @@ const _lateStageNer = _lateStage.filter(d => d.ner > 0).reduce((a, d) => a + (d.
 const KPIS = [
   { label: "Avg NER",                value: "$74/sf",   subtitle: "+9.4% vs budget", trend: "up" as const },
   {
-    label: "Expiring leases (12mo)",
-    value: String(_expiring12mo.length),
-    subtitle: `${(_expiringSf / 1000).toFixed(0)}K sf at risk`,
-    trend: _expiring12mo.length > 3 ? "down" as const : undefined,
-  },
-  {
     label: "Late-stage deals",
     value: String(_lateStage.length),
     subtitle: `$${(_lateStageNer / 1000).toFixed(0)}K/mo projected NER`,
@@ -1038,10 +1032,6 @@ export default function App() {
         ? ASSETS.filter(a => selectedPortfolio.assetIds.includes(a.id))
         : ASSETS
       const visibleAssetNames = new Set(visibleAssets.map(a => a.name))
-      const portfolioExpiring = CRITICAL_DATES.filter(d => d.category === "expiring" && d.monthsOut <= 12 && (!d.asset || visibleAssetNames.has(d.asset)))
-      const expiringCount = portfolioExpiring.length
-      const expiringSf = portfolioExpiring.reduce((s, d) => s + d.sf, 0)
-      const expiringSfStr = expiringSf >= 1000000 ? `${(expiringSf / 1000000).toFixed(1)}M sf` : `${Math.round(expiringSf / 1000)}K sf`
       const portfolioDeals = DEALS.filter(d => visibleAssetNames.has(d.asset))
       const portfolioAtRisk = portfolioDeals.filter(d => getDealHealth(d.id, d.stage as any).score === "at-risk")
       const portfolioCaution = portfolioDeals.filter(d => getDealHealth(d.id, d.stage as any).score === "caution")
@@ -1123,7 +1113,7 @@ export default function App() {
           <KpiBar kpis={[
             { label: "Avg portfolio NER",  value: "$62/sf",  subtitle: "+4.2% vs budget",  trend: "up" as const },
             { label: "Occupancy",          value: "91.4%",  subtitle: "+0.8% vs budget",  trend: "up" as const },
-            { label: "Expiring < 12 mo",   value: `${expiringCount} lease${expiringCount !== 1 ? "s" : ""}`, subtitle: expiringSf > 0 ? expiringSfStr : "None expiring", trend: expiringCount > 2 ? "down" as const : undefined },
+            { label: "WALT", value: "3.8 yrs", subtitle: "Weighted avg lease" },
             {
               label: "Need attention",
               value: `${portfolioNeedAttention} deal${portfolioNeedAttention !== 1 ? "s" : ""}`,
