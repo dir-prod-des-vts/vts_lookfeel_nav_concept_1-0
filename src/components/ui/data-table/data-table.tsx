@@ -401,7 +401,7 @@ export function DataTable<TData>({
         </DataTableToolbar>
       )}
 
-      <div className="rounded-lg border border-border overflow-hidden">
+      <div className="rounded-lg border border-border overflow-hidden bg-card">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
