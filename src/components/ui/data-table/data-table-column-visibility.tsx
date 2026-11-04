@@ -1,5 +1,6 @@
+import * as React from "react"
 import type { Table } from "@tanstack/react-table"
-import { AlignStartVertical, AlignEndVertical, Columns3, Check } from "lucide-react"
+import { AlignStartVertical, AlignEndVertical, Columns3, Check, GripVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -13,18 +14,69 @@ import { cn } from "@/lib/utils"
 interface DataTableColumnVisibilityProps<TData> {
   table: Table<TData>
   enableColumnPinning?: boolean
-  enableColumnOrdering?: boolean // reserved for drag-to-reorder (not implemented here)
+  enableColumnOrdering?: boolean
 }
 
 export function DataTableColumnVisibility<TData>({
   table,
   enableColumnPinning = false,
-  enableColumnOrdering: _enableColumnOrdering = false,
+  enableColumnOrdering = false,
 }: DataTableColumnVisibilityProps<TData>) {
-  const hidableColumns = table.getAllColumns().filter((col) => col.getCanHide())
+  const dragOverId = React.useRef<string | null>(null)
+  const [dragOver, setDragOver] = React.useState<string | null>(null)
+
+  // Get columns in current table order (getAllLeafColumns respects columnOrder state)
+  const hidableColumns = table.getAllLeafColumns().filter((col) => col.getCanHide())
   const allVisible = hidableColumns.every((col) => col.getIsVisible())
   const allHidden = hidableColumns.every((col) => !col.getIsVisible())
   const anyPinned = enableColumnPinning && hidableColumns.some((col) => col.getIsPinned())
+
+  function handleDragStart(e: React.DragEvent, colId: string) {
+    e.dataTransfer.setData("text/plain", colId)
+    e.dataTransfer.effectAllowed = "move"
+  }
+
+  function handleDragOver(e: React.DragEvent, colId: string) {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
+    if (dragOverId.current !== colId) {
+      dragOverId.current = colId
+      setDragOver(colId)
+    }
+  }
+
+  function handleDrop(e: React.DragEvent, targetId: string) {
+    e.preventDefault()
+    const sourceId = e.dataTransfer.getData("text/plain")
+    if (!sourceId || sourceId === targetId) return
+
+    const pinned = table.getState().columnPinning
+    const unpinnedIds = table
+      .getAllLeafColumns()
+      .filter((c) => !c.getIsPinned())
+      .map((c) => c.id)
+
+    const fromIdx = unpinnedIds.indexOf(sourceId)
+    const toIdx = unpinnedIds.indexOf(targetId)
+    if (fromIdx === -1 || toIdx === -1) return
+
+    const newIds = [...unpinnedIds]
+    newIds.splice(fromIdx, 1)
+    newIds.splice(toIdx, 0, sourceId)
+
+    table.setColumnOrder([
+      ...(pinned.left ?? []),
+      ...newIds,
+      ...(pinned.right ?? []),
+    ])
+    setDragOver(null)
+    dragOverId.current = null
+  }
+
+  function handleDragEnd() {
+    setDragOver(null)
+    dragOverId.current = null
+  }
 
   return (
     <DropdownMenu>
@@ -80,16 +132,28 @@ export function DataTableColumnVisibility<TData>({
                 typeof col.columnDef.header === "string" ? col.columnDef.header : col.id
               const isVisible = col.getIsVisible()
               const pinned = col.getIsPinned()
+              const isDragTarget = dragOver === col.id
 
               return (
                 <div
                   key={col.id}
+                  draggable={enableColumnOrdering}
+                  onDragStart={(e) => handleDragStart(e, col.id)}
+                  onDragOver={(e) => handleDragOver(e, col.id)}
+                  onDrop={(e) => handleDrop(e, col.id)}
+                  onDragEnd={handleDragEnd}
                   className={cn(
-                    "flex items-center gap-2 px-2 mx-1 rounded-md py-1 cursor-pointer select-none transition-colors",
+                    "flex items-center gap-2 px-2 mx-1 rounded-md py-1 select-none transition-colors",
                     "hover:bg-accent",
-                    pinned && "bg-primary/5"
+                    pinned && "bg-primary/5",
+                    isDragTarget && "border-t-2 border-primary"
                   )}
                 >
+                  {/* Drag handle */}
+                  {enableColumnOrdering && (
+                    <GripVertical className="size-3.5 shrink-0 text-muted-foreground/30 cursor-grab active:cursor-grabbing" />
+                  )}
+
                   {/* Visibility checkbox */}
                   <button
                     onClick={() => col.toggleVisibility(!isVisible)}
@@ -106,7 +170,7 @@ export function DataTableColumnVisibility<TData>({
                   {/* Label */}
                   <span
                     className={cn(
-                      "flex-1 min-w-0 truncate text-sm transition-colors",
+                      "flex-1 min-w-0 truncate text-sm transition-colors cursor-pointer",
                       isVisible ? "text-foreground" : "text-muted-foreground"
                     )}
                     onClick={() => col.toggleVisibility(!isVisible)}
