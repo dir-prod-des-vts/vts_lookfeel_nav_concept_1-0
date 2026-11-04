@@ -5,8 +5,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -56,8 +56,8 @@ export function DataTableColumnVisibility<TData>({
         Columns
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Columns</span>
+        <div className="flex items-center justify-between px-3 py-1.5">
+          <span className="text-sm font-medium">Columns</span>
           <div className="flex items-center gap-1">
             <button
               className="text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -75,8 +75,9 @@ export function DataTableColumnVisibility<TData>({
               Hide all
             </button>
           </div>
-        </DropdownMenuLabel>
+        </div>
         <DropdownMenuSeparator />
+        <DropdownMenuGroup>
         {hidableColumns.map((col) => {
           const label =
             typeof col.columnDef.header === "string"
@@ -162,14 +163,15 @@ export function DataTableColumnVisibility<TData>({
             </div>
           )
         })}
+        </DropdownMenuGroup>
         {enableColumnPinning && (
-          <>
+          <DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => table.resetColumnPinning()}>
               <PinOff className="size-3.5" />
               Unpin all
             </DropdownMenuItem>
-          </>
+          </DropdownMenuGroup>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
