@@ -9,8 +9,9 @@ import * as ReactDOM from "react-dom/client"
 import { Crosshair, Maximize2, Minimize2, Layers } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ASSET_KPIS } from "@/App"
+import { DEALS } from "@/components/deals-page"
+import { AssetCard } from "@/components/portfolio-grid"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -40,11 +41,6 @@ function occupancyColor(occ: number) {
   return "var(--color-destructive)"
 }
 
-function occupancyClass(occ: number) {
-  if (occ >= 90) return "text-success"
-  if (occ >= 75) return "text-warning"
-  return "text-destructive"
-}
 
 function makePin(occ: number, isDimmed = false) {
   const color = isDimmed ? "oklch(0.75 0 0)" : occupancyColor(occ)
@@ -78,47 +74,9 @@ interface Asset {
 }
 
 function PopupContent({ asset, onAssetClick }: { asset: Asset; onAssetClick: (id: string) => void }) {
-  const kpi = ASSET_KPIS[asset.id]
-  const occ = kpi?.occupancy ?? 80
   return (
-    <div className="w-52">
-      <div className="px-4 pt-4 pb-3">
-        <p className="text-sm font-semibold text-foreground leading-snug">{asset.name}</p>
-        <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{asset.address}</p>
-      </div>
-      {kpi && (
-        <>
-          <Separator />
-          <div className="grid grid-cols-2 gap-px bg-border border-b border-border">
-            <KpiCell label="Occupancy">
-              <span className={cn("text-sm font-bold tabular-nums", occupancyClass(occ))}>{occ}%</span>
-            </KpiCell>
-            <KpiCell label="Avg NER">
-              <span className="text-sm font-bold tabular-nums text-foreground">{kpi.avgNer}</span>
-            </KpiCell>
-            <KpiCell label="WALT">
-              <span className="text-sm font-bold tabular-nums text-foreground">{kpi.walt}</span>
-            </KpiCell>
-            <KpiCell label="Active deals">
-              <span className="text-sm font-bold tabular-nums text-foreground">{kpi.activeDeals}</span>
-            </KpiCell>
-          </div>
-        </>
-      )}
-      <div className="px-3 py-3">
-        <Button size="sm" className="w-full h-8 text-xs" onClick={() => onAssetClick(asset.id)}>
-          View asset
-        </Button>
-      </div>
-    </div>
-  )
-}
-
-function KpiCell({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="bg-card px-3.5 py-2.5 flex flex-col gap-0.5">
-      <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</span>
-      {children}
+    <div className="w-[400px]">
+      <AssetCard asset={asset} deals={DEALS} onClick={() => onAssetClick(asset.id)} />
     </div>
   )
 }
@@ -171,7 +129,7 @@ function ClusterLayer({ assets, onAssetClick, dimmed }: { assets: Asset[]; onAss
       }, {
         closeButton: false,
         className: "portfolio-map-popup",
-        minWidth: 208,
+        minWidth: 400,
         autoPan: true,
         autoPanPaddingTopLeft: [20, 320],
         autoPanPaddingBottomRight: [20, 20],
@@ -328,15 +286,26 @@ export function PortfolioMap({ assets, onAssetClick, className, activeFilters, m
     <>
       <style>{`
 .portfolio-map-popup .leaflet-popup-content-wrapper {
-          background: var(--color-card);
-          border: 1px solid var(--color-border);
-          border-radius: 12px;
-          box-shadow: 0 8px 32px -4px oklch(0 0 0 / 0.14), 0 2px 8px -2px oklch(0 0 0 / 0.08);
+          background: transparent;
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
           padding: 0;
-          overflow: hidden;
+          overflow: visible;
         }
         .portfolio-map-popup .leaflet-popup-content { margin: 0; width: auto !important; }
         .portfolio-map-popup .leaflet-popup-tip-container { display: none; }
+        .portfolio-map-popup .leaflet-popup-content {
+          font-family: var(--font-sans) !important;
+          font-size: 1rem !important;
+          line-height: 1.5 !important;
+        }
+        .portfolio-map-popup .leaflet-popup-content * {
+          font-family: var(--font-sans) !important;
+        }
+        .portfolio-map-popup .leaflet-popup-content p {
+          margin: 0 !important;
+        }
         .leaflet-cluster-anim .leaflet-marker-icon, .leaflet-cluster-anim .leaflet-marker-shadow {
           transition: transform 0.3s ease-out, opacity 0.3s ease-in;
         }

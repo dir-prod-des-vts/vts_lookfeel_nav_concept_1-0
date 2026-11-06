@@ -9,6 +9,66 @@ import { ASSET_KPIS, ASSET_DETAILS } from "@/App"
 import { getDealHealth } from "@/components/deal-profile"
 import type { Deal } from "@/components/deals-page"
 
+export function AssetCard({ asset, deals, onClick }: { asset: { id: string; name: string; address?: string }; deals: Deal[]; onClick: () => void }) {
+  const kpi = ASSET_KPIS[asset.id]
+  const detail = ASSET_DETAILS[asset.id]
+  if (!kpi) return null
+  const assetDeals = deals.filter(d => d.asset === asset.name)
+  const atRisk = assetDeals.filter(d => getDealHealth(d.id, d.stage as any).score === "at-risk")
+  const caution = assetDeals.filter(d => getDealHealth(d.id, d.stage as any).score === "caution")
+  const needAttention = atRisk.length + caution.length
+  return (
+    <div
+      className="group cursor-pointer rounded-2xl overflow-hidden bg-white/70 dark:bg-white/8 backdrop-blur-md border border-border/70 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
+      onClick={onClick}
+    >
+      <div className="relative h-44 overflow-hidden">
+        <img src={detail?.image} alt={asset.name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        {kpi.alert && (
+          <div className="absolute top-3 right-3">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-destructive rounded-full px-2.5 py-1">⚠ {kpi.alert}</span>
+          </div>
+        )}
+        <div className="absolute bottom-0 left-0 right-0 px-4 pb-3">
+          <p className="text-[10px] font-medium uppercase tracking-widest text-white/60 mb-0.5">{detail?.city}</p>
+          <h3 className="font-semibold text-white text-base leading-tight">{asset.name}</h3>
+          <p className="text-xs text-white/60 truncate">{asset.address}</p>
+        </div>
+      </div>
+      <div className="px-4 py-3">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="flex-1 h-1 rounded-full bg-border overflow-hidden">
+            <div className={cn("h-full rounded-full", kpi.occupancy >= 90 ? "bg-success" : kpi.occupancy >= 75 ? "bg-primary" : "bg-warning")} style={{ width: `${kpi.occupancy}%` }} />
+          </div>
+          <span className="text-xs font-medium text-foreground tabular-nums shrink-0">{kpi.occupancy}% occupied</span>
+        </div>
+        <div className="grid grid-cols-3 divide-x divide-border/60">
+          <div className="pr-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Avg NER</p>
+            <p className="text-sm font-semibold text-foreground">{kpi.avgNer}</p>
+            <p className={cn("text-xs font-medium", kpi.nerBudgetUp ? "text-success" : "text-destructive")}>{kpi.nerBudgetDelta} vs budget</p>
+          </div>
+          <div className="px-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">WALT</p>
+            <p className="text-sm font-semibold text-foreground">{kpi.walt}</p>
+            <p className="text-xs font-medium text-muted-foreground">Wtd. avg lease</p>
+          </div>
+          <div className="pl-3">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Need attention</p>
+            <p className="text-sm font-semibold text-foreground">{needAttention} deal{needAttention !== 1 ? "s" : ""}</p>
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              {atRisk.length > 0 && <span className="text-xs text-destructive font-medium">{atRisk.length} at risk</span>}
+              {caution.length > 0 && <span className="text-xs text-warning font-medium">{caution.length} critical</span>}
+              {needAttention === 0 && <span className="text-xs text-muted-foreground">None</span>}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export type SortKey =
   | "name" | "name_asc" | "name_desc"
   | "occupancy" | "occupancy_asc" | "occupancy_desc"
@@ -107,69 +167,9 @@ export function PortfolioGrid({ assets, deals, onAssetClick, hideContent, cardSo
       {/* Card view */}
       {view === "cards" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(({ asset, kpi, detail, atRisk, caution, needAttention }) => {
-            if (!kpi) return null
-            return (
-              <div
-                key={asset.id}
-                className="group cursor-pointer rounded-2xl overflow-hidden bg-white/70 dark:bg-white/8 backdrop-blur-md border border-border/70 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200"
-                onClick={() => onAssetClick(asset.id)}
-              >
-                <div className="relative h-44 overflow-hidden">
-                  <img src={detail?.image} alt={asset.name} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  {kpi.alert && (
-                    <div className="absolute top-3 right-3">
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-destructive rounded-full px-2.5 py-1">
-                        ⚠ {kpi.alert}
-                      </span>
-                    </div>
-                  )}
-                  <div className="absolute bottom-0 left-0 right-0 px-4 pb-3">
-                    <p className="text-[10px] font-medium uppercase tracking-widest text-white/60 mb-0.5">{detail?.city}</p>
-                    <h3 className="font-semibold text-white text-base leading-tight">{asset.name}</h3>
-                    <p className="text-xs text-white/60 truncate">{asset.address}</p>
-                  </div>
-                </div>
-                <div className="px-4 py-3">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="flex-1 h-1 rounded-full bg-border overflow-hidden">
-                      <div
-                        className={cn("h-full rounded-full", kpi.occupancy >= 90 ? "bg-success" : kpi.occupancy >= 75 ? "bg-primary" : "bg-warning")}
-                        style={{ width: `${kpi.occupancy}%` }}
-                      />
-                    </div>
-                    <span className="text-xs font-medium text-foreground tabular-nums shrink-0">{kpi.occupancy}% occupied</span>
-                  </div>
-                  <div className="grid grid-cols-3 divide-x divide-border/60">
-                    <div className="pr-3">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Avg NER</p>
-                      <p className="text-sm font-semibold text-foreground">{kpi.avgNer}</p>
-                      <p className={cn("text-xs font-medium", kpi.nerBudgetUp ? "text-success" : "text-destructive")}>{kpi.nerBudgetDelta} vs budget</p>
-                    </div>
-                    <div className="px-3">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">WALT</p>
-                      <p className="text-sm font-semibold text-foreground">{kpi.walt}</p>
-                      <p className="text-xs font-medium text-muted-foreground">Wtd. avg lease</p>
-                    </div>
-                    <div className="pl-3">
-                      <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-0.5">Need attention</p>
-                      <p className="text-sm font-semibold text-foreground">{needAttention} deal{needAttention !== 1 ? "s" : ""}</p>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        {atRisk.length > 0 && (
-                          <span className="text-xs text-destructive font-medium">{atRisk.length} at risk</span>
-                        )}
-                        {caution.length > 0 && (
-                          <span className="text-xs text-warning font-medium">{caution.length} critical</span>
-                        )}
-                        {needAttention === 0 && <span className="text-xs text-muted-foreground">None</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+          {filtered.map(({ asset }) => (
+            <AssetCard key={asset.id} asset={asset} deals={deals} onClick={() => onAssetClick(asset.id)} />
+          ))}
         </div>
       )}
 
