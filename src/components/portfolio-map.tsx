@@ -21,20 +21,17 @@ L.Icon.Default.mergeOptions({
 })
 
 const TILE_STYLES = [
-  { key: "light_nolabels", label: "Minimal" },
-  { key: "light_all",      label: "Light" },
-  { key: "dark_all",       label: "Dark" },
-  { key: "voyager",        label: "Street" },
-  { key: "dark_nolabels",  label: "High contrast" },
-  { key: "voyager_labels_under", label: "Outdoors" },
+  { key: "Canvas/World_Light_Gray_Base", label: "Minimal" },
+  { key: "World_Street_Map",             label: "Street" },
+  { key: "Canvas/World_Dark_Gray_Base",  label: "Dark" },
+  { key: "World_Topo_Map",               label: "Outdoors" },
+  { key: "World_Imagery",                label: "Satellite" },
 ] as const
 
 type TileStyleKey = typeof TILE_STYLES[number]["key"]
 
 function tileUrl(key: TileStyleKey) {
-  const rastertiles = ["voyager", "voyager_labels_under"]
-  const base = rastertiles.includes(key) ? "rastertiles/" : ""
-  return `https://{s}.basemaps.cartocdn.com/${base}${key}/{z}/{x}/{y}{r}.png`
+  return `https://server.arcgisonline.com/ArcGIS/rest/services/${key}/MapServer/tile/{z}/{y}/{x}`
 }
 
 function occupancyColor(occ: number) {
@@ -301,7 +298,7 @@ export function PortfolioMap({ assets, onAssetClick, className, activeFilters, m
   const boundsRef = React.useRef<L.LatLngBounds | null>(null)
   const [height, setHeight] = React.useState(400)
   const [isFullscreen, setIsFullscreen] = React.useState(false)
-  const [tileStyle, setTileStyle] = React.useState<TileStyleKey>("light_nolabels")
+  const [tileStyle, setTileStyle] = React.useState<TileStyleKey>("Canvas/World_Light_Gray_Base")
   const { filtered: filteredAssets, dimmed } = React.useMemo(() => applyMapFilter(assets, mapFilter ?? null), [assets, mapFilter])
 
   React.useLayoutEffect(() => {
