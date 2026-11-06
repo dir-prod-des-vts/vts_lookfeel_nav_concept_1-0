@@ -408,9 +408,12 @@ export function DataTable<TData>({
         </DataTableToolbar>
       )}
 
-      <div className="rounded-lg border border-border overflow-hidden bg-card">
+      <div className="rounded-lg border border-border overflow-clip bg-card">
         <div className="overflow-x-auto">
-          <Table style={rightPinnedTotalSize > 0 ? { marginRight: -rightPinnedTotalSize } : undefined}>
+          <Table style={{
+            ...(enableColumnResizing ? { width: table.getTotalSize() + (enableRowPinning ? 36 : 0) } : {}),
+            ...(rightPinnedTotalSize > 0 ? { marginRight: -rightPinnedTotalSize } : {}),
+          }}>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <React.Fragment key={headerGroup.id}>
