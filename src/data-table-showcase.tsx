@@ -300,7 +300,10 @@ function App() {
   const [isDark, setIsDark] = React.useState(false)
 
   React.useEffect(() => {
-    document.documentElement.classList.toggle("dark", isDark)
+    const el = document.documentElement
+    el.classList.add("no-transitions")
+    el.classList.toggle("dark", isDark)
+    requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove("no-transitions")))
   }, [isDark])
 
   return (

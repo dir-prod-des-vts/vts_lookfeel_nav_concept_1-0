@@ -204,6 +204,9 @@
     * {
         @apply border-border outline-ring/50;
     }
+    .no-transitions * {
+        transition: none !important;
+    }
     body {
         @apply text-foreground;
         background:
