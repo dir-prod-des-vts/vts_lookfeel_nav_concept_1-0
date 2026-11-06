@@ -427,7 +427,7 @@ export function DataTable<TData>({
                             "relative h-10 px-3 text-xs font-medium text-muted-foreground",
                             header.column.id === "__select__" && "w-9 px-2",
                             header.column.id === "__expand__" && "w-9 px-2",
-                            pinned && "sticky z-10 bg-muted/40",
+                            pinned && "sticky z-10 bg-pinned-header",
                             pinned === "left" && "shadow-[inset_-2px_0_0_0_var(--border)]",
                             pinned === "right" && "shadow-[inset_2px_0_0_0_var(--border)]",
                           )}
@@ -482,7 +482,7 @@ export function DataTable<TData>({
                             style={filterPinStyle}
                             className={cn(
                               "px-2 py-1 h-9",
-                              filterPinned && "sticky z-10 bg-muted/40",
+                              filterPinned && "sticky z-10 bg-pinned-header",
                               filterPinned === "left" && "shadow-[inset_-2px_0_0_0_var(--border)]",
                               filterPinned === "right" && "shadow-[inset_2px_0_0_0_var(--border)]",
                             )}

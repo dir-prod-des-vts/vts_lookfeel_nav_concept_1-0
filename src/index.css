@@ -207,6 +207,10 @@
     .no-transitions * {
         transition: none !important;
     }
+    /* Opaque equivalent of bg-muted/40 over bg-card — used for sticky/pinned table cells */
+    .bg-pinned-header {
+        background-color: color-mix(in oklch, var(--muted) 40%, var(--card));
+    }
     body {
         @apply text-foreground;
         background:
