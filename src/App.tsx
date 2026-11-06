@@ -1130,7 +1130,7 @@ export default function App() {
             <ViewSwitcher
               views={portfolioViews.views}
               activeView={portfolioViews.activeView}
-              onSelect={portfolioViews.selectView}
+              onSelect={id => { portfolioViews.selectView(id); if (id !== "pv-assets") setPortfolioMapView(false) }}
               onSave={portfolioViews.saveView}
               onRename={portfolioViews.renameView}
               onDelete={portfolioViews.deleteView}
@@ -1257,7 +1257,7 @@ export default function App() {
               view={portfolioView}
             />
           )}
-          {portfolioMapView && (
+          {portfolioMapView && activePortfolioViewId === "pv-assets" && (
             <PortfolioMap
               assets={filteredVisibleAssets.filter(a => a.lat != null) as any}
               onAssetClick={id => { setSelectedAssetId(id); setCurrentPage("dashboard") }}
