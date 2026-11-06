@@ -292,7 +292,7 @@ export function DataTable<TData>({
                 key={cell.id}
                 colSpan={colSpan}
                 style={{
-                  ...(enableColumnResizing ? { width: cell.column.getSize() } : {}),
+                  ...((enableColumnResizing || !!pinned) ? { width: cell.column.getSize() } : {}),
                   ...pinStyle,
                 }}
                 onClick={(e) => handleCellClick(e, i, cIdx, cellKey)}
@@ -420,7 +420,7 @@ export function DataTable<TData>({
                           key={header.id}
                           colSpan={header.colSpan}
                           style={{
-                            ...(enableColumnResizing ? { width: header.getSize() } : {}),
+                            ...((enableColumnResizing || !!pinned) ? { width: header.getSize() } : {}),
                             ...pinStyle,
                           }}
                           className={cn(
@@ -474,7 +474,13 @@ export function DataTable<TData>({
                         })()
                         const filterPinned = header.column.getIsPinned()
                         const filterPinStyle = filterPinned
-                          ? { [filterPinned === "left" ? "left" : "right"]: `${header.column.getStart(filterPinned)}px` }
+                          ? {
+                              width: header.column.getSize(),
+                              [filterPinned === "left" ? "left" : "right"]:
+                                filterPinned === "left"
+                                  ? header.column.getStart("left")
+                                  : header.column.getAfter("right"),
+                            }
                           : {}
                         return (
                           <TableHead
