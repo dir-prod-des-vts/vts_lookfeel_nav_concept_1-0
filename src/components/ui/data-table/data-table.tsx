@@ -292,7 +292,7 @@ export function DataTable<TData>({
                 key={cell.id}
                 colSpan={colSpan}
                 style={{
-                  ...((enableColumnResizing || pinned === "left") ? { width: cell.column.getSize() } : {}),
+                  ...((enableColumnResizing || !!pinned) ? { width: cell.column.getSize() } : {}),
                   ...pinStyle,
                 }}
                 onClick={(e) => handleCellClick(e, i, cIdx, cellKey)}
@@ -379,6 +379,13 @@ export function DataTable<TData>({
     ))
   }
 
+  const rightPinnedTotalSize = React.useMemo(() => {
+    if (!enableColumnPinning) return 0
+    const ids = table.getState().columnPinning.right ?? []
+    return ids.reduce((sum, id) => sum + (table.getColumn(id)?.getSize() ?? 0), 0)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enableColumnPinning, table.getState().columnPinning.right])
+
   const topRows = enableRowPinning ? (table.getTopRows() as Row<TData>[]) : ([] as Row<TData>[])
   const bottomRows = enableRowPinning ? (table.getBottomRows() as Row<TData>[]) : ([] as Row<TData>[])
   const centerRows = enableRowPinning
@@ -403,7 +410,7 @@ export function DataTable<TData>({
 
       <div className="rounded-lg border border-border overflow-hidden bg-card">
         <div className="overflow-x-auto">
-          <Table>
+          <Table style={rightPinnedTotalSize > 0 ? { marginRight: -rightPinnedTotalSize } : undefined}>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <React.Fragment key={headerGroup.id}>
@@ -420,7 +427,7 @@ export function DataTable<TData>({
                           key={header.id}
                           colSpan={header.colSpan}
                           style={{
-                            ...((enableColumnResizing || pinned === "left") ? { width: header.getSize() } : {}),
+                            ...((enableColumnResizing || !!pinned) ? { width: header.getSize() } : {}),
                             ...pinStyle,
                           }}
                           className={cn(
@@ -475,7 +482,7 @@ export function DataTable<TData>({
                         const filterPinned = header.column.getIsPinned()
                         const filterPinStyle = filterPinned
                           ? {
-                              ...(filterPinned === "left" ? { width: header.column.getSize() } : {}),
+                              width: header.column.getSize(),
                               [filterPinned === "left" ? "left" : "right"]:
                                 filterPinned === "left"
                                   ? header.column.getStart("left")
