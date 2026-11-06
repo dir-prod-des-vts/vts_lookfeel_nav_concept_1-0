@@ -329,151 +329,7 @@ function App() {
           </Button>
         </div>
 
-        {/* 1. Basic */}
-        <Section
-          title="Basic table"
-          description="Read-only table with no interactive features. Ideal for simple display."
-        >
-          <div className="rounded-lg bg-card p-4">
-            <DataTable
-              columns={BASIC_COLUMNS}
-              data={DATA.slice(0, 6)}
-              enablePagination={false}
-              enableGlobalFilter={false}
-              enableColumnVisibility={false}
-              enableSorting={false}
-              enableColumnFilters={false}
-            />
-          </div>
-        </Section>
-
-        {/* 2. Sorting & filtering */}
-        <Section
-          title="Sorting and filtering"
-          description="Click column headers to sort. Global search filters across all columns. Per-column filter inputs appear below headers. Enable faceting for low-cardinality columns to show value counts as dropdowns."
-        >
-          <div className="rounded-lg bg-card p-4">
-            <DataTable
-              columns={COLUMNS}
-              data={DATA}
-              initialSorting={[{ id: "tenant", desc: false }]}
-              enablePagination={false}
-              enableRowSelection={false}
-              enableColumnFilters
-              enableFaceting
-              enableColumnResizing
-            />
-          </div>
-        </Section>
-
-        {/* 3. Pagination */}
-        <Section
-          title="Pagination"
-          description="Client-side pagination with configurable page sizes."
-        >
-          <div className="rounded-lg bg-card p-4">
-            <DataTable
-              columns={COLUMNS}
-              data={DATA}
-              initialSorting={[{ id: "tenant", desc: false }]}
-              enablePagination
-              pageSize={5}
-              pageSizeOptions={[5, 10, 20]}
-              enableRowSelection={false}
-              enableColumnFilters={false}
-              enableColumnResizing
-            />
-          </div>
-        </Section>
-
-        {/* 4. Column management */}
-        <Section
-          title="Column management"
-          description="Columns button opens a merged panel: toggle visibility, pin left/right, and reorder with arrows. Column resizing is via drag handles on header edges."
-        >
-          <div className="rounded-lg bg-card p-4">
-            <DataTable
-              columns={COLUMNS}
-              data={DATA}
-              initialSorting={[{ id: "tenant", desc: false }]}
-              enableColumnPinning
-              enableColumnOrdering
-              enableColumnResizing
-              enableColumnVisibility
-              enablePagination
-              pageSize={8}
-              enableRowSelection={false}
-              enableColumnFilters={false}
-            />
-          </div>
-        </Section>
-
-        {/* 5. Row features */}
-        <Section
-          title="Row features"
-          description="Multi-row selection with header checkbox. Rows with subtenants can be expanded. Pin individual rows to top or bottom using the pin icon on hover."
-        >
-          <div className="rounded-lg bg-card p-4">
-            <DataTable
-              columns={COLUMNS}
-              data={DATA}
-              initialSorting={[{ id: "tenant", desc: false }]}
-              enableRowSelection
-              enableMultiRowSelection
-              enableExpanding
-              enableRowPinning
-              enablePagination
-              pageSize={8}
-              getRowCanExpand={(row) => row.original.subtenants.length > 0}
-              renderSubComponent={({ row }) => <SubtenantsPanel row={row} />}
-              onRowSelectionChange={(rows) => console.log("Selected:", rows.map(r => r.original.id))}
-              enableColumnFilters={false}
-              enableColumnResizing
-            />
-          </div>
-        </Section>
-
-        {/* 6. Grouping & aggregation */}
-        <Section
-          title="Grouping and aggregation"
-          description="Click the group icon on Market or Type column headers to group rows. Aggregated rows show sum of SF and average NER. Expand groups to see individual rows."
-        >
-          <div className="rounded-lg bg-card p-4">
-            <DataTable
-              columns={GROUPING_COLUMNS}
-              data={DATA}
-              initialSorting={[{ id: "tenant", desc: false }]}
-              enableGrouping
-              enableExpanding
-              enablePagination
-              pageSize={12}
-              enableColumnFilters={false}
-              enableColumnResizing
-              getRowCanExpand={(row) => row.getIsGrouped()}
-            />
-          </div>
-        </Section>
-
-        {/* 7. Cell selection */}
-        <Section
-          title="Cell selection"
-          description="Click any cell to select it. Hold Shift and click another cell to select a rectangular range. Selected cells are highlighted."
-        >
-          <div className="rounded-lg bg-card p-4">
-            <DataTable
-              columns={BASIC_COLUMNS}
-              data={DATA.slice(0, 10)}
-              enableCellSelection
-              enablePagination={false}
-              enableColumnFilters={false}
-              enableGlobalFilter={false}
-              enableColumnVisibility={false}
-              enableColumnResizing
-            />
-          </div>
-        </Section>
-
-        {/* 8. Full-featured */}
+        {/* 1. Full-featured */}
         <Section
           title="Full-featured table"
           description="All features enabled: sorting, search, column filters with faceting, visibility, row selection, expansion, row pinning, pagination, resizing, column pinning, and column ordering."
@@ -501,6 +357,150 @@ function App() {
           </div>
         </Section>
 
+        {/* 2. Basic */}
+        <Section
+          title="Basic table"
+          description="Read-only table with no interactive features. Ideal for simple display."
+        >
+          <div className="rounded-lg bg-card p-4">
+            <DataTable
+              columns={BASIC_COLUMNS}
+              data={DATA.slice(0, 6)}
+              enablePagination={false}
+              enableGlobalFilter={false}
+              enableColumnVisibility={false}
+              enableSorting={false}
+              enableColumnFilters={false}
+            />
+          </div>
+        </Section>
+
+        {/* 3. Sorting & filtering */}
+        <Section
+          title="Sorting and filtering"
+          description="Click column headers to sort. Global search filters across all columns. Per-column filter inputs appear below headers. Enable faceting for low-cardinality columns to show value counts as dropdowns."
+        >
+          <div className="rounded-lg bg-card p-4">
+            <DataTable
+              columns={COLUMNS}
+              data={DATA}
+              initialSorting={[{ id: "tenant", desc: false }]}
+              enablePagination={false}
+              enableRowSelection={false}
+              enableColumnFilters
+              enableFaceting
+              enableColumnResizing
+            />
+          </div>
+        </Section>
+
+        {/* 4. Pagination */}
+        <Section
+          title="Pagination"
+          description="Client-side pagination with configurable page sizes."
+        >
+          <div className="rounded-lg bg-card p-4">
+            <DataTable
+              columns={COLUMNS}
+              data={DATA}
+              initialSorting={[{ id: "tenant", desc: false }]}
+              enablePagination
+              pageSize={5}
+              pageSizeOptions={[5, 10, 20]}
+              enableRowSelection={false}
+              enableColumnFilters={false}
+              enableColumnResizing
+            />
+          </div>
+        </Section>
+
+        {/* 5. Column management */}
+        <Section
+          title="Column management"
+          description="Columns button opens a merged panel: toggle visibility, pin left/right, and reorder with arrows. Column resizing is via drag handles on header edges."
+        >
+          <div className="rounded-lg bg-card p-4">
+            <DataTable
+              columns={COLUMNS}
+              data={DATA}
+              initialSorting={[{ id: "tenant", desc: false }]}
+              enableColumnPinning
+              enableColumnOrdering
+              enableColumnResizing
+              enableColumnVisibility
+              enablePagination
+              pageSize={8}
+              enableRowSelection={false}
+              enableColumnFilters={false}
+            />
+          </div>
+        </Section>
+
+        {/* 6. Row features */}
+        <Section
+          title="Row features"
+          description="Multi-row selection with header checkbox. Rows with subtenants can be expanded. Pin individual rows to top or bottom using the pin icon on hover."
+        >
+          <div className="rounded-lg bg-card p-4">
+            <DataTable
+              columns={COLUMNS}
+              data={DATA}
+              initialSorting={[{ id: "tenant", desc: false }]}
+              enableRowSelection
+              enableMultiRowSelection
+              enableExpanding
+              enableRowPinning
+              enablePagination
+              pageSize={8}
+              getRowCanExpand={(row) => row.original.subtenants.length > 0}
+              renderSubComponent={({ row }) => <SubtenantsPanel row={row} />}
+              onRowSelectionChange={(rows) => console.log("Selected:", rows.map(r => r.original.id))}
+              enableColumnFilters={false}
+              enableColumnResizing
+            />
+          </div>
+        </Section>
+
+        {/* 7. Grouping & aggregation */}
+        <Section
+          title="Grouping and aggregation"
+          description="Click the group icon on Market or Type column headers to group rows. Aggregated rows show sum of SF and average NER. Expand groups to see individual rows."
+        >
+          <div className="rounded-lg bg-card p-4">
+            <DataTable
+              columns={GROUPING_COLUMNS}
+              data={DATA}
+              initialSorting={[{ id: "tenant", desc: false }]}
+              enableGrouping
+              enableExpanding
+              enablePagination
+              pageSize={12}
+              enableColumnFilters={false}
+              enableColumnResizing
+              getRowCanExpand={(row) => row.getIsGrouped()}
+            />
+          </div>
+        </Section>
+
+        {/* 8. Cell selection */}
+        <Section
+          title="Cell selection"
+          description="Click any cell to select it. Hold Shift and click another cell to select a rectangular range. Selected cells are highlighted."
+        >
+          <div className="rounded-lg bg-card p-4">
+            <DataTable
+              columns={BASIC_COLUMNS}
+              data={DATA.slice(0, 10)}
+              enableCellSelection
+              enablePagination={false}
+              enableColumnFilters={false}
+              enableGlobalFilter={false}
+              enableColumnVisibility={false}
+              enableColumnResizing
+            />
+          </div>
+        </Section>
+
         {/* 9. Loading state */}
         <Section
           title="Loading state"
@@ -511,42 +511,41 @@ function App() {
           </div>
         </Section>
 
-        {/* 10. Empty state */}
+        {/* 10. Empty state — no data */}
         <Section
           title="Empty state"
-          description="Shown when there is no data, or when filters return no results."
+          description="Shown when there is no data to display."
         >
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium text-foreground">No data</p>
-              <div className="rounded-lg bg-card p-4">
-                <DataTable
-                  columns={BASIC_COLUMNS}
-                  data={[]}
-                  enablePagination={false}
-                  enableGlobalFilter={false}
-                  enableColumnVisibility={false}
-                  enableColumnFilters={false}
-                  emptyMessage="No leases found"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium text-foreground">Empty after filter (search to trigger)</p>
-              <div className="rounded-lg bg-card p-4">
-                <DataTable
-                  columns={BASIC_COLUMNS}
-                  data={DATA.slice(0, 5)}
-                  enablePagination={false}
-                  enableColumnVisibility={false}
-                  enableColumnFilters={false}
-                />
-              </div>
-            </div>
+          <div className="rounded-lg bg-card p-4">
+            <DataTable
+              columns={BASIC_COLUMNS}
+              data={[]}
+              enablePagination={false}
+              enableGlobalFilter={false}
+              enableColumnVisibility={false}
+              enableColumnFilters={false}
+              emptyMessage="No leases found"
+            />
           </div>
         </Section>
 
-        {/* 11. Error state */}
+        {/* 11. Empty state — after filter */}
+        <Section
+          title="Empty state after filter"
+          description="Shown when filters return no results. Search to trigger."
+        >
+          <div className="rounded-lg bg-card p-4">
+            <DataTable
+              columns={BASIC_COLUMNS}
+              data={DATA.slice(0, 5)}
+              enablePagination={false}
+              enableColumnVisibility={false}
+              enableColumnFilters={false}
+            />
+          </div>
+        </Section>
+
+        {/* 12. Error state */}
         <Section
           title="Error state"
           description="Shown when the data request fails. Displays an inline error message."
