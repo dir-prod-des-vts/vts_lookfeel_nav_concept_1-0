@@ -806,12 +806,13 @@ export default function App() {
     if (selectedDeal) params.push(`deal=${selectedDeal.id}`)
     if (currentPage === "ai" && agentView === "grid") params.push("view=grid")
     params.push(navCollapsed ? "nav=collapsed" : "nav=expanded")
-    if (currentPage === "dashboard" && (selectedAssetId === "all" || selectedAssetId?.startsWith("portfolio-"))) {
+    const isPortfolioPage = currentPage === "dashboard" && (selectedAssetId === "all" || PORTFOLIOS.some(p => p.id === selectedAssetId))
+    if (isPortfolioPage) {
       params.push(`pvView=${portfolioViews.activeView?.id ?? "pv-assets"}`)
       params.push(`pvSort=${portfolioCardSort}`)
       params.push(`pvDisplay=${portfolioMapView ? "map" : portfolioView}`)
     }
-    if (currentPage === "dashboard" && selectedAssetId !== "all" && !selectedAssetId?.startsWith("portfolio-")) {
+    if (currentPage === "dashboard" && !isPortfolioPage) {
       params.push(`ovView=${overviewViews.activeView?.id ?? "view-full"}`)
     }
     if (params.length) base += `?${params.join("&")}`
