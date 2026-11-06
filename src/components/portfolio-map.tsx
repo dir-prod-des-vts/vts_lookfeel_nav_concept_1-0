@@ -21,18 +21,20 @@ L.Icon.Default.mergeOptions({
 })
 
 const TILE_STYLES = [
-  { key: "stamen_toner_lite",   label: "Minimal" },
-  { key: "alidade_smooth",      label: "Light" },
-  { key: "alidade_smooth_dark", label: "Dark" },
-  { key: "osm_bright",          label: "Street" },
-  { key: "stamen_toner",        label: "High contrast" },
-  { key: "outdoors",            label: "Outdoors" },
+  { key: "light_nolabels", label: "Minimal" },
+  { key: "light_all",      label: "Light" },
+  { key: "dark_all",       label: "Dark" },
+  { key: "voyager",        label: "Street" },
+  { key: "dark_nolabels",  label: "High contrast" },
+  { key: "voyager_labels_under", label: "Outdoors" },
 ] as const
 
 type TileStyleKey = typeof TILE_STYLES[number]["key"]
 
 function tileUrl(key: TileStyleKey) {
-  return `https://tiles.stadiamaps.com/tiles/${key}/{z}/{x}/{y}{r}.png`
+  const rastertiles = ["voyager", "voyager_labels_under"]
+  const base = rastertiles.includes(key) ? "rastertiles/" : ""
+  return `https://{s}.basemaps.cartocdn.com/${base}${key}/{z}/{x}/{y}{r}.png`
 }
 
 function occupancyColor(occ: number) {
@@ -299,7 +301,7 @@ export function PortfolioMap({ assets, onAssetClick, className, activeFilters, m
   const boundsRef = React.useRef<L.LatLngBounds | null>(null)
   const [height, setHeight] = React.useState(400)
   const [isFullscreen, setIsFullscreen] = React.useState(false)
-  const [tileStyle, setTileStyle] = React.useState<TileStyleKey>("stamen_toner_lite")
+  const [tileStyle, setTileStyle] = React.useState<TileStyleKey>("light_nolabels")
   const { filtered: filteredAssets, dimmed } = React.useMemo(() => applyMapFilter(assets, mapFilter ?? null), [assets, mapFilter])
 
   React.useLayoutEffect(() => {
@@ -356,7 +358,7 @@ export function PortfolioMap({ assets, onAssetClick, className, activeFilters, m
           <TileLayer
             key={tileStyle}
             url={tileUrl(tileStyle)}
-            attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             maxZoom={20}
           />
           <MapController mapRef={mapRef} boundsRef={boundsRef} assets={assets} />
