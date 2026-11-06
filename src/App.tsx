@@ -144,6 +144,7 @@ function AssetValuationCard({ deals, dates, assetId, className, onNavigate }: {
   const netAbsorption = lateStageNewSf - _expiringSf
 
   const statTiles = [
+    { label: "Total RSF",      value: kpis.rsf,                sub: "Rentable sq ft",      colorCls: "" },
     { label: "Avg NER",        value: kpis.avgNer,             sub: "Per sf / yr",         colorCls: "" },
     { label: "NER vs budget",  value: kpis.nerBudgetDelta,     sub: "Year to date",        colorCls: kpis.nerBudgetUp ? "text-success" : "text-destructive" },
     { label: "Net absorption", value: `${netAbsorption >= 0 ? "+" : ""}${(netAbsorption / 1000).toFixed(0)}K sf`, sub: "Pipeline vs expiring", colorCls: netAbsorption >= 0 ? "text-success" : "text-destructive" },
@@ -691,20 +692,20 @@ export const ASSET_DETAILS: Record<string, { city: string; image: string }> = {
 }
 
 export const ASSET_KPIS: Record<string, {
-  occupancy: number; avgNer: string; nerBudgetDelta: string; nerBudgetUp: boolean;
+  rsf: string; occupancy: number; avgNer: string; nerBudgetDelta: string; nerBudgetUp: boolean;
   walt: string; expiring12mo: number; activeDeals: number; alert?: string
 }> = {
-  "vts-tower":     { occupancy: 70, avgNer: "$74/sf", nerBudgetDelta: "+9.4%", nerBudgetUp: true,  walt: "4.2 yrs", expiring12mo: 3, activeDeals: 6 },
-  "one-financial": { occupancy: 88, avgNer: "$43/sf", nerBudgetDelta: "+2.1%", nerBudgetUp: true,  walt: "5.1 yrs", expiring12mo: 1, activeDeals: 2 },
-  "empire-state":  { occupancy: 94, avgNer: "$57/sf", nerBudgetDelta: "-1.3%", nerBudgetUp: false, walt: "3.8 yrs", expiring12mo: 5, activeDeals: 4, alert: "2 options expiring" },
-  "salesforce":    { occupancy: 82, avgNer: "$88/sf", nerBudgetDelta: "+5.7%", nerBudgetUp: true,  walt: "6.3 yrs", expiring12mo: 2, activeDeals: 3 },
-  "willis":        { occupancy: 76, avgNer: "$46/sf", nerBudgetDelta: "-3.1%", nerBudgetUp: false, walt: "2.9 yrs", expiring12mo: 4, activeDeals: 1, alert: "Below occupancy target" },
-  "hudson-yards":  { occupancy: 97, avgNer: "$83/sf", nerBudgetDelta: "+11.2%", nerBudgetUp: true, walt: "7.6 yrs", expiring12mo: 0, activeDeals: 5 },
-  "one-wtc":       { occupancy: 91, avgNer: "$76/sf", nerBudgetDelta: "+3.8%", nerBudgetUp: true,  walt: "5.4 yrs", expiring12mo: 2, activeDeals: 2 },
-  "transamerica":  { occupancy: 68, avgNer: "$38/sf", nerBudgetDelta: "-6.5%", nerBudgetUp: false, walt: "2.1 yrs", expiring12mo: 6, activeDeals: 3, alert: "High vacancy risk" },
-  "peachtree":     { occupancy: 85, avgNer: "$33/sf", nerBudgetDelta: "+1.9%", nerBudgetUp: true,  walt: "4.7 yrs", expiring12mo: 1, activeDeals: 0 },
-  "union-square":  { occupancy: 93, avgNer: "$56/sf", nerBudgetDelta: "+4.4%", nerBudgetUp: true,  walt: "5.9 yrs", expiring12mo: 3, activeDeals: 4 },
-  "200-berkeley":  { occupancy: 79, avgNer: "$71/sf", nerBudgetDelta: "-0.8%", nerBudgetUp: false, walt: "3.3 yrs", expiring12mo: 2, activeDeals: 1 },
+  "vts-tower":     { rsf: "1.37M sf", occupancy: 70, avgNer: "$74/sf", nerBudgetDelta: "+9.4%", nerBudgetUp: true,  walt: "4.2 yrs", expiring12mo: 3, activeDeals: 6 },
+  "one-financial": { rsf: "823K sf",  occupancy: 88, avgNer: "$43/sf", nerBudgetDelta: "+2.1%", nerBudgetUp: true,  walt: "5.1 yrs", expiring12mo: 1, activeDeals: 2 },
+  "empire-state":  { rsf: "2.77M sf", occupancy: 94, avgNer: "$57/sf", nerBudgetDelta: "-1.3%", nerBudgetUp: false, walt: "3.8 yrs", expiring12mo: 5, activeDeals: 4, alert: "2 options expiring" },
+  "salesforce":    { rsf: "1.42M sf", occupancy: 82, avgNer: "$88/sf", nerBudgetDelta: "+5.7%", nerBudgetUp: true,  walt: "6.3 yrs", expiring12mo: 2, activeDeals: 3 },
+  "willis":        { rsf: "3.80M sf", occupancy: 76, avgNer: "$46/sf", nerBudgetDelta: "-3.1%", nerBudgetUp: false, walt: "2.9 yrs", expiring12mo: 4, activeDeals: 1, alert: "Below occupancy target" },
+  "hudson-yards":  { rsf: "1.74M sf", occupancy: 97, avgNer: "$83/sf", nerBudgetDelta: "+11.2%", nerBudgetUp: true, walt: "7.6 yrs", expiring12mo: 0, activeDeals: 5 },
+  "one-wtc":       { rsf: "3.11M sf", occupancy: 91, avgNer: "$76/sf", nerBudgetDelta: "+3.8%", nerBudgetUp: true,  walt: "5.4 yrs", expiring12mo: 2, activeDeals: 2 },
+  "transamerica":  { rsf: "530K sf",  occupancy: 68, avgNer: "$38/sf", nerBudgetDelta: "-6.5%", nerBudgetUp: false, walt: "2.1 yrs", expiring12mo: 6, activeDeals: 3, alert: "High vacancy risk" },
+  "peachtree":     { rsf: "1.09M sf", occupancy: 85, avgNer: "$33/sf", nerBudgetDelta: "+1.9%", nerBudgetUp: true,  walt: "4.7 yrs", expiring12mo: 1, activeDeals: 0 },
+  "union-square":  { rsf: "940K sf",  occupancy: 93, avgNer: "$56/sf", nerBudgetDelta: "+4.4%", nerBudgetUp: true,  walt: "5.9 yrs", expiring12mo: 3, activeDeals: 4 },
+  "200-berkeley":  { rsf: "678K sf",  occupancy: 79, avgNer: "$71/sf", nerBudgetDelta: "-0.8%", nerBudgetUp: false, walt: "3.3 yrs", expiring12mo: 2, activeDeals: 1 },
 }
 
 const _expiring12mo = LEASES.filter(l => l.remaining > 0 && l.remaining <= 12)
@@ -713,6 +714,7 @@ const _lateStage    = DEALS.filter(d => ["LOI", "Legal", "Lease Out"].includes(d
 const _lateStageNer = _lateStage.filter(d => d.ner > 0).reduce((a, d) => a + (d.ner * d.sf) / 12, 0)
 
 const KPIS = [
+  { label: "Total RSF",              value: "1.37M sf", subtitle: "Rentable sq ft" },
   { label: "Avg NER",                value: "$74/sf",   subtitle: "+9.4% vs budget", trend: "up" as const },
   {
     label: "Late-stage deals",
@@ -1222,6 +1224,7 @@ export default function App() {
           </div>
 
           <KpiBar kpis={[
+            { label: "Total RSF",          value: "18.3M sf", subtitle: "Rentable sq ft" },
             { label: "Avg portfolio NER",  value: "$62/sf",  subtitle: "+4.2% vs budget",  trend: "up" as const },
             { label: "Occupancy",          value: "91.4%",  subtitle: "+0.8% vs budget",  trend: "up" as const },
             { label: "WALT", value: "3.8 yrs", subtitle: "Wtd. avg lease" },
