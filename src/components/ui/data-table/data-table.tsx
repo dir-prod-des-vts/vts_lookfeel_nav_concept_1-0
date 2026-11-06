@@ -301,8 +301,8 @@ export function DataTable<TData>({
                   cell.column.id === "__select__" && "px-2",
                   cell.column.id === "__expand__" && "px-2",
                   pinned && "sticky z-10 bg-card",
-                  pinned === "left" && "shadow-[1px_0_0_0_hsl(var(--border))]",
-                  pinned === "right" && "shadow-[-1px_0_0_0_hsl(var(--border))]",
+                  pinned === "left" && "border-r-2 border-primary/40",
+                  pinned === "right" && "border-l-2 border-primary/40",
                   isCellSelected && "bg-primary/10",
                   enableCellSelection && "cursor-pointer select-none",
                   // Grouped rows
@@ -428,8 +428,8 @@ export function DataTable<TData>({
                             header.column.id === "__select__" && "w-9 px-2",
                             header.column.id === "__expand__" && "w-9 px-2",
                             pinned && "sticky z-10 bg-card",
-                            pinned === "left" && "shadow-[1px_0_0_0_hsl(var(--border))]",
-                            pinned === "right" && "shadow-[-1px_0_0_0_hsl(var(--border))]",
+                            pinned === "left" && "border-r-2 border-primary/40",
+                            pinned === "right" && "border-l-2 border-primary/40",
                           )}
                         >
                           {header.isPlaceholder
