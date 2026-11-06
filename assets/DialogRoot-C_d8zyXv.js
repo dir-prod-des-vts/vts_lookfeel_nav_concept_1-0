@@ -1,1 +1,0 @@
-import{$ as e,X as t}from"./button-RjV-6vAm.js";import{c as n,r}from"./DialogTrigger-CLATDxpq.js";var i=e(t(),1);function a(e){return r(e,i.useContext(n)?`drawer`:`dialog`)}export{a as t};
