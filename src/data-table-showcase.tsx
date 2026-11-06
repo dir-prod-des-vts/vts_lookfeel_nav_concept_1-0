@@ -331,7 +331,7 @@ function App() {
           title="Basic table"
           description="Read-only table with no interactive features. Ideal for simple display."
         >
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg bg-card p-4">
             <DataTable
               columns={BASIC_COLUMNS}
               data={DATA.slice(0, 6)}
@@ -349,7 +349,7 @@ function App() {
           title="Sorting and filtering"
           description="Click column headers to sort. Global search filters across all columns. Per-column filter inputs appear below headers. Enable faceting for low-cardinality columns to show value counts as dropdowns."
         >
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg bg-card p-4">
             <DataTable
               columns={COLUMNS}
               data={DATA}
@@ -367,7 +367,7 @@ function App() {
           title="Pagination"
           description="Client-side pagination with configurable page sizes."
         >
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg bg-card p-4">
             <DataTable
               columns={COLUMNS}
               data={DATA}
@@ -386,7 +386,7 @@ function App() {
           title="Column management"
           description="Columns button opens a merged panel: toggle visibility, pin left/right, and reorder with arrows. Column resizing is via drag handles on header edges."
         >
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg bg-card p-4">
             <DataTable
               columns={COLUMNS}
               data={DATA}
@@ -408,7 +408,7 @@ function App() {
           title="Row features"
           description="Multi-row selection with header checkbox. Rows with subtenants can be expanded. Pin individual rows to top or bottom using the pin icon on hover."
         >
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg bg-card p-4">
             <DataTable
               columns={COLUMNS}
               data={DATA}
@@ -432,7 +432,7 @@ function App() {
           title="Grouping and aggregation"
           description="Click the group icon on Market or Type column headers to group rows. Aggregated rows show sum of SF and average NER. Expand groups to see individual rows."
         >
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg bg-card p-4">
             <DataTable
               columns={GROUPING_COLUMNS}
               data={DATA}
@@ -452,7 +452,7 @@ function App() {
           title="Cell selection"
           description="Click any cell to select it. Hold Shift and click another cell to select a rectangular range. Selected cells are highlighted."
         >
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg bg-card p-4">
             <DataTable
               columns={BASIC_COLUMNS}
               data={DATA.slice(0, 10)}
@@ -470,7 +470,7 @@ function App() {
           title="Full-featured table"
           description="All features enabled: sorting, search, column filters with faceting, visibility, row selection, expansion, row pinning, pagination, resizing, column pinning, and column ordering."
         >
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg bg-card p-4">
             <DataTable
               columns={COLUMNS}
               data={DATA}
@@ -498,7 +498,7 @@ function App() {
           title="Loading state"
           description="A skeleton animation fills the table while data is being fetched."
         >
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg bg-card p-4">
             <LoadingExample />
           </div>
         </Section>
@@ -511,7 +511,7 @@ function App() {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">No data</p>
-              <div className="rounded-lg border border-border bg-card p-4">
+              <div className="rounded-lg bg-card p-4">
                 <DataTable
                   columns={BASIC_COLUMNS}
                   data={[]}
@@ -525,7 +525,7 @@ function App() {
             </div>
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">Empty after filter (search to trigger)</p>
-              <div className="rounded-lg border border-border bg-card p-4">
+              <div className="rounded-lg bg-card p-4">
                 <DataTable
                   columns={BASIC_COLUMNS}
                   data={DATA.slice(0, 5)}
@@ -543,7 +543,7 @@ function App() {
           title="Error state"
           description="Shown when the data request fails. Displays an inline error message."
         >
-          <div className="rounded-lg border border-border bg-card p-4">
+          <div className="rounded-lg bg-card p-4">
             <DataTable
               columns={BASIC_COLUMNS}
               data={[]}
