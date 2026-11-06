@@ -301,11 +301,10 @@ function App() {
 
   React.useEffect(() => {
     document.documentElement.classList.toggle("dark", isDark)
-    document.documentElement.classList.add("bg-card")
   }, [isDark])
 
   return (
-    <div className="min-h-screen bg-card text-foreground">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="mx-auto max-w-6xl px-6 py-10 flex flex-col gap-12">
 
         {/* Header */}
