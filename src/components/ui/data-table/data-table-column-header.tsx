@@ -12,6 +12,8 @@ import {
   ChevronsRight,
   ChevronLeft,
   ChevronRight,
+  Layers,
+  X,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -30,6 +32,7 @@ interface DataTableColumnHeaderProps<TData, TValue> {
   className?: string
   enableColumnPinning?: boolean
   enableColumnOrdering?: boolean
+  enableGrouping?: boolean
 }
 
 function moveColumn<TData>(table: Table<TData>, columnId: string, direction: "left" | "right" | "first" | "last") {
@@ -65,6 +68,7 @@ export function DataTableColumnHeader<TData, TValue>({
   className,
   enableColumnPinning = false,
   enableColumnOrdering = false,
+  enableGrouping = false,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort()) {
     return <div className={cn("text-sm font-medium", className)}>{title}</div>
@@ -110,6 +114,23 @@ export function DataTableColumnHeader<TData, TValue>({
             <ArrowDown className="size-3.5 text-muted-foreground" />
             Desc
           </DropdownMenuItem>
+
+          {enableGrouping && column.getCanGroup() && (
+            <>
+              <DropdownMenuSeparator />
+              {column.getIsGrouped() ? (
+                <DropdownMenuItem onClick={() => column.toggleGrouping()}>
+                  <X className="size-3.5 text-muted-foreground" />
+                  Ungroup
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => column.toggleGrouping()}>
+                  <Layers className="size-3.5 text-muted-foreground" />
+                  Group by
+                </DropdownMenuItem>
+              )}
+            </>
+          )}
 
           {enableColumnPinning && (
             <>

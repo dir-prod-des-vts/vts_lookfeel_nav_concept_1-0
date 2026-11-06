@@ -244,11 +244,11 @@ function LoadingExample() {
 const GROUPING_COLUMNS: ColumnDef<LeaseRow>[] = [
   {
     accessorKey: "market",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Market" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Market" enableGrouping />,
   },
   {
     accessorKey: "type",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Type" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Type" enableGrouping />,
   },
   {
     accessorKey: "tenant",
