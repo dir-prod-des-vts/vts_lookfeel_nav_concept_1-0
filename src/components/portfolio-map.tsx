@@ -21,8 +21,8 @@ L.Icon.Default.mergeOptions({
 })
 
 const TILE_STYLES = [
-  { key: "Canvas/World_Dark_Gray_Base",  label: "Dark" },
   { key: "Canvas/World_Light_Gray_Base", label: "Minimal" },
+  { key: "Canvas/World_Dark_Gray_Base",  label: "Dark" },
   { key: "World_Street_Map",             label: "Street" },
   { key: "World_Topo_Map",               label: "Outdoors" },
   { key: "World_Imagery",                label: "Satellite" },
@@ -298,7 +298,7 @@ export function PortfolioMap({ assets, onAssetClick, className, activeFilters, m
   const boundsRef = React.useRef<L.LatLngBounds | null>(null)
   const [height, setHeight] = React.useState(400)
   const [isFullscreen, setIsFullscreen] = React.useState(false)
-  const [tileStyle, setTileStyle] = React.useState<TileStyleKey>("Canvas/World_Dark_Gray_Base")
+  const [tileStyle, setTileStyle] = React.useState<TileStyleKey>("Canvas/World_Light_Gray_Base")
   const { filtered: filteredAssets, dimmed } = React.useMemo(() => applyMapFilter(assets, mapFilter ?? null), [assets, mapFilter])
 
   React.useLayoutEffect(() => {
