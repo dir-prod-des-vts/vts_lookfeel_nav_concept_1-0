@@ -1259,7 +1259,7 @@ export default function App() {
               mapFilter={portfolioMapFilter}
             />
           )}
-          {!portfolioMapView && activePortfolioViewId !== "pv-assets" && portfolioCardRows.map((row, i) => {
+          {activePortfolioViewId !== "pv-assets" && portfolioCardRows.map((row, i) => {
             const rowSpan = row.reduce((s, id) => s + (OVERVIEW_CARD_DEFS.find(c => c.id === id)?.span ?? 1), 0)
             return (
               <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4">
