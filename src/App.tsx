@@ -786,10 +786,10 @@ export default function App() {
     if (pvView) portfolioViews.selectView(pvView)
     if (ovView) overviewViews.selectView(ovView)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
-  const [portfolioMapView, setPortfolioMapView] = React.useState(false)
+  const [portfolioMapView, setPortfolioMapView] = React.useState(() => parseHash().pvDisplay === "map")
   const [portfolioMapFilter, setPortfolioMapFilter] = React.useState<string | null>(null)
-  const [portfolioCardSort, setPortfolioCardSort] = React.useState<PortfolioSortKey>("name_asc")
-  const [portfolioView, setPortfolioView] = React.useState<"cards" | "table">("cards")
+  const [portfolioCardSort, setPortfolioCardSort] = React.useState<PortfolioSortKey>(() => (parseHash().pvSort as PortfolioSortKey) ?? "name_asc")
+  const [portfolioView, setPortfolioView] = React.useState<"cards" | "table">(() => parseHash().pvDisplay === "table" ? "table" : "cards")
   const [selectedSpace, setSelectedSpace] = React.useState<SpaceRef | null>(null)
   const [selectedSpaceStatus, setSelectedSpaceStatus] = React.useState<SpaceStatus>("Available")
   const [selectedLease, setSelectedLease] = React.useState<Lease | null>(null)
