@@ -782,8 +782,7 @@ export default function App() {
   const [insightCardsNew, setInsightCardsNew] = React.useState(false)
   const portfolioViews = usePortfolioViews()
   React.useLayoutEffect(() => {
-    const { ovView } = parseHash()
-    if (ovView) overviewViews.selectView(ovView)
+    // bookmark is the source of truth on mount — no URL override
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const [portfolioMapView, setPortfolioMapView] = React.useState(() => parseHash().pvDisplay === "map")
   const [portfolioMapFilter, setPortfolioMapFilter] = React.useState<string | null>(null)
@@ -812,15 +811,13 @@ export default function App() {
       params.push(`pvSort=${portfolioCardSort}`)
       params.push(`pvDisplay=${portfolioMapView ? "map" : portfolioView}`)
     }
-    if (currentPage === "dashboard" && !isPortfolioPage) {
-      params.push(`ovView=${overviewViews.activeView?.id ?? "view-full"}`)
-    }
+    // ovView intentionally not written to URL — bookmark is source of truth on refresh
     if (params.length) base += `?${params.join("&")}`
     if (window.location.hash !== `#${base}`) {
       programmaticNav.current = true
       window.location.hash = base
     }
-  }, [currentPage, selectedAssetId, selectedDeal, agentView, navCollapsed, portfolioCardSort, portfolioMapView, portfolioView, overviewViews.activeView])
+  }, [currentPage, selectedAssetId, selectedDeal, agentView, navCollapsed, portfolioCardSort, portfolioMapView, portfolioView])
 
   React.useEffect(() => {
     const onHashChange = () => {
