@@ -583,6 +583,11 @@ function ColumnFilter<TData>({
       .slice(0, 8)
   }, [facets])
 
+  const totalCount = React.useMemo(() => {
+    if (!facets) return 0
+    return Array.from(facets.values()).reduce((sum, n) => sum + (n as number), 0)
+  }, [facets])
+
   if (facets && facets.size <= 10 && facets.size > 0) {
     // Show a select-style filter for low-cardinality columns
     return (
@@ -597,7 +602,7 @@ function ColumnFilter<TData>({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="__all__">
-            All {sortedFacets.length > 0 ? `(${facets.size})` : ""}
+            All {totalCount > 0 ? `(${totalCount})` : ""}
           </SelectItem>
           {sortedFacets.map(([v, count]) => (
             <SelectItem key={String(v)} value={String(v)}>
