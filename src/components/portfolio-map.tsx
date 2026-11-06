@@ -122,6 +122,7 @@ function ClusterLayer({ assets, onAssetClick, dimmed }: { assets: Asset[]; onAss
 
       marker.bindPopup(() => {
         const container = document.createElement("div")
+        if (document.documentElement.classList.contains("dark")) container.classList.add("dark")
         const root = ReactDOM.createRoot(container)
         rootsRef.current.push(root)
         root.render(<PopupContent asset={asset} onAssetClick={onAssetClick} />)
