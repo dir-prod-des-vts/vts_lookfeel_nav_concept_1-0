@@ -1,58 +1,24 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { LayoutGrid, Table2, ChevronDownIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { AgentBtn } from "@/components/agent-btn"
 import {
   Table, TableHeader, TableBody, TableRow, TableCell,
   SortableHead, useSortState,
 } from "@/components/sortable-table"
-import { FilterBar, toggleFilterValue, clearFilterKey } from "@/components/filter-chip"
-import type { FilterDef } from "@/components/filter-chip"
 import { ASSET_KPIS, ASSET_DETAILS } from "@/App"
 import { getDealHealth } from "@/components/deal-profile"
 import type { Deal } from "@/components/deals-page"
 
-type SortKey = "name" | "occupancy" | "avgNer" | "nerBudgetDelta" | "walt" | "needAttention" | "atRisk" | "caution" | "activeDeals"
+export type SortKey =
+  | "name" | "name_asc" | "name_desc"
+  | "occupancy" | "occupancy_asc" | "occupancy_desc"
+  | "avgNer" | "avgNer_asc" | "avgNer_desc"
+  | "nerBudgetDelta" | "nerBudgetDelta_asc" | "nerBudgetDelta_desc"
+  | "walt" | "walt_asc" | "walt_desc"
+  | "needAttention" | "needAttention_asc" | "needAttention_desc"
+  | "activeDeals" | "activeDeals_asc" | "activeDeals_desc"
+  | "atRisk" | "caution"
 
-const TABLE_FILTERS: FilterDef[] = [
-  {
-    key: "occupancy",
-    label: "Occupancy",
-    options: [
-      { label: "90%+", value: "high" },
-      { label: "75–90%", value: "mid" },
-      { label: "Below 75%", value: "low" },
-    ],
-  },
-  {
-    key: "health",
-    label: "Health",
-    options: [
-      { label: "At risk", value: "atRisk" },
-      { label: "Critical", value: "caution" },
-    ],
-  },
-  {
-    key: "expiring",
-    label: "Expiring",
-    options: [
-      { label: "Has expiries < 12 mo", value: "yes" },
-      { label: "None expiring", value: "no" },
-    ],
-  },
-  {
-    key: "nerVsBudget",
-    label: "NER vs budget",
-    options: [
-      { label: "Above budget", value: "above" },
-      { label: "Below budget", value: "below" },
-    ],
-  },
-]
 
 interface Asset {
   id: string
@@ -64,16 +30,27 @@ interface PortfolioGridProps {
   assets: Asset[]
   deals: Deal[]
   onAssetClick: (assetId: string) => void
+  hideContent?: boolean
+  cardSortKey?: SortKey
+  onCardSort?: (key: SortKey) => void
+  view?: "cards" | "table"
 }
 
-const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "name",           label: "Name" },
-  { key: "occupancy",      label: "Occupancy" },
-  { key: "avgNer",         label: "Avg NER" },
-  { key: "nerBudgetDelta", label: "NER vs budget" },
-  { key: "walt",            label: "WALT" },
-  { key: "needAttention",  label: "Need attention" },
-  { key: "activeDeals",    label: "Active deals" },
+export const SORT_OPTIONS: { key: SortKey; label: string; group?: string }[] = [
+  { key: "name_asc",            label: "Name ↑", group: "Name" },
+  { key: "name_desc",           label: "Name ↓", group: "Name" },
+  { key: "occupancy_desc",      label: "Occupancy ↓",     group: "Occupancy" },
+  { key: "occupancy_asc",       label: "Occupancy ↑",     group: "Occupancy" },
+  { key: "avgNer_desc",         label: "Avg NER ↓",       group: "Avg NER" },
+  { key: "avgNer_asc",          label: "Avg NER ↑",       group: "Avg NER" },
+  { key: "nerBudgetDelta_desc",  label: "NER vs budget ↓", group: "NER vs budget" },
+  { key: "nerBudgetDelta_asc",   label: "NER vs budget ↑", group: "NER vs budget" },
+  { key: "walt_asc",            label: "WALT ↑",          group: "WALT" },
+  { key: "walt_desc",           label: "WALT ↓",          group: "WALT" },
+  { key: "needAttention_desc",  label: "Need attention ↓", group: "Need attention" },
+  { key: "needAttention_asc",   label: "Need attention ↑", group: "Need attention" },
+  { key: "activeDeals_desc",    label: "Active deals ↓",  group: "Active deals" },
+  { key: "activeDeals_asc",     label: "Active deals ↑",  group: "Active deals" },
 ]
 
 function parseNer(s: string) { return parseFloat(s.replace(/[^0-9.]/g, "")) || 0 }
@@ -82,14 +59,9 @@ function parseDelta(s: string) {
   return s.trimStart().startsWith("-") ? -n : n
 }
 
-export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProps) {
-  const [view, setView] = React.useState<"cards" | "table">("cards")
-  const { sortKey, sortDir, handleSort } = useSortState<SortKey>("name")
-  const [activeFilters, setActiveFilters] = React.useState<Record<string, string[]>>({})
-
-  function onToggle(key: string, value: string) { setActiveFilters(prev => toggleFilterValue(prev, key, value)) }
-  function onClear(key: string) { setActiveFilters(prev => clearFilterKey(prev, key)) }
-  function onClearAll() { setActiveFilters({}) }
+export function PortfolioGrid({ assets, deals, onAssetClick, hideContent, cardSortKey, onCardSort: _onCardSort, view = "cards" }: PortfolioGridProps) {
+  const { sortKey: internalSortKey, sortDir, handleSort } = useSortState<SortKey>("name")
+  const sortKey = cardSortKey ?? internalSortKey
 
   const enriched = React.useMemo(() => assets.map(asset => {
     const kpi = ASSET_KPIS[asset.id]
@@ -100,90 +72,38 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
     return { asset, kpi, detail, atRisk, caution, needAttention: atRisk.length + caution.length }
   }), [assets, deals])
 
-  const sorted = React.useMemo(() => [...enriched].sort((a, b) => {
-    const ak = a.kpi, bk = b.kpi
-    if (!ak || !bk) return 0
-    let av: number | string, bv: number | string
-    switch (sortKey) {
-      case "name":           av = a.asset.name;              bv = b.asset.name; break
-      case "occupancy":      av = ak.occupancy;               bv = bk.occupancy; break
-      case "avgNer":         av = parseNer(ak.avgNer);        bv = parseNer(bk.avgNer); break
-      case "nerBudgetDelta": av = parseDelta(ak.nerBudgetDelta); bv = parseDelta(bk.nerBudgetDelta); break
-      case "walt":           av = parseFloat(ak.walt);        bv = parseFloat(bk.walt); break
-      case "needAttention":  av = a.needAttention;            bv = b.needAttention; break
-      case "atRisk":         av = a.atRisk.length;            bv = b.atRisk.length; break
-      case "caution":        av = a.caution.length;           bv = b.caution.length; break
-      case "activeDeals":    av = ak.activeDeals;             bv = bk.activeDeals; break
-      default:               av = a.asset.name;               bv = b.asset.name
-    }
-    const cmp = typeof av === "string" ? av.localeCompare(bv as string) : (av as number) - (bv as number)
-    return sortDir === "asc" ? cmp : -cmp
-  }), [enriched, sortKey, sortDir])
+  const sorted = React.useMemo(() => {
+    const [baseKey, dirSuffix] = sortKey.includes("_") ? sortKey.split(/_(?=asc$|desc$)/) : [sortKey, null]
+    const dir = dirSuffix ?? sortDir
+    return [...enriched].sort((a, b) => {
+      const ak = a.kpi, bk = b.kpi
+      if (!ak || !bk) return 0
+      let av: number | string, bv: number | string
+      switch (baseKey) {
+        case "name":
+        case "name_asc":
+        case "name_desc":      av = a.asset.name;                   bv = b.asset.name; break
+        case "occupancy":      av = ak.occupancy;                    bv = bk.occupancy; break
+        case "avgNer":         av = parseNer(ak.avgNer);             bv = parseNer(bk.avgNer); break
+        case "nerBudgetDelta": av = parseDelta(ak.nerBudgetDelta);   bv = parseDelta(bk.nerBudgetDelta); break
+        case "walt":           av = parseFloat(ak.walt);             bv = parseFloat(bk.walt); break
+        case "needAttention":  av = a.needAttention;                 bv = b.needAttention; break
+        case "atRisk":         av = a.atRisk.length;                 bv = b.atRisk.length; break
+        case "caution":        av = a.caution.length;                bv = b.caution.length; break
+        case "activeDeals":    av = ak.activeDeals;                  bv = bk.activeDeals; break
+        default:               av = a.asset.name;                    bv = b.asset.name
+      }
+      const cmp = typeof av === "string" ? av.localeCompare(bv as string) : (av as number) - (bv as number)
+      return dir === "asc" ? cmp : -cmp
+    })
+  }, [enriched, sortKey, sortDir])
 
-  const filtered = React.useMemo(() => sorted.filter(({ kpi, atRisk, caution }) => {
-    if (!kpi) return true
-    const occ = activeFilters.occupancy ?? []
-    if (occ.length > 0) {
-      const bucket = kpi.occupancy >= 90 ? "high" : kpi.occupancy >= 75 ? "mid" : "low"
-      if (!occ.includes(bucket)) return false
-    }
-    const health = activeFilters.health ?? []
-    if (health.length > 0) {
-      const hasAtRisk = atRisk.length > 0
-      const hasCaution = caution.length > 0
-      if (!health.some(h => (h === "atRisk" && hasAtRisk) || (h === "caution" && hasCaution))) return false
-    }
-    const exp = activeFilters.expiring ?? []
-    if (exp.length > 0) {
-      const waltVal = parseFloat(kpi.walt) || 0
-      const hasLowWalt = waltVal < 3
-      if (!exp.some(e => (e === "yes" && hasLowWalt) || (e === "no" && !hasLowWalt))) return false
-    }
-    const ner = activeFilters.nerVsBudget ?? []
-    if (ner.length > 0) {
-      if (!ner.some(n => (n === "above" && kpi.nerBudgetUp) || (n === "below" && !kpi.nerBudgetUp))) return false
-    }
-    return true
-  }), [sorted, activeFilters])
+  const filtered = sorted
+
+  if (hideContent) return null
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        {view === "cards" && (
-          <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 font-normal whitespace-nowrap" />}>
-              Sort: {SORT_OPTIONS.find(o => o.key === sortKey)?.label ?? "Name"}
-              <ChevronDownIcon data-icon="inline-end" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-48">
-              {SORT_OPTIONS.map(opt => (
-                <DropdownMenuItem
-                  key={opt.key}
-                  onClick={() => handleSort(opt.key)}
-                  className={cn(sortKey === opt.key && "font-medium text-primary")}
-                >
-                  {opt.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
-        {view === "table" && (
-          <FilterBar filters={TABLE_FILTERS} active={activeFilters} onToggle={onToggle} onClear={onClear} onClearAll={onClearAll} chipClassName="h-8" />
-        )}
-        <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon" onClick={() => setView("cards")}
-            className={cn("h-8 w-8", view === "cards" && "bg-muted")}>
-            <LayoutGrid className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={() => setView("table")}
-            className={cn("h-8 w-8", view === "table" && "bg-muted")}>
-            <Table2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
       {/* Card view */}
       {view === "cards" && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -256,7 +176,6 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
       {/* Table view */}
       {view === "table" && (
         <div className="rounded-2xl bg-card/70 backdrop-blur-md border border-border/70 p-5">
-          <div className="overflow-x-auto">
           <Table className="border-collapse">
             <TableHeader>
               <TableRow className="border-b-2 border-border/60 hover:bg-transparent">
@@ -292,7 +211,7 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-1 rounded-full bg-border overflow-hidden">
                           <div
-                            className={cn("h-full rounded-full", kpi.occupancy >= 90 ? "bg-success" : kpi.occupancy >= 75 ? "bg-primary" : "bg-warning")}
+                            className={cn("h-full rounded-full", kpi.occupancy >= 90 ? "bg-success" : kpi.occupancy >= 75 ? "bg-warning" : "bg-destructive")}
                             style={{ width: `${kpi.occupancy}%` }}
                           />
                         </div>
@@ -325,7 +244,6 @@ export function PortfolioGrid({ assets, deals, onAssetClick }: PortfolioGridProp
               })}
             </TableBody>
           </Table>
-          </div>
         </div>
       )}
     </div>

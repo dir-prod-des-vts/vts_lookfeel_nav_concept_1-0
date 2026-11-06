@@ -3,6 +3,7 @@ import { cn, cardBase } from "@/lib/utils"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { FilterBar, toggleFilterValue, clearFilterKey } from "@/components/filter-chip"
@@ -950,6 +951,7 @@ export function DealsPage({ onDealClick, assetContext, allowedAssets }: { onDeal
         />
         <div className="ml-auto flex items-center gap-2 shrink-0">
           <CardManager visible={visibleCards} order={cardOrder} onToggle={toggleCard} onReorder={updateCardOrder} />
+          <Separator orientation="vertical" className="mx-1 bg-foreground/35 !h-5 !self-center" />
           <DropdownMenu>
             <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium" />}>
               <Download className="h-3.5 w-3.5" />Export<ChevronDown className="h-3 w-3 opacity-60" />

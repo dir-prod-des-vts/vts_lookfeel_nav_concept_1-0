@@ -17,9 +17,10 @@ interface BuildingHeaderProps {
   onAskVts?: () => void
   onCommand?: (cmd: unknown) => void
   commandSuggestions?: ChatCommand[]
+  suggestions?: string[]
 }
 
-function BuildingHeader({ image, name, address, city, badges, actions, className, onCommand, commandSuggestions }: BuildingHeaderProps) {
+function BuildingHeader({ image, name, address, city, badges, actions, className, onCommand, commandSuggestions, suggestions }: BuildingHeaderProps) {
   const { pattern, openChat } = useChatPattern()
   const [popoverOpen, setPopoverOpen] = React.useState(false)
 
@@ -27,7 +28,7 @@ function BuildingHeader({ image, name, address, city, badges, actions, className
     if (pattern === "popover") {
       setPopoverOpen(true)
     } else {
-      openChat({ onCommand, commandSuggestions })
+      openChat({ onCommand, commandSuggestions, suggestions })
     }
   }
 

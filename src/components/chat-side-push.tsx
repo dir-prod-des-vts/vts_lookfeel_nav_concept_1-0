@@ -185,6 +185,13 @@ export function ChatSidePush() {
                       {cs.label}
                     </button>
                   ))
+                : suggestions.length > 0
+                ? suggestions.map((s, i) => (
+                    <button key={i} onClick={() => sendText(s)}
+                      className="text-left text-xs px-3 py-2 rounded-md border border-primary text-primary bg-transparent hover:bg-primary/10 transition-colors leading-snug w-full">
+                      {s}
+                    </button>
+                  ))
                 : SUGGESTED.slice(0, 4).map((s) => (
                     <button key={s.label} onClick={() => sendText(s.prompt)}
                       className="text-left text-xs px-3 py-2 rounded-md border border-primary text-primary bg-transparent hover:bg-primary/10 transition-colors leading-snug w-full">

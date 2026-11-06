@@ -9,7 +9,8 @@ import type { CriticalDate } from "@/components/critical-dates"
 import { FinancialPerformance } from "@/components/financial-performance"
 import { ActionLevers } from "@/components/action-levers"
 import { DealActions } from "@/components/deal-actions"
-import { PortfolioGrid } from "@/components/portfolio-grid"
+import { PortfolioGrid, SORT_OPTIONS, type SortKey as PortfolioSortKey } from "@/components/portfolio-grid"
+import { PortfolioMap } from "@/components/portfolio-map"
 import { KpiBar } from "@/components/kpi-bar"
 import { AgentsPage } from "@/components/agents-page"
 import { DealsPage, DEALS, CardManager } from "@/components/deals-page"
@@ -78,7 +79,7 @@ function SidePushMain({ children, navCollapsed }: { children: React.ReactNode; n
   return (
     <main
       className={cn(
-        "transition-all duration-300 ease-in-out pr-4 pb-4 overflow-x-hidden flex-1 flex flex-col overflow-y-auto",
+        "transition-all duration-300 ease-in-out pr-4 pb-4 flex-1 flex flex-col overflow-y-auto overflow-x-clip",
         "pt-[72px] pl-4",
         navCollapsed ? "md:pt-4 md:pl-[104px]" : "md:pt-4 md:pl-[264px]"
       )}
@@ -89,11 +90,12 @@ function SidePushMain({ children, navCollapsed }: { children: React.ReactNode; n
   )
 }
 import { cn, cardBase } from "@/lib/utils"
-import { type LucideIcon, UserCircle, BellRing, Activity, Plus, Pencil, Trash2, Bookmark, ChevronDownIcon, Sparkles, AlertTriangle, Clock, Download, Share2, FileType2, FileSpreadsheet, ChevronDown } from "lucide-react"
+import { type LucideIcon, UserCircle, BellRing, Activity, Plus, Pencil, Trash2, Bookmark, ChevronDownIcon, Sparkles, AlertTriangle, Clock, Download, Share2, FileType2, FileSpreadsheet, ChevronDown, LayoutGrid, Table2, Map } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Separator } from "@/components/ui/separator"
 import buildingImg from "@/assets/building.jpg"
 
 // ── Overview view switcher ─────────────────────────────────────────────────────
@@ -362,19 +364,19 @@ function migrateViews(saved: OverviewView[]): OverviewView[] {
   })
 }
 
-function initialViewId(storageViewsKey: string, storageActiveKey: string, builtIns: OverviewView[], migrate: (v: OverviewView[]) => OverviewView[] = x => x): string {
+function initialViewId(storageViewsKey: string, _storageActiveKey: string, builtIns: OverviewView[], migrate: (v: OverviewView[]) => OverviewView[] = x => x): string {
   try {
     const s = localStorage.getItem(storageViewsKey)
     const views = s ? migrate(JSON.parse(s)) : builtIns
-    return localStorage.getItem(storageActiveKey) ?? views.find(v => v.isDefault)?.id ?? builtIns[0].id
+    return views.find(v => v.isDefault)?.id ?? builtIns[0].id
   } catch { return builtIns[0].id }
 }
 
-function initialLiveCards(storageViewsKey: string, storageActiveKey: string, builtIns: OverviewView[], migrate: (v: OverviewView[]) => OverviewView[] = x => x): OverviewCardId[] {
+function initialLiveCards(storageViewsKey: string, _storageActiveKey: string, builtIns: OverviewView[], migrate: (v: OverviewView[]) => OverviewView[] = x => x): OverviewCardId[] {
   try {
     const s = localStorage.getItem(storageViewsKey)
     const views = s ? migrate(JSON.parse(s)) : builtIns
-    const id = localStorage.getItem(storageActiveKey) ?? views.find(v => v.isDefault)?.id ?? builtIns[0].id
+    const id = views.find(v => v.isDefault)?.id ?? builtIns[0].id
     return views.find(v => v.id === id)?.cards ?? builtIns[0].cards
   } catch { return builtIns[0].cards }
 }
@@ -415,6 +417,8 @@ function useOverviewViews() {
   }
   function setDefault(id: string) {
     persistViews(views.map(v => ({ ...v, isDefault: v.id === id })))
+    localStorage.setItem("overview:activeViewId", id)
+    selectView(id)
   }
   function toggleCard(cardId: OverviewCardId) {
     setLiveCards(prev => prev.includes(cardId) ? prev.filter(c => c !== cardId) : [...prev, cardId])
@@ -459,7 +463,11 @@ function usePortfolioViews() {
     const next = views.filter(v => v.id !== id); persist(next)
     if (activeViewId === id) selectView(next[0]?.id ?? BUILT_IN_PORTFOLIO_VIEWS[0].id)
   }
-  function setDefault(id: string) { persist(views.map(v => ({ ...v, isDefault: v.id === id }))) }
+  function setDefault(id: string) {
+    persist(views.map(v => ({ ...v, isDefault: v.id === id })))
+    localStorage.setItem("portfolio:activeViewId", id)
+    selectView(id)
+  }
   function toggleCard(cardId: OverviewCardId) {
     setLiveCards(prev => prev.includes(cardId) ? prev.filter(c => c !== cardId) : [...prev, cardId])
   }
@@ -469,7 +477,7 @@ function usePortfolioViews() {
   return { views, activeView, liveCards, selectView, saveView, renameView, deleteView, setDefault, toggleCard, reorderCards }
 }
 
-function ViewSwitcher({ views, activeView, onSelect, onSave, onRename, onDelete, onSetDefault, prefix = "Asset:" }: {
+function ViewSwitcher({ views, activeView, onSelect, onSave, onRename, onDelete, onSetDefault, prefix = "Asset view:" }: {
   views: OverviewView[]
   activeView: OverviewView
   onSelect: (id: string) => void
@@ -649,17 +657,17 @@ function MultiImage({ assetIds }: { assetIds: string[] }) {
 }
 
 export const ASSETS = [
-  { id: "vts-tower",     name: "VTS Tower Headquarters",  address: "114 West 41st Street, New York, NY 10036" },
-  { id: "one-financial", name: "One Financial Plaza",      address: "1 Financial Plaza, Providence, RI 02903" },
-  { id: "empire-state",  name: "Empire State Building",    address: "350 5th Ave, New York, NY 10118" },
-  { id: "salesforce",    name: "Salesforce Tower",         address: "415 Mission St, San Francisco, CA 94105" },
-  { id: "willis",        name: "Willis Tower",             address: "233 S Wacker Dr, Chicago, IL 60606" },
-  { id: "hudson-yards",  name: "30 Hudson Yards",          address: "30 Hudson Yards, New York, NY 10001" },
-  { id: "one-wtc",       name: "One World Trade Center",   address: "285 Fulton St, New York, NY 10007" },
-  { id: "transamerica",  name: "Transamerica Pyramid",     address: "600 Montgomery St, San Francisco, CA 94111" },
-  { id: "peachtree",     name: "One Peachtree Center",     address: "303 Peachtree St NE, Atlanta, GA 30308" },
-  { id: "union-square",  name: "Two Union Square",         address: "601 Union St, Seattle, WA 98101" },
-  { id: "200-berkeley",  name: "200 Berkeley Street",      address: "200 Berkeley St, Boston, MA 02116" },
+  { id: "vts-tower",     name: "VTS Tower Headquarters",  address: "114 West 41st Street, New York, NY 10036",  lat: 40.7549,  lng: -73.9922,  market: "New York" },
+  { id: "one-financial", name: "One Financial Plaza",      address: "1 Financial Plaza, Providence, RI 02903",   lat: 41.8231,  lng: -71.4119,  market: "Providence" },
+  { id: "empire-state",  name: "Empire State Building",    address: "350 5th Ave, New York, NY 10118",           lat: 40.7484,  lng: -73.9856,  market: "New York" },
+  { id: "salesforce",    name: "Salesforce Tower",         address: "415 Mission St, San Francisco, CA 94105",   lat: 37.7897,  lng: -122.3966, market: "San Francisco" },
+  { id: "willis",        name: "Willis Tower",             address: "233 S Wacker Dr, Chicago, IL 60606",        lat: 41.8789,  lng: -87.6359,  market: "Chicago" },
+  { id: "hudson-yards",  name: "30 Hudson Yards",          address: "30 Hudson Yards, New York, NY 10001",       lat: 40.7540,  lng: -74.0019,  market: "New York" },
+  { id: "one-wtc",       name: "One World Trade Center",   address: "285 Fulton St, New York, NY 10007",         lat: 40.7127,  lng: -74.0134,  market: "New York" },
+  { id: "transamerica",  name: "Transamerica Pyramid",     address: "600 Montgomery St, San Francisco, CA 94111",lat: 37.7952,  lng: -122.4028, market: "San Francisco" },
+  { id: "peachtree",     name: "One Peachtree Center",     address: "303 Peachtree St NE, Atlanta, GA 30308",    lat: 33.7579,  lng: -84.3878,  market: "Atlanta" },
+  { id: "union-square",  name: "Two Union Square",         address: "601 Union St, Seattle, WA 98101",           lat: 47.6062,  lng: -122.3321, market: "Seattle" },
+  { id: "200-berkeley",  name: "200 Berkeley Street",      address: "200 Berkeley St, Boston, MA 02116",         lat: 42.3488,  lng: -71.0756,  market: "Boston" },
 ]
 
 export const PORTFOLIOS = [
@@ -750,7 +758,7 @@ export default function App() {
     const page = parts[0] || "dashboard"
     const asset = parts[1] || "vts-tower"
     const params = new URLSearchParams(queryPart ?? "")
-    return { page, asset, dealId: params.get("deal"), agentId: params.get("agent"), view: params.get("view"), comp: params.get("comp"), nav: params.get("nav") }
+    return { page, asset, dealId: params.get("deal"), agentId: params.get("agent"), view: params.get("view"), comp: params.get("comp"), nav: params.get("nav"), pvView: params.get("pvView"), pvSort: params.get("pvSort"), pvDisplay: params.get("pvDisplay"), ovView: params.get("ovView") }
   }
 
   const programmaticNav = React.useRef(false)
@@ -771,6 +779,15 @@ export default function App() {
   const [overviewInsightCards, setOverviewInsightCards] = React.useState<Array<"asset-valuation" | "leasing-strategy">>([])
   const [insightCardsNew, setInsightCardsNew] = React.useState(false)
   const portfolioViews = usePortfolioViews()
+  React.useLayoutEffect(() => {
+    const { pvView, ovView } = parseHash()
+    if (pvView) portfolioViews.selectView(pvView)
+    if (ovView) overviewViews.selectView(ovView)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const [portfolioMapView, setPortfolioMapView] = React.useState(() => parseHash().pvDisplay === "map")
+  const [portfolioMapFilter, setPortfolioMapFilter] = React.useState<string | null>(null)
+  const [portfolioCardSort, setPortfolioCardSort] = React.useState<PortfolioSortKey>(() => (parseHash().pvSort as PortfolioSortKey) ?? "name_asc")
+  const [portfolioView, setPortfolioView] = React.useState<"cards" | "table">(() => parseHash().pvDisplay === "table" ? "table" : "cards")
   const [selectedSpace, setSelectedSpace] = React.useState<SpaceRef | null>(null)
   const [selectedSpaceStatus, setSelectedSpaceStatus] = React.useState<SpaceStatus>("Available")
   const [selectedLease, setSelectedLease] = React.useState<Lease | null>(null)
@@ -789,17 +806,25 @@ export default function App() {
     if (selectedDeal) params.push(`deal=${selectedDeal.id}`)
     if (currentPage === "ai" && agentView === "grid") params.push("view=grid")
     params.push(navCollapsed ? "nav=collapsed" : "nav=expanded")
+    if (currentPage === "dashboard" && (selectedAssetId === "all" || selectedAssetId?.startsWith("portfolio-"))) {
+      params.push(`pvView=${portfolioViews.activeView?.id ?? "pv-assets"}`)
+      params.push(`pvSort=${portfolioCardSort}`)
+      params.push(`pvDisplay=${portfolioMapView ? "map" : portfolioView}`)
+    }
+    if (currentPage === "dashboard" && selectedAssetId !== "all" && !selectedAssetId?.startsWith("portfolio-")) {
+      params.push(`ovView=${overviewViews.activeView?.id ?? "view-full"}`)
+    }
     if (params.length) base += `?${params.join("&")}`
     if (window.location.hash !== `#${base}`) {
       programmaticNav.current = true
       window.location.hash = base
     }
-  }, [currentPage, selectedAssetId, selectedDeal, agentView, navCollapsed])
+  }, [currentPage, selectedAssetId, selectedDeal, agentView, navCollapsed, portfolioViews.activeView, portfolioCardSort, portfolioMapView, portfolioView, overviewViews.activeView])
 
   React.useEffect(() => {
     const onHashChange = () => {
       if (programmaticNav.current) { programmaticNav.current = false; return }
-      const { page, asset, dealId, agentId, comp, nav } = parseHash()
+      const { page, asset, dealId, agentId, comp, nav, pvView, pvSort, pvDisplay, ovView } = parseHash()
       if (nav === "collapsed") setNavCollapsed(true)
       else if (nav === "expanded") setNavCollapsed(false)
       setCurrentPage(page)
@@ -807,6 +832,12 @@ export default function App() {
       if (page === "leases") setSelectedLease(null)
       setSelectedAssetId(asset)
       setDefaultAgentId(agentId ?? undefined)
+      if (pvView) portfolioViews.selectView(pvView)
+      if (pvSort) setPortfolioCardSort(pvSort as PortfolioSortKey)
+      if (pvDisplay === "map") { setPortfolioMapView(true) }
+      else if (pvDisplay === "table") { setPortfolioMapView(false); setPortfolioView("table") }
+      else if (pvDisplay === "cards") { setPortfolioMapView(false); setPortfolioView("cards") }
+      if (ovView) overviewViews.selectView(ovView)
       if (comp === "added") toast.success("Comp added", { description: "Salesforce · One Vanderbilt added to your comps database.", duration: 5000 })
       if (dealId) {
         const deal = DEALS.find(d => d.id === dealId) ?? null
@@ -1031,6 +1062,7 @@ export default function App() {
       const visibleAssets = selectedPortfolio
         ? ASSETS.filter(a => selectedPortfolio.assetIds.includes(a.id))
         : ASSETS
+      const filteredVisibleAssets = visibleAssets
       const visibleAssetNames = new Set(visibleAssets.map(a => a.name))
       const portfolioDeals = DEALS.filter(d => visibleAssetNames.has(d.asset))
       const portfolioAtRisk = portfolioDeals.filter(d => getDealHealth(d.id, d.stage as any).score === "at-risk")
@@ -1070,9 +1102,25 @@ export default function App() {
         }
       }
 
+      const MAP_COMMANDS = [
+        { label: "Show assets below 80% occupancy", reply: "Highlighting assets with occupancy below 80% — 3 assets flagged across San Francisco and New York.", cmd: "occ-low" },
+        { label: "Flag leases expiring within 12 months", reply: "Flagging assets with near-term lease expirations — 4 assets have leases expiring before next year.", cmd: "expiring" },
+        { label: "Surface at-risk deals by market", reply: "Highlighting markets with at-risk deals — New York and Chicago have the highest concentration.", cmd: "at-risk" },
+        { label: "Show assets where WALT < 2 years", reply: "3 assets have a weighted average lease term under 2 years — these are your most urgent re-leasing priorities.", cmd: "walt-low" },
+        { label: "Reset map to show all assets", reply: "Map reset — showing all assets across your portfolio.", cmd: "reset" },
+      ]
+
+      function handleMapCommand(cmd: unknown) {
+        setPortfolioMapFilter(cmd as string)
+      }
+
       return (
         <div className="space-y-4">
-          <BuildingHeader {...pagedHeaderProps} />
+          <BuildingHeader
+            {...pagedHeaderProps}
+            commandSuggestions={portfolioMapView ? MAP_COMMANDS : undefined}
+            onCommand={portfolioMapView ? handleMapCommand : undefined}
+          />
 
           {/* Portfolio view switcher — above KPIs */}
           <div className="flex flex-wrap items-center gap-2">
@@ -1084,18 +1132,80 @@ export default function App() {
               onRename={portfolioViews.renameView}
               onDelete={portfolioViews.deleteView}
               onSetDefault={portfolioViews.setDefault}
-              prefix="Portfolio:"
+              prefix="Portfolio view:"
             />
-            {activePortfolioViewId !== "pv-assets" && (
-              <CardManager
-                defs={PORTFOLIO_CARD_DEFS}
-                visible={new Set(portfolioViews.liveCards)}
-                order={[...portfolioViews.liveCards, ...PORTFOLIO_CARD_DEFS.map(c => c.id).filter(id => !portfolioViews.liveCards.includes(id as OverviewCardId))]}
-                onToggle={id => portfolioViews.toggleCard(id as OverviewCardId)}
-                onReorder={next => portfolioViews.reorderCards(next.filter(id => portfolioViews.liveCards.includes(id as OverviewCardId)) as OverviewCardId[])}
-              />
+            {activePortfolioViewId === "pv-assets" && !portfolioMapView && portfolioView === "cards" && (
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 font-normal whitespace-nowrap" />}>
+                  Sort: {SORT_OPTIONS.find(o => o.key === portfolioCardSort)?.group ?? SORT_OPTIONS.find(o => o.key === portfolioCardSort)?.label ?? "Name"}{portfolioCardSort.endsWith("_asc") ? " ↑" : portfolioCardSort.endsWith("_desc") ? " ↓" : ""}
+                  <ChevronDown className="h-3 w-3 opacity-60" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-52">
+                  {(() => {
+                    const groups: { label: string; ascKey: PortfolioSortKey | null; descKey: PortfolioSortKey | null }[] = []
+                    SORT_OPTIONS.forEach(opt => {
+                      if (!opt.group) return
+                      let g = groups.find(x => x.label === opt.group)
+                      if (!g) { g = { label: opt.group, ascKey: null, descKey: null }; groups.push(g) }
+                      if (opt.key.endsWith("_asc")) g.ascKey = opt.key
+                      else g.descKey = opt.key
+                    })
+                    return groups.map((g, i) => (
+                      <React.Fragment key={g.label}>
+                        {i > 0 && <DropdownMenuSeparator />}
+                        {(
+                          <div className="flex items-center justify-between px-2 py-1.5">
+                            <span className={cn("text-sm", (portfolioCardSort === g.ascKey || portfolioCardSort === g.descKey) ? "font-medium text-primary" : "text-foreground")}>
+                              {g.label}
+                            </span>
+                            <div className="flex items-center rounded-md border border-border overflow-hidden">
+                              <button
+                                onClick={() => setPortfolioCardSort(g.ascKey!)}
+                                title={g.label === "Name" ? "A → Z" : "Low → High"}
+                                className={cn("px-2 py-0.5 text-xs transition-colors", portfolioCardSort === g.ascKey ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground")}
+                              >↑</button>
+                              <div className="w-px h-4 bg-border" />
+                              <button
+                                onClick={() => setPortfolioCardSort(g.descKey!)}
+                                title={g.label === "Name" ? "Z → A" : "High → Low"}
+                                className={cn("px-2 py-0.5 text-xs transition-colors", portfolioCardSort === g.descKey ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground")}
+                              >↓</button>
+                            </div>
+                          </div>
+                        )}
+                      </React.Fragment>
+                    ))
+                  })()}
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
             <div className="ml-auto flex items-center gap-2">
+              {activePortfolioViewId === "pv-assets" && (
+                <div className="flex items-center gap-1">
+                  <Button variant="outline" size="icon" onClick={() => { setPortfolioView("cards"); if (portfolioMapView) setPortfolioMapView(false) }}
+                    className={cn("h-8 w-8", !portfolioMapView && portfolioView === "cards" && "bg-muted")}>
+                    <LayoutGrid className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={() => { setPortfolioView("table"); if (portfolioMapView) setPortfolioMapView(false) }}
+                    className={cn("h-8 w-8", !portfolioMapView && portfolioView === "table" && "bg-muted")}>
+                    <Table2 className="h-4 w-4" />
+                  </Button>
+                  <Button variant="outline" size="icon" onClick={() => setPortfolioMapView(v => !v)}
+                    className={cn("h-8 w-8", portfolioMapView && "bg-muted")}>
+                    <Map className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+              {activePortfolioViewId !== "pv-assets" && (
+                <CardManager
+                  defs={PORTFOLIO_CARD_DEFS}
+                  visible={new Set(portfolioViews.liveCards)}
+                  order={[...portfolioViews.liveCards, ...PORTFOLIO_CARD_DEFS.map(c => c.id).filter(id => !portfolioViews.liveCards.includes(id as OverviewCardId))]}
+                  onToggle={id => portfolioViews.toggleCard(id as OverviewCardId)}
+                  onReorder={next => portfolioViews.reorderCards(next.filter(id => portfolioViews.liveCards.includes(id as OverviewCardId)) as OverviewCardId[])}
+                />
+              )}
+              <Separator orientation="vertical" className="mx-1 bg-foreground/35 !h-5 !self-center" />
               <DropdownMenu>
                 <DropdownMenuTrigger render={<Button variant="outline" size="sm" className="h-8 gap-1.5 text-sm font-medium" />}>
                   <Download className="h-3.5 w-3.5" />Export<ChevronDown className="h-3 w-3 opacity-60" />
@@ -1134,12 +1244,23 @@ export default function App() {
           {/* View content */}
           {activePortfolioViewId === "pv-assets" && (
             <PortfolioGrid
-              assets={visibleAssets}
+              assets={filteredVisibleAssets}
               deals={DEALS}
               onAssetClick={id => { setSelectedAssetId(id); setCurrentPage("dashboard") }}
+              hideContent={portfolioMapView}
+              cardSortKey={portfolioCardSort}
+              onCardSort={setPortfolioCardSort}
+              view={portfolioView}
             />
           )}
-          {activePortfolioViewId !== "pv-assets" && portfolioCardRows.map((row, i) => {
+          {portfolioMapView && (
+            <PortfolioMap
+              assets={filteredVisibleAssets.filter(a => a.lat != null) as any}
+              onAssetClick={id => { setSelectedAssetId(id); setCurrentPage("dashboard") }}
+              mapFilter={portfolioMapFilter}
+            />
+          )}
+          {!portfolioMapView && activePortfolioViewId !== "pv-assets" && portfolioCardRows.map((row, i) => {
             const rowSpan = row.reduce((s, id) => s + (OVERVIEW_CARD_DEFS.find(c => c.id === id)?.span ?? 1), 0)
             return (
               <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4">
