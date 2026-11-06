@@ -445,7 +445,7 @@ function App() {
               enablePagination
               pageSize={12}
               enableColumnFilters={false}
-              getRowCanExpand={() => true}
+              getRowCanExpand={(row) => row.getIsGrouped()}
             />
           </div>
         </Section>
