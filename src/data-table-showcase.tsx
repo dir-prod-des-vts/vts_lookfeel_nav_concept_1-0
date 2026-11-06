@@ -361,6 +361,7 @@ function App() {
               enableRowSelection={false}
               enableColumnFilters
               enableFaceting
+              enableColumnResizing
             />
           </div>
         </Section>
@@ -380,6 +381,7 @@ function App() {
               pageSizeOptions={[5, 10, 20]}
               enableRowSelection={false}
               enableColumnFilters={false}
+              enableColumnResizing
             />
           </div>
         </Section>
@@ -426,6 +428,7 @@ function App() {
               renderSubComponent={({ row }) => <SubtenantsPanel row={row} />}
               onRowSelectionChange={(rows) => console.log("Selected:", rows.map(r => r.original.id))}
               enableColumnFilters={false}
+              enableColumnResizing
             />
           </div>
         </Section>
@@ -445,6 +448,7 @@ function App() {
               enablePagination
               pageSize={12}
               enableColumnFilters={false}
+              enableColumnResizing
               getRowCanExpand={(row) => row.getIsGrouped()}
             />
           </div>
@@ -464,6 +468,7 @@ function App() {
               enableColumnFilters={false}
               enableGlobalFilter={false}
               enableColumnVisibility={false}
+              enableColumnResizing
             />
           </div>
         </Section>

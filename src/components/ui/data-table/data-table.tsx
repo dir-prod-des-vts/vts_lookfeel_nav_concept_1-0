@@ -442,11 +442,16 @@ export function DataTable<TData>({
                             <div
                               onMouseDown={header.getResizeHandler()}
                               onTouchStart={header.getResizeHandler()}
+                              onClick={(e) => e.stopPropagation()}
                               className={cn(
-                                "absolute right-0 top-0 h-full w-1 cursor-col-resize select-none touch-none opacity-0 hover:opacity-100 bg-border",
-                                header.column.getIsResizing() && "opacity-100 bg-primary"
+                                "absolute right-0 top-0 h-full w-4 cursor-col-resize select-none touch-none flex items-center justify-center group/resizer",
                               )}
-                            />
+                            >
+                              <div className={cn(
+                                "w-px h-4/5 bg-border opacity-0 group-hover/resizer:opacity-100 transition-opacity",
+                                header.column.getIsResizing() && "opacity-100 bg-primary w-0.5"
+                              )} />
+                            </div>
                           )}
                         </TableHead>
                       )
