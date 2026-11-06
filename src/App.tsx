@@ -782,8 +782,7 @@ export default function App() {
   const [insightCardsNew, setInsightCardsNew] = React.useState(false)
   const portfolioViews = usePortfolioViews()
   React.useLayoutEffect(() => {
-    const { pvView, ovView } = parseHash()
-    if (pvView) portfolioViews.selectView(pvView)
+    const { ovView } = parseHash()
     if (ovView) overviewViews.selectView(ovView)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const [portfolioMapView, setPortfolioMapView] = React.useState(() => parseHash().pvDisplay === "map")
@@ -810,7 +809,6 @@ export default function App() {
     params.push(navCollapsed ? "nav=collapsed" : "nav=expanded")
     const isPortfolioPage = currentPage === "dashboard" && (selectedAssetId === "all" || PORTFOLIOS.some(p => p.id === selectedAssetId))
     if (isPortfolioPage) {
-      params.push(`pvView=${portfolioViews.activeView?.id ?? "pv-assets"}`)
       params.push(`pvSort=${portfolioCardSort}`)
       params.push(`pvDisplay=${portfolioMapView ? "map" : portfolioView}`)
     }
@@ -822,7 +820,7 @@ export default function App() {
       programmaticNav.current = true
       window.location.hash = base
     }
-  }, [currentPage, selectedAssetId, selectedDeal, agentView, navCollapsed, portfolioViews.activeView, portfolioCardSort, portfolioMapView, portfolioView, overviewViews.activeView])
+  }, [currentPage, selectedAssetId, selectedDeal, agentView, navCollapsed, portfolioCardSort, portfolioMapView, portfolioView, overviewViews.activeView])
 
   React.useEffect(() => {
     const onHashChange = () => {
