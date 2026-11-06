@@ -17,6 +17,7 @@ import { DealsPage, DEALS, CardManager } from "@/components/deals-page"
 import type { Deal as DealsPageDeal } from "@/components/deals-page"
 import { DealProfile, TenantLogoImage, getDealHealth, type DealStatus } from "@/components/deal-profile"
 import { ThemeShowcase } from "@/components/theme-showcase"
+import { FilterMenu } from "@/components/filter-menu"
 import { AgentPrinciples } from "@/components/agent-principles"
 import { StackingPlan, type StackingPlanSpaceRef, type StackingPlanHandle, type StackingPlanCommand } from "@/components/stacking-plan"
 import { SpacesPage, type Space as SpacesPageSpace } from "@/components/spaces-page"
@@ -798,7 +799,7 @@ export default function App() {
   const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains("dark"))
 
   React.useEffect(() => {
-    const globalPages = ["ai", "theme", "principles", "activity", "reminders", "avatar", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm", "comp-email", "comp-email-forward", "comp-email-confirm", "ask-vts", "document-agent", "proposal-builder", "deal-monitor", "deal-monitor-email-am", "deal-monitor-email-broker", "deal-monitor-email-tenant", "deal-monitor-email-lawyer", "deal-monitor-email-owner"]
+    const globalPages = ["ai", "theme", "principles", "activity", "reminders", "avatar", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm", "comp-email", "comp-email-forward", "comp-email-confirm", "ask-vts", "document-agent", "proposal-builder", "deal-monitor", "deal-monitor-email-am", "deal-monitor-email-broker", "deal-monitor-email-tenant", "deal-monitor-email-lawyer", "deal-monitor-email-owner", "filter-menu"]
     let base = globalPages.includes(currentPage)
       ? `/${currentPage}`
       : `/${currentPage}/${selectedAssetId}`
@@ -939,6 +940,19 @@ export default function App() {
 
     if (page === "principles") {
       return <AgentPrinciples isDark={isDark} onToggleDark={toggleDark} />
+    }
+
+    if (page === "filter-menu") {
+      return (
+        <div className="min-h-screen bg-background text-foreground px-10 py-12 font-sans max-w-4xl mx-auto">
+          <div className="mb-8">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">Components</p>
+            <h1 className="text-3xl font-semibold text-foreground mb-2">Filter menu</h1>
+            <p className="text-sm text-muted-foreground">Responsive filter row with inline dropdown pills, overflow handling, and mobile full-screen takeover.</p>
+          </div>
+          <FilterMenu />
+        </div>
+      )
     }
 
     if (page === "avatar")    return <GlobalPlaceholderPage icon={UserCircle} title="Profile" />
@@ -1590,7 +1604,7 @@ export default function App() {
   if (currentPage === "deal-monitor-email-lawyer")  return <LawyerLeaseEmailPage />
   if (currentPage === "deal-monitor-email-owner")   return <OwnerUpdateEmailPage />
 
-  const standalonePages = ["theme", "principles", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm", "comp-email", "comp-email-forward", "comp-email-confirm", "deal-monitor", "deal-monitor-email-am", "deal-monitor-email-broker", "deal-monitor-email-tenant", "deal-monitor-email-lawyer", "deal-monitor-email-owner", "document-agent", "proposal-builder"]
+  const standalonePages = ["theme", "principles", "filter-menu", "inquiry-email", "inquiry-email-forward", "inquiry-email-confirm", "comp-email", "comp-email-forward", "comp-email-confirm", "deal-monitor", "deal-monitor-email-am", "deal-monitor-email-broker", "deal-monitor-email-tenant", "deal-monitor-email-lawyer", "deal-monitor-email-owner", "document-agent", "proposal-builder"]
   if (standalonePages.includes(currentPage)) {
     return (
       <ChatPatternProvider onOpenChat={goAskVts}>

@@ -70,6 +70,7 @@ export default defineConfig({
         'toggle-group-showcase': path.resolve(__dirname, 'toggle-group-showcase.html'),
         'tab-feed-showcase': path.resolve(__dirname, 'tab-feed-showcase.html'),
         'tooltip-showcase': path.resolve(__dirname, 'tooltip-showcase.html'),
+        'filter-menu-showcase': path.resolve(__dirname, 'filter-menu-showcase.html'),
       },
     },
   },

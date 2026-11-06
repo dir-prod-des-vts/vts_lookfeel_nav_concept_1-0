@@ -693,6 +693,7 @@ export function ThemeShowcase({ isDark, onToggleDark }: ThemeShowcaseProps) {
             { label: "Tooltip", href: "/vts_lookfeel_nav_concept_1-0/tooltip-showcase.html" },
             { label: "Date picker", href: "/vts_lookfeel_nav_concept_1-0/datepicker-showcase.html" },
             { label: "Tab feed", href: "/vts_lookfeel_nav_concept_1-0/tab-feed-showcase.html" },
+            { label: "Filter menu", href: "/vts_lookfeel_nav_concept_1-0/filter-menu-showcase.html" },
           ].map(({ label, href }) => (
             <a
               key={label}
