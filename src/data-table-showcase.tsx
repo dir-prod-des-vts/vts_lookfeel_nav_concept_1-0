@@ -16,6 +16,7 @@ import {
 type LeaseRow = {
   id: string
   tenant: string
+  domain: string
   building: string
   market: string
   sf: number
@@ -29,29 +30,53 @@ type LeaseRow = {
 }
 
 const DATA: LeaseRow[] = [
-  { id: "L-001", tenant: "Acme Corp", building: "111 8th Ave", market: "New York", sf: 42000, ner: 72, start: "Apr 2019", expiry: "Mar 2026", status: "Active", floors: "12-14", type: "Gross", subtenants: [{ name: "Acme Labs", sf: 8000 }] },
-  { id: "L-002", tenant: "Brightline Media", building: "525 Market St", market: "San Francisco", sf: 18500, ner: 68, start: "Jan 2021", expiry: "Dec 2027", status: "Active", floors: "7", type: "Net", subtenants: [] },
-  { id: "L-003", tenant: "Meridian Health", building: "350 N Orleans", market: "Chicago", sf: 31200, ner: 65, start: "Oct 2018", expiry: "Sep 2024", status: "Expired", floors: "3-4", type: "Gross", subtenants: [] },
-  { id: "L-004", tenant: "Techstart Inc", building: "1 Market Plaza", market: "San Francisco", sf: 9800, ner: 84, start: "Jul 2022", expiry: "Jun 2029", status: "Active", floors: "22", type: "Modified gross", subtenants: [] },
-  { id: "L-005", tenant: "Redpoint Capital", building: "300 Park Ave", market: "New York", sf: 55000, ner: 95, start: "Mar 2020", expiry: "Feb 2027", status: "Active", floors: "18-20", type: "Gross", subtenants: [{ name: "Redpoint Ventures", sf: 12000 }, { name: "Redpoint Advisory", sf: 8500 }] },
-  { id: "L-006", tenant: "Vega Logistics", building: "2 Embarcadero Ctr", market: "San Francisco", sf: 24600, ner: 61, start: "Aug 2017", expiry: "Jul 2024", status: "Expired", floors: "5-6", type: "Net", subtenants: [] },
-  { id: "L-007", tenant: "Cobalt Analytics", building: "Willis Tower", market: "Chicago", sf: 38400, ner: 78, start: "May 2023", expiry: "Apr 2030", status: "Active", floors: "44-46", type: "Gross", subtenants: [] },
-  { id: "L-008", tenant: "Harbor West", building: "Hudson Yards T1", market: "New York", sf: 72000, ner: 110, start: "Jan 2022", expiry: "Dec 2031", status: "Active", floors: "30-33", type: "Gross", subtenants: [{ name: "Harbor West Advisory", sf: 15000 }] },
-  { id: "L-009", tenant: "Nexus Bio", building: "Transamerica Pyramid", market: "San Francisco", sf: 11200, ner: 59, start: "Feb 2021", expiry: "Jan 2025", status: "Expiring", floors: "8", type: "Modified gross", subtenants: [] },
-  { id: "L-010", tenant: "Summit Partners", building: "One Financial Ctr", market: "Boston", sf: 29300, ner: 82, start: "Jun 2020", expiry: "May 2027", status: "Active", floors: "15-16", type: "Gross", subtenants: [] },
-  { id: "L-011", tenant: "Pacific Realty", building: "Salesforce Tower", market: "San Francisco", sf: 46800, ner: 102, start: "Mar 2022", expiry: "Feb 2032", status: "Active", floors: "35-38", type: "Gross", subtenants: [] },
-  { id: "L-012", tenant: "Clearwater Law", building: "Empire State Bldg", market: "New York", sf: 17500, ner: 76, start: "Nov 2019", expiry: "Oct 2026", status: "Expiring", floors: "28", type: "Net", subtenants: [] },
-  { id: "L-013", tenant: "Ironclad Finance", building: "Willis Tower", market: "Chicago", sf: 22000, ner: 71, start: "Sep 2021", expiry: "Aug 2028", status: "Active", floors: "55", type: "Gross", subtenants: [] },
-  { id: "L-014", tenant: "Azure Cloud Co", building: "1 World Trade Ctr", market: "New York", sf: 88000, ner: 115, start: "Jan 2023", expiry: "Dec 2032", status: "Active", floors: "60-64", type: "Gross", subtenants: [{ name: "Azure AI Division", sf: 22000 }] },
-  { id: "L-015", tenant: "Coral Consulting", building: "Union Square 200", market: "San Francisco", sf: 7400, ner: 55, start: "Apr 2022", expiry: "Mar 2025", status: "Expiring", floors: "4", type: "Modified gross", subtenants: [] },
-  { id: "L-016", tenant: "Greenfield Dev", building: "Peachtree Ctr", market: "Atlanta", sf: 33600, ner: 48, start: "Jul 2018", expiry: "Jun 2024", status: "Expired", floors: "10-11", type: "Net", subtenants: [] },
-  { id: "L-017", tenant: "Momentum VC", building: "Hudson Yards T2", market: "New York", sf: 19200, ner: 108, start: "Nov 2022", expiry: "Oct 2029", status: "Active", floors: "25", type: "Gross", subtenants: [] },
-  { id: "L-018", tenant: "Theta Systems", building: "200 Berkeley St", market: "Boston", sf: 41000, ner: 67, start: "Feb 2020", expiry: "Jan 2026", status: "Negotiating", floors: "14-16", type: "Gross", subtenants: [] },
-  { id: "L-019", tenant: "Marble Group", building: "One Financial Ctr", market: "Boston", sf: 12800, ner: 74, start: "Aug 2023", expiry: "Jul 2030", status: "Active", floors: "9", type: "Net", subtenants: [] },
-  { id: "L-020", tenant: "Dusk Creative", building: "Transamerica Pyramid", market: "San Francisco", sf: 5600, ner: 52, start: "May 2022", expiry: "Apr 2027", status: "Active", floors: "6", type: "Modified gross", subtenants: [] },
-  { id: "L-021", tenant: "Vortex Capital", building: "Empire State Bldg", market: "New York", sf: 26500, ner: 88, start: "Oct 2021", expiry: "Sep 2028", status: "Active", floors: "32-33", type: "Gross", subtenants: [] },
-  { id: "L-022", tenant: "Strata RE", building: "Salesforce Tower", market: "San Francisco", sf: 15000, ner: 98, start: "Jan 2024", expiry: "Dec 2033", status: "Active", floors: "42", type: "Gross", subtenants: [] },
+  { id: "L-001", tenant: "Google", domain: "google.com", building: "111 8th Ave", market: "New York", sf: 42000, ner: 72, start: "Apr 2019", expiry: "Mar 2026", status: "Active", floors: "12-14", type: "Gross", subtenants: [{ name: "Google Labs", sf: 8000 }] },
+  { id: "L-002", tenant: "Spotify", domain: "spotify.com", building: "525 Market St", market: "San Francisco", sf: 18500, ner: 68, start: "Jan 2021", expiry: "Dec 2027", status: "Active", floors: "7", type: "Net", subtenants: [] },
+  { id: "L-003", tenant: "Johnson & Johnson", domain: "jnj.com", building: "350 N Orleans", market: "Chicago", sf: 31200, ner: 65, start: "Oct 2018", expiry: "Sep 2024", status: "Expired", floors: "3-4", type: "Gross", subtenants: [] },
+  { id: "L-004", tenant: "Stripe", domain: "stripe.com", building: "1 Market Plaza", market: "San Francisco", sf: 9800, ner: 84, start: "Jul 2022", expiry: "Jun 2029", status: "Active", floors: "22", type: "Modified gross", subtenants: [] },
+  { id: "L-005", tenant: "Goldman Sachs", domain: "goldmansachs.com", building: "300 Park Ave", market: "New York", sf: 55000, ner: 95, start: "Mar 2020", expiry: "Feb 2027", status: "Active", floors: "18-20", type: "Gross", subtenants: [{ name: "GS Asset Management", sf: 12000 }, { name: "GS Advisory", sf: 8500 }] },
+  { id: "L-006", tenant: "Amazon", domain: "amazon.com", building: "2 Embarcadero Ctr", market: "San Francisco", sf: 24600, ner: 61, start: "Aug 2017", expiry: "Jul 2024", status: "Expired", floors: "5-6", type: "Net", subtenants: [] },
+  { id: "L-007", tenant: "Salesforce", domain: "salesforce.com", building: "Willis Tower", market: "Chicago", sf: 38400, ner: 78, start: "May 2023", expiry: "Apr 2030", status: "Active", floors: "44-46", type: "Gross", subtenants: [] },
+  { id: "L-008", tenant: "JPMorgan Chase", domain: "jpmorgan.com", building: "Hudson Yards T1", market: "New York", sf: 72000, ner: 110, start: "Jan 2022", expiry: "Dec 2031", status: "Active", floors: "30-33", type: "Gross", subtenants: [{ name: "JPM Private Bank", sf: 15000 }] },
+  { id: "L-009", tenant: "Pfizer", domain: "pfizer.com", building: "Transamerica Pyramid", market: "San Francisco", sf: 11200, ner: 59, start: "Feb 2021", expiry: "Jan 2025", status: "Expiring", floors: "8", type: "Modified gross", subtenants: [] },
+  { id: "L-010", tenant: "BlackRock", domain: "blackrock.com", building: "One Financial Ctr", market: "Boston", sf: 29300, ner: 82, start: "Jun 2020", expiry: "May 2027", status: "Active", floors: "15-16", type: "Gross", subtenants: [] },
+  { id: "L-011", tenant: "CBRE", domain: "cbre.com", building: "Salesforce Tower", market: "San Francisco", sf: 46800, ner: 102, start: "Mar 2022", expiry: "Feb 2032", status: "Active", floors: "35-38", type: "Gross", subtenants: [] },
+  { id: "L-012", tenant: "Kirkland & Ellis", domain: "kirkland.com", building: "Empire State Bldg", market: "New York", sf: 17500, ner: 76, start: "Nov 2019", expiry: "Oct 2026", status: "Expiring", floors: "28", type: "Net", subtenants: [] },
+  { id: "L-013", tenant: "Morgan Stanley", domain: "morganstanley.com", building: "Willis Tower", market: "Chicago", sf: 22000, ner: 71, start: "Sep 2021", expiry: "Aug 2028", status: "Active", floors: "55", type: "Gross", subtenants: [] },
+  { id: "L-014", tenant: "Microsoft", domain: "microsoft.com", building: "1 World Trade Ctr", market: "New York", sf: 88000, ner: 115, start: "Jan 2023", expiry: "Dec 2032", status: "Active", floors: "60-64", type: "Gross", subtenants: [{ name: "Microsoft Azure", sf: 22000 }] },
+  { id: "L-015", tenant: "McKinsey & Co", domain: "mckinsey.com", building: "Union Square 200", market: "San Francisco", sf: 7400, ner: 55, start: "Apr 2022", expiry: "Mar 2025", status: "Expiring", floors: "4", type: "Modified gross", subtenants: [] },
+  { id: "L-016", tenant: "Deloitte", domain: "deloitte.com", building: "Peachtree Ctr", market: "Atlanta", sf: 33600, ner: 48, start: "Jul 2018", expiry: "Jun 2024", status: "Expired", floors: "10-11", type: "Net", subtenants: [] },
+  { id: "L-017", tenant: "Citadel", domain: "citadel.com", building: "Hudson Yards T2", market: "New York", sf: 19200, ner: 108, start: "Nov 2022", expiry: "Oct 2029", status: "Active", floors: "25", type: "Gross", subtenants: [] },
+  { id: "L-018", tenant: "Apple", domain: "apple.com", building: "200 Berkeley St", market: "Boston", sf: 41000, ner: 67, start: "Feb 2020", expiry: "Jan 2026", status: "Negotiating", floors: "14-16", type: "Gross", subtenants: [] },
+  { id: "L-019", tenant: "WeWork", domain: "wework.com", building: "One Financial Ctr", market: "Boston", sf: 12800, ner: 74, start: "Aug 2023", expiry: "Jul 2030", status: "Active", floors: "9", type: "Net", subtenants: [] },
+  { id: "L-020", tenant: "Airbnb", domain: "airbnb.com", building: "Transamerica Pyramid", market: "San Francisco", sf: 5600, ner: 52, start: "May 2022", expiry: "Apr 2027", status: "Active", floors: "6", type: "Modified gross", subtenants: [] },
+  { id: "L-021", tenant: "Accenture", domain: "accenture.com", building: "Empire State Bldg", market: "New York", sf: 26500, ner: 88, start: "Oct 2021", expiry: "Sep 2028", status: "Active", floors: "32-33", type: "Gross", subtenants: [] },
+  { id: "L-022", tenant: "JLL", domain: "jll.com", building: "Salesforce Tower", market: "San Francisco", sf: 15000, ner: 98, start: "Jan 2024", expiry: "Dec 2033", status: "Active", floors: "42", type: "Gross", subtenants: [] },
 ]
+
+// ─── Tenant cell ─────────────────────────────────────────────────────────────
+
+function TenantCell({ tenant, domain }: { tenant: string; domain: string }) {
+  const [imgError, setImgError] = React.useState(false)
+  const initials = tenant.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
+  return (
+    <div className="flex items-center gap-2">
+      <div className="size-5 rounded shrink-0 overflow-hidden bg-muted flex items-center justify-center">
+        {!imgError ? (
+          <img
+            src={`https://logo.clearbit.com/${domain}`}
+            alt={tenant}
+            className="size-5 object-contain"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <span className="text-[9px] font-semibold text-muted-foreground leading-none">{initials}</span>
+        )}
+      </div>
+      <span className="font-medium">{tenant}</span>
+    </div>
+  )
+}
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
@@ -84,7 +109,7 @@ const COLUMNS: ColumnDef<LeaseRow>[] = [
   {
     accessorKey: "tenant",
     header: ({ column, table }) => <DataTableColumnHeader column={column} table={table} title="Tenant" enableColumnPinning enableColumnOrdering />,
-    cell: ({ row }) => <span className="font-medium">{row.getValue("tenant")}</span>,
+    cell: ({ row }) => <TenantCell tenant={row.getValue("tenant")} domain={row.original.domain} />,
   },
   {
     accessorKey: "building",
@@ -157,7 +182,7 @@ const BASIC_COLUMNS: ColumnDef<LeaseRow>[] = [
   {
     accessorKey: "tenant",
     header: "Tenant",
-    cell: ({ row }) => <span className="font-medium">{row.getValue("tenant")}</span>,
+    cell: ({ row }) => <TenantCell tenant={row.getValue("tenant")} domain={row.original.domain} />,
   },
   { accessorKey: "building", header: "Building" },
   { accessorKey: "market", header: "Market" },
@@ -264,7 +289,7 @@ const GROUPING_COLUMNS: ColumnDef<LeaseRow>[] = [
   {
     accessorKey: "tenant",
     header: ({ column }) => <DataTableColumnHeader column={column} title="Tenant" />,
-    cell: ({ row }) => <span className="font-medium">{row.getValue("tenant")}</span>,
+    cell: ({ row }) => <TenantCell tenant={row.getValue("tenant")} domain={row.original.domain} />,
     enableGrouping: false,
   },
   {
