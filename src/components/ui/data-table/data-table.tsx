@@ -407,7 +407,7 @@ export function DataTable<TData>({
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <React.Fragment key={headerGroup.id}>
-                  <TableRow className="border-b border-border/60 hover:bg-transparent">
+                  <TableRow className="border-b border-border/60 hover:bg-transparent bg-muted/40">
                     {headerGroup.headers.map((header) => {
                       const pinned = header.column.getIsPinned()
                       const pinStyle = getPinStyles(
@@ -427,7 +427,7 @@ export function DataTable<TData>({
                             "relative h-10 px-3 text-xs font-medium text-muted-foreground",
                             header.column.id === "__select__" && "w-9 px-2",
                             header.column.id === "__expand__" && "w-9 px-2",
-                            pinned && "sticky z-10 bg-card",
+                            pinned && "sticky z-10 bg-muted/40",
                             pinned === "left" && "shadow-[inset_-2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
                             pinned === "right" && "shadow-[inset_2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
                           )}
@@ -477,7 +477,7 @@ export function DataTable<TData>({
                             style={filterPinStyle}
                             className={cn(
                               "px-2 py-1 h-9",
-                              filterPinned && "sticky z-10 bg-card",
+                              filterPinned && "sticky z-10 bg-muted/40",
                               filterPinned === "left" && "shadow-[inset_-2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
                               filterPinned === "right" && "shadow-[inset_2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
                             )}
@@ -598,9 +598,13 @@ function ColumnFilter<TData>({
     )
   }
 
+  const label = typeof column.columnDef.header === "string"
+    ? column.columnDef.header
+    : column.id.replace(/_/g, " ")
+
   return (
     <Input
-      placeholder="Filter..."
+      placeholder={`Search ${label.toLowerCase()}…`}
       value={value}
       onChange={(e) => column.setFilterValue(e.target.value || undefined)}
       className="h-7 text-xs"
