@@ -301,8 +301,8 @@ export function DataTable<TData>({
                   cell.column.id === "__select__" && "px-2",
                   cell.column.id === "__expand__" && "px-2",
                   pinned && "sticky z-10 bg-card",
-                  pinned === "left" && "shadow-[inset_-2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
-                  pinned === "right" && "shadow-[inset_2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
+                  pinned === "left" && "shadow-[inset_-2px_0_0_0_var(--border)]",
+                  pinned === "right" && "shadow-[inset_2px_0_0_0_var(--border)]",
                   isCellSelected && "bg-primary/10",
                   enableCellSelection && "cursor-pointer select-none",
                   // Grouped rows
@@ -428,8 +428,8 @@ export function DataTable<TData>({
                             header.column.id === "__select__" && "w-9 px-2",
                             header.column.id === "__expand__" && "w-9 px-2",
                             pinned && "sticky z-10 bg-muted/40",
-                            pinned === "left" && "shadow-[inset_-2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
-                            pinned === "right" && "shadow-[inset_2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
+                            pinned === "left" && "shadow-[inset_-2px_0_0_0_var(--border)]",
+                            pinned === "right" && "shadow-[inset_2px_0_0_0_var(--border)]",
                           )}
                         >
                           {header.isPlaceholder
@@ -478,8 +478,8 @@ export function DataTable<TData>({
                             className={cn(
                               "px-2 py-1 h-9",
                               filterPinned && "sticky z-10 bg-muted/40",
-                              filterPinned === "left" && "shadow-[inset_-2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
-                              filterPinned === "right" && "shadow-[inset_2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
+                              filterPinned === "left" && "shadow-[inset_-2px_0_0_0_var(--border)]",
+                              filterPinned === "right" && "shadow-[inset_2px_0_0_0_var(--border)]",
                             )}
                           >
                             {canFilter && !header.isPlaceholder && (
@@ -598,13 +598,9 @@ function ColumnFilter<TData>({
     )
   }
 
-  const label = typeof column.columnDef.header === "string"
-    ? column.columnDef.header
-    : column.id.replace(/_/g, " ")
-
   return (
     <Input
-      placeholder={`Search ${label.toLowerCase()}…`}
+      placeholder="Search"
       value={value}
       onChange={(e) => column.setFilterValue(e.target.value || undefined)}
       className="h-7 text-xs"
