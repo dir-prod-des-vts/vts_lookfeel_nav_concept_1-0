@@ -331,15 +331,17 @@ function App() {
           title="Basic table"
           description="Read-only table with no interactive features. Ideal for simple display."
         >
-          <DataTable
-            columns={BASIC_COLUMNS}
-            data={DATA.slice(0, 6)}
-            enablePagination={false}
-            enableGlobalFilter={false}
-            enableColumnVisibility={false}
-            enableSorting={false}
-            enableColumnFilters={false}
-          />
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <DataTable
+              columns={BASIC_COLUMNS}
+              data={DATA.slice(0, 6)}
+              enablePagination={false}
+              enableGlobalFilter={false}
+              enableColumnVisibility={false}
+              enableSorting={false}
+              enableColumnFilters={false}
+            />
+          </div>
         </Section>
 
         {/* 2. Sorting & filtering */}
@@ -347,15 +349,17 @@ function App() {
           title="Sorting and filtering"
           description="Click column headers to sort. Global search filters across all columns. Per-column filter inputs appear below headers. Enable faceting for low-cardinality columns to show value counts as dropdowns."
         >
-          <DataTable
-            columns={COLUMNS}
-            data={DATA}
-            initialSorting={[{ id: "tenant", desc: false }]}
-            enablePagination={false}
-            enableRowSelection={false}
-            enableColumnFilters
-            enableFaceting
-          />
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <DataTable
+              columns={COLUMNS}
+              data={DATA}
+              initialSorting={[{ id: "tenant", desc: false }]}
+              enablePagination={false}
+              enableRowSelection={false}
+              enableColumnFilters
+              enableFaceting
+            />
+          </div>
         </Section>
 
         {/* 3. Pagination */}
@@ -363,16 +367,18 @@ function App() {
           title="Pagination"
           description="Client-side pagination with configurable page sizes."
         >
-          <DataTable
-            columns={COLUMNS}
-            data={DATA}
-            initialSorting={[{ id: "tenant", desc: false }]}
-            enablePagination
-            pageSize={5}
-            pageSizeOptions={[5, 10, 20]}
-            enableRowSelection={false}
-            enableColumnFilters={false}
-          />
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <DataTable
+              columns={COLUMNS}
+              data={DATA}
+              initialSorting={[{ id: "tenant", desc: false }]}
+              enablePagination
+              pageSize={5}
+              pageSizeOptions={[5, 10, 20]}
+              enableRowSelection={false}
+              enableColumnFilters={false}
+            />
+          </div>
         </Section>
 
         {/* 4. Column management */}
@@ -380,19 +386,21 @@ function App() {
           title="Column management"
           description="Columns button opens a merged panel: toggle visibility, pin left/right, and reorder with arrows. Column resizing is via drag handles on header edges."
         >
-          <DataTable
-            columns={COLUMNS}
-            data={DATA}
-            initialSorting={[{ id: "tenant", desc: false }]}
-            enableColumnPinning
-            enableColumnOrdering
-            enableColumnResizing
-            enableColumnVisibility
-            enablePagination
-            pageSize={8}
-            enableRowSelection={false}
-            enableColumnFilters={false}
-          />
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <DataTable
+              columns={COLUMNS}
+              data={DATA}
+              initialSorting={[{ id: "tenant", desc: false }]}
+              enableColumnPinning
+              enableColumnOrdering
+              enableColumnResizing
+              enableColumnVisibility
+              enablePagination
+              pageSize={8}
+              enableRowSelection={false}
+              enableColumnFilters={false}
+            />
+          </div>
         </Section>
 
         {/* 5. Row features */}
@@ -400,21 +408,23 @@ function App() {
           title="Row features"
           description="Multi-row selection with header checkbox. Rows with subtenants can be expanded. Pin individual rows to top or bottom using the pin icon on hover."
         >
-          <DataTable
-            columns={COLUMNS}
-            data={DATA}
-            initialSorting={[{ id: "tenant", desc: false }]}
-            enableRowSelection
-            enableMultiRowSelection
-            enableExpanding
-            enableRowPinning
-            enablePagination
-            pageSize={8}
-            getRowCanExpand={(row) => row.original.subtenants.length > 0}
-            renderSubComponent={({ row }) => <SubtenantsPanel row={row} />}
-            onRowSelectionChange={(rows) => console.log("Selected:", rows.map(r => r.original.id))}
-            enableColumnFilters={false}
-          />
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <DataTable
+              columns={COLUMNS}
+              data={DATA}
+              initialSorting={[{ id: "tenant", desc: false }]}
+              enableRowSelection
+              enableMultiRowSelection
+              enableExpanding
+              enableRowPinning
+              enablePagination
+              pageSize={8}
+              getRowCanExpand={(row) => row.original.subtenants.length > 0}
+              renderSubComponent={({ row }) => <SubtenantsPanel row={row} />}
+              onRowSelectionChange={(rows) => console.log("Selected:", rows.map(r => r.original.id))}
+              enableColumnFilters={false}
+            />
+          </div>
         </Section>
 
         {/* 6. Grouping & aggregation */}
@@ -422,17 +432,19 @@ function App() {
           title="Grouping and aggregation"
           description="Click the group icon on Market or Type column headers to group rows. Aggregated rows show sum of SF and average NER. Expand groups to see individual rows."
         >
-          <DataTable
-            columns={GROUPING_COLUMNS}
-            data={DATA}
-            initialSorting={[{ id: "tenant", desc: false }]}
-            enableGrouping
-            enableExpanding
-            enablePagination
-            pageSize={12}
-            enableColumnFilters={false}
-            getRowCanExpand={() => true}
-          />
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <DataTable
+              columns={GROUPING_COLUMNS}
+              data={DATA}
+              initialSorting={[{ id: "tenant", desc: false }]}
+              enableGrouping
+              enableExpanding
+              enablePagination
+              pageSize={12}
+              enableColumnFilters={false}
+              getRowCanExpand={() => true}
+            />
+          </div>
         </Section>
 
         {/* 7. Cell selection */}
@@ -440,15 +452,17 @@ function App() {
           title="Cell selection"
           description="Click any cell to select it. Hold Shift and click another cell to select a rectangular range. Selected cells are highlighted."
         >
-          <DataTable
-            columns={BASIC_COLUMNS}
-            data={DATA.slice(0, 10)}
-            enableCellSelection
-            enablePagination={false}
-            enableColumnFilters={false}
-            enableGlobalFilter={false}
-            enableColumnVisibility={false}
-          />
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <DataTable
+              columns={BASIC_COLUMNS}
+              data={DATA.slice(0, 10)}
+              enableCellSelection
+              enablePagination={false}
+              enableColumnFilters={false}
+              enableGlobalFilter={false}
+              enableColumnVisibility={false}
+            />
+          </div>
         </Section>
 
         {/* 8. Full-featured */}
@@ -456,71 +470,89 @@ function App() {
           title="Full-featured table"
           description="All features enabled: sorting, search, column filters with faceting, visibility, row selection, expansion, row pinning, pagination, resizing, column pinning, and column ordering."
         >
-          <DataTable
-            columns={COLUMNS}
-            data={DATA}
-            initialSorting={[{ id: "tenant", desc: false }]}
-            enableRowSelection
-            enableMultiRowSelection
-            enableExpanding
-            enableRowPinning
-            enablePagination
-            enableColumnResizing
-            enableColumnPinning
-            enableColumnOrdering
-            enableColumnFilters
-            enableFaceting
-            pageSize={10}
-            pageSizeOptions={[5, 10, 20, 50]}
-            getRowCanExpand={(row) => row.original.subtenants.length > 0}
-            renderSubComponent={({ row }) => <SubtenantsPanel row={row} />}
-          />
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <DataTable
+              columns={COLUMNS}
+              data={DATA}
+              initialSorting={[{ id: "tenant", desc: false }]}
+              enableRowSelection
+              enableMultiRowSelection
+              enableExpanding
+              enableRowPinning
+              enablePagination
+              enableColumnResizing
+              enableColumnPinning
+              enableColumnOrdering
+              enableColumnFilters
+              enableFaceting
+              pageSize={10}
+              pageSizeOptions={[5, 10, 20, 50]}
+              getRowCanExpand={(row) => row.original.subtenants.length > 0}
+              renderSubComponent={({ row }) => <SubtenantsPanel row={row} />}
+            />
+          </div>
         </Section>
 
-        {/* 9. States */}
+        {/* 9. Loading state */}
         <Section
-          title="Loading, empty, and error states"
-          description="Trigger the loading skeleton. The empty state appears when no data matches filters."
+          title="Loading state"
+          description="A skeleton animation fills the table while data is being fetched."
+        >
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <LoadingExample />
+          </div>
+        </Section>
+
+        {/* 10. Empty state */}
+        <Section
+          title="Empty state"
+          description="Shown when there is no data, or when filters return no results."
         >
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium text-foreground">Loading</p>
-              <LoadingExample />
-            </div>
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium text-foreground">Empty (no data)</p>
-              <DataTable
-                columns={BASIC_COLUMNS}
-                data={[]}
-                enablePagination={false}
-                enableGlobalFilter={false}
-                enableColumnVisibility={false}
-                enableColumnFilters={false}
-                emptyMessage="No leases found"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-medium text-foreground">Error</p>
-              <DataTable
-                columns={BASIC_COLUMNS}
-                data={[]}
-                error="Failed to load lease data. Please try again."
-                enablePagination={false}
-                enableGlobalFilter={false}
-                enableColumnVisibility={false}
-                enableColumnFilters={false}
-              />
+              <p className="text-sm font-medium text-foreground">No data</p>
+              <div className="rounded-lg border border-border bg-card overflow-hidden">
+                <DataTable
+                  columns={BASIC_COLUMNS}
+                  data={[]}
+                  enablePagination={false}
+                  enableGlobalFilter={false}
+                  enableColumnVisibility={false}
+                  enableColumnFilters={false}
+                  emptyMessage="No leases found"
+                />
+              </div>
             </div>
             <div className="flex flex-col gap-2">
               <p className="text-sm font-medium text-foreground">Empty after filter (search to trigger)</p>
-              <DataTable
-                columns={BASIC_COLUMNS}
-                data={DATA.slice(0, 5)}
-                enablePagination={false}
-                enableColumnVisibility={false}
-                enableColumnFilters={false}
-              />
+              <div className="rounded-lg border border-border bg-card overflow-hidden">
+                <DataTable
+                  columns={BASIC_COLUMNS}
+                  data={DATA.slice(0, 5)}
+                  enablePagination={false}
+                  enableColumnVisibility={false}
+                  enableColumnFilters={false}
+                />
+              </div>
             </div>
+          </div>
+        </Section>
+
+        {/* 11. Error state */}
+        <Section
+          title="Error state"
+          description="Shown when the data request fails. Displays an inline error message."
+        >
+          <div className="rounded-lg border border-border bg-card overflow-hidden">
+            <DataTable
+              columns={BASIC_COLUMNS}
+              data={[]}
+              error="Failed to load lease data. Please try again."
+              enablePagination={false}
+              enableGlobalFilter={false}
+              enableColumnVisibility={false}
+              enableColumnFilters={false}
+            />
           </div>
         </Section>
 
