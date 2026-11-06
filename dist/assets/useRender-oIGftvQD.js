@@ -1,1 +1,0 @@
-import{h as e}from"./button-CfXsKtGu.js";function t(t){return e(t.defaultTagName??`div`,t,t)}export{t};

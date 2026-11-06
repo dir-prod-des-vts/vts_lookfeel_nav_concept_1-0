@@ -223,6 +223,15 @@ export function DataTable<TData>({
       : {}),
     initialState: {
       pagination: { pageSize: initialPageSize },
+      // Keep structural columns pinned left so they're never stranded between pinned and center columns
+      columnPinning: enableColumnPinning
+        ? {
+            left: [
+              ...(enableRowSelection ? ["__select__"] : []),
+              ...(enableExpanding ? ["__expand__"] : []),
+            ],
+          }
+        : {},
     },
   })
 
@@ -474,7 +483,9 @@ export function DataTable<TData>({
                         })()
                         const filterPinned = header.column.getIsPinned()
                         const filterPinStyle = filterPinned
-                          ? { [filterPinned === "left" ? "left" : "right"]: `${header.column.getStart(filterPinned)}px` }
+                          ? filterPinned === "left"
+                            ? { left: header.column.getStart("left") }
+                            : { right: header.column.getAfter("right") }
                           : {}
                         return (
                           <TableHead
