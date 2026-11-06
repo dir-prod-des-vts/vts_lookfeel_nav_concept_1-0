@@ -301,8 +301,8 @@ export function DataTable<TData>({
                   cell.column.id === "__select__" && "px-2",
                   cell.column.id === "__expand__" && "px-2",
                   pinned && "sticky z-10 bg-card",
-                  pinned === "left" && "border-r-2 border-primary/40",
-                  pinned === "right" && "border-l-2 border-primary/40",
+                  pinned === "left" && "shadow-[inset_-2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
+                  pinned === "right" && "shadow-[inset_2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
                   isCellSelected && "bg-primary/10",
                   enableCellSelection && "cursor-pointer select-none",
                   // Grouped rows
@@ -428,8 +428,8 @@ export function DataTable<TData>({
                             header.column.id === "__select__" && "w-9 px-2",
                             header.column.id === "__expand__" && "w-9 px-2",
                             pinned && "sticky z-10 bg-card",
-                            pinned === "left" && "border-r-2 border-primary/40",
-                            pinned === "right" && "border-l-2 border-primary/40",
+                            pinned === "left" && "shadow-[inset_-2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
+                            pinned === "right" && "shadow-[inset_2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
                           )}
                         >
                           {header.isPlaceholder
@@ -467,10 +467,20 @@ export function DataTable<TData>({
                             return undefined
                           }
                         })()
+                        const filterPinned = header.column.getIsPinned()
+                        const filterPinStyle = filterPinned
+                          ? { [filterPinned === "left" ? "left" : "right"]: `${header.column.getStart(filterPinned)}px` }
+                          : {}
                         return (
                           <TableHead
                             key={`filter-${header.id}`}
-                            className="px-2 py-1 h-9"
+                            style={filterPinStyle}
+                            className={cn(
+                              "px-2 py-1 h-9",
+                              filterPinned && "sticky z-10 bg-card",
+                              filterPinned === "left" && "shadow-[inset_-2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
+                              filterPinned === "right" && "shadow-[inset_2px_0_0_0_color-mix(in_oklch,var(--primary)_40%,transparent)]",
+                            )}
                           >
                             {canFilter && !header.isPlaceholder && (
                               header.column.id === "__select__" || header.column.id === "__expand__" ? null :
