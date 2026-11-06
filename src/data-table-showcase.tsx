@@ -214,20 +214,30 @@ function Section({ title, description, children }: { title: string; description?
 }
 
 function LoadingExample() {
-  const [loading, setLoading] = React.useState(false)
+  const [loading, setLoading] = React.useState(true)
+  const [key, setKey] = React.useState(0)
+
+  React.useEffect(() => {
+    if (loading) {
+      const t = setTimeout(() => setLoading(false), 2000)
+      return () => clearTimeout(t)
+    }
+  }, [loading, key])
+
   return (
     <div className="flex flex-col gap-3">
-      <Button
-        variant="outline"
-        size="sm"
-        className="h-8 w-fit gap-1.5 text-sm font-medium"
-        onClick={() => {
-          setLoading(true)
-          setTimeout(() => setLoading(false), 2000)
-        }}
-      >
-        Simulate loading
-      </Button>
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">Skeleton fills the table while data loads.</p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 text-sm font-medium"
+          disabled={loading}
+          onClick={() => { setLoading(true); setKey(k => k + 1) }}
+        >
+          Replay
+        </Button>
+      </div>
       <DataTable
         columns={BASIC_COLUMNS}
         data={loading ? [] : DATA.slice(0, 5)}
@@ -235,6 +245,7 @@ function LoadingExample() {
         enablePagination={false}
         enableGlobalFilter={false}
         enableColumnVisibility={false}
+        enableColumnFilters={false}
       />
     </div>
   )

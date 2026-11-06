@@ -1,25 +1,40 @@
 import { Skeleton } from "@/components/ui/skeleton"
 
-const COL_WIDTHS = ["w-16", "w-24", "w-20", "w-32", "w-14", "w-28", "w-18", "w-12"]
-
 interface DataTableLoadingStateProps {
   columns?: number
   rows?: number
 }
+
+// Stagger widths so skeletons don't look like a uniform grid
+const FILL_WIDTHS = ["75%", "60%", "85%", "50%", "70%", "80%", "55%", "65%"]
 
 export function DataTableLoadingState({
   columns = 5,
   rows = 8,
 }: DataTableLoadingStateProps) {
   return (
-    <div className="space-y-1">
+    <div className="w-full">
+      {/* Header skeleton */}
+      <div className="flex border-b border-border bg-muted/40 px-3 py-2.5">
+        {Array.from({ length: columns }).map((_, j) => (
+          <div key={j} className="flex-1 px-2">
+            <Skeleton className="h-3.5 w-20" />
+          </div>
+        ))}
+      </div>
+      {/* Body row skeletons */}
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex gap-4 px-3 py-2.5">
+        <div
+          key={i}
+          className="flex items-center border-b border-border px-3 py-3 last:border-0"
+        >
           {Array.from({ length: columns }).map((_, j) => (
-            <Skeleton
-              key={j}
-              className={`h-4 shrink-0 ${COL_WIDTHS[(i + j) % COL_WIDTHS.length]}`}
-            />
+            <div key={j} className="flex-1 px-2">
+              <Skeleton
+                className="h-3.5"
+                style={{ width: FILL_WIDTHS[(i * columns + j) % FILL_WIDTHS.length] }}
+              />
+            </div>
           ))}
         </div>
       ))}
