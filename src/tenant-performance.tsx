@@ -179,29 +179,6 @@ const OUTLOOK_CONFIG = {
   atRisk: { label: "At risk", color: "var(--destructive)" },
 } satisfies ChartConfig
 
-function Section({
-  eyebrow,
-  title,
-  description,
-  children,
-}: {
-  eyebrow: string
-  title: string
-  description: string
-  children: React.ReactNode
-}) {
-  return (
-    <section className="flex flex-col gap-4">
-      <div>
-        <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground mb-1">{eyebrow}</p>
-        <h2 className="text-xl font-semibold text-foreground">{title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      </div>
-      {children}
-    </section>
-  )
-}
-
 function ChartCard({
   title,
   description,
@@ -867,7 +844,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 flex flex-col gap-10">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-6 flex flex-col gap-4">
         <header className="flex flex-col gap-2">
           <PageBreadcrumb crumbs={[{ label: "Portfolio" }, { label: "One Financial Plaza" }, { label: "Tenant performance" }]} />
           <BuildingHeader
@@ -910,52 +887,32 @@ function App() {
           <KpiBar kpis={KPIS} className="mt-2" />
         </header>
 
-        <Section
-          eyebrow="Understand"
-          title="How tenants drive performance"
-          description="Which tenants the asset depends on, and how strong those tenants are."
-        >
+        <section>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <RentContributionChart />
             <CreditExposureChart />
           </div>
-        </Section>
+        </section>
 
-        <Section
-          eyebrow="Assess"
-          title="How secure rental income is"
-          description="When income comes up for renewal and how much is likely to stay."
-        >
+        <section>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ExpirationChart />
             <IncomeRunoffChart />
           </div>
-        </Section>
+        </section>
 
-        <Section
-          eyebrow="Prioritize"
-          title="Where exposure and opportunity sit"
-          description="Rent that could be lost, and rent that could be gained by resetting leases to market."
-        >
+        <section>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <MarkToMarketChart />
             <ExposureSummary />
           </div>
-        </Section>
+        </section>
 
-        <Section
-          eyebrow="Act"
-          title="Decisions that need attention"
-          description="The actions with the largest impact on income, ordered by urgency."
-        >
+        <section>
           <DecisionsQueue />
-        </Section>
+        </section>
 
-        <Section
-          eyebrow="Detail"
-          title="Tenant roster"
-          description="Every tenant with the metrics behind the priorities above. Sorted by priority, then rent."
-        >
+        <section>
           <div className={cardBase}>
             <DataTable
               columns={COLUMNS}
@@ -969,7 +926,7 @@ function App() {
               emptyMessage="No tenants match these filters"
             />
           </div>
-        </Section>
+        </section>
       </div>
       <Toaster />
     </div>
