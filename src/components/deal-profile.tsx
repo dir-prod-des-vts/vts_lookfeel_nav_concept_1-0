@@ -3,16 +3,15 @@ import { cn, cardBase } from "@/lib/utils"
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
-  ChevronDown, Check, FileText, Download, Send,
+  ChevronDown, Check, FileText, Download,
   Building2, User, MapPin, Ruler, Tag, Calendar,
   CheckCircle2, Clock, AlertTriangle, HeartPulse, Zap, Dot,
   Bot, LayoutGrid, Table2, ArrowUpDown,
   Briefcase, Globe, Mail, DollarSign, Layers, Target,
-  Star, Home, SquareStack, Scale, Trophy, Plus, Paperclip,
+  Star, Home, SquareStack, Scale, Trophy, Plus,
   ChevronRight,
 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -22,6 +21,7 @@ import { type Deal } from "@/components/deals-page"
 import { TENANT_LOGO } from "@/components/tenant-avatar"
 import { TENANT_DOMAIN } from "@/lib/tenant-data"
 import { KpiBar } from "@/components/kpi-bar"
+import { ActivityFeed, type FeedEntry } from "@/components/activity-feed"
 
 export function TenantLogoImage({ name }: { name: string }) {
   const domain = TENANT_DOMAIN[name]
@@ -1204,7 +1204,6 @@ function DocumentsTab({ stage }: { stage: StageValue }) {
 
 // ─── Activity feed ────────────────────────────────────────────────────────────
 
-type FeedEntry = { initials: string; name: string; timestamp: string; message: string; kind: "update" | "comment" | "agent" }
 
 const DEAL_FEEDS: Record<string, FeedEntry[]> = {
   "d00": [
@@ -1321,148 +1320,12 @@ export function getLatestHumanUpdate(dealId: string, stage: string): { message: 
   return { message: entry.message, name: entry.name, timestamp: entry.timestamp }
 }
 
-const REACTIONS = ["👍", "👏", "🎉", "❤️"]
-
-function UpdateCard({ entry }: { entry: FeedEntry }) {
-  const [reactions, setReactions] = React.useState<Record<string, number>>({})
-  const toggle = (r: string) => setReactions(prev => ({ ...prev, [r]: (prev[r] ?? 0) === 1 ? 0 : 1 }))
-
-  if (entry.kind === "update") {
-    return (
-      <div className="rounded-lg bg-muted/50 px-3 py-2.5 flex items-center gap-2">
-        <div className="h-5 w-5 rounded-full bg-muted-foreground/15 text-muted-foreground flex items-center justify-center shrink-0">
-          <span className="text-[8px] font-bold">VTS</span>
-        </div>
-        <span className="text-xs text-foreground/75 flex-1">{entry.message}</span>
-        <span className="text-xs text-muted-foreground shrink-0">{entry.timestamp}</span>
-      </div>
-    )
-  }
-
-  if (entry.kind === "agent") {
-    const AgentIcon = AGENT_ICON_MAP[entry.name] ?? Bot
-    return (
-      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex flex-col gap-2.5">
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-full bg-primary/15 text-primary flex items-center justify-center shrink-0">
-            <AgentIcon className="h-4 w-4" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-foreground leading-none">{entry.name}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{entry.timestamp}</p>
-          </div>
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
-            <Zap className="h-2.5 w-2.5 text-primary" />
-            <span className="text-xs font-medium text-primary">Agent</span>
-          </div>
-        </div>
-        <p className="text-sm text-foreground/80 leading-relaxed pl-[42px]">{entry.message}</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="rounded-xl border border-border bg-card p-4 flex flex-col gap-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-semibold shrink-0">
-            {entry.initials}
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-foreground leading-none">{entry.name}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{entry.timestamp}</p>
-          </div>
-        </div>
-      </div>
-      <p className="text-sm text-foreground leading-relaxed">{entry.message}</p>
-      <div className="flex items-center gap-3 pt-1 border-t border-border/50">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Button variant="ghost" size="sm" className="text-xs">Share</Button>
-          <span className="opacity-40">·</span>
-          <Button variant="ghost" size="sm" className="text-xs">Edit</Button>
-          <span className="opacity-40">·</span>
-          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive">Delete</Button>
-          <span className="opacity-40">·</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          {REACTIONS.map(r => (
-            <button key={r} onClick={() => toggle(r)}
-              className={cn("h-7 px-2 rounded-md text-sm transition-colors flex items-center gap-1",
-                reactions[r] ? "bg-primary/10 text-primary" : "hover:bg-muted text-muted-foreground"
-              )}>
-              {r}{reactions[r] ? <span className="text-xs font-medium">{reactions[r]}</span> : null}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="h-6 w-6 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-[9px] font-semibold shrink-0">ES</div>
-        <input className="flex-1 text-xs bg-muted/50 rounded-lg px-3 py-1.5 text-muted-foreground placeholder:text-muted-foreground/60 outline-none focus:ring-1 focus:ring-border" placeholder="Add a comment…" />
-      </div>
-    </div>
-  )
-}
-
-
-function ActivityFeed({ deal, stage }: { deal: Deal; stage: StageValue }) {
-  const [draft, setDraft] = React.useState("")
-  const [logAsTour, setLogAsTour] = React.useState(false)
-  const today = new Date().toISOString().slice(0, 10)
-  const [updateDate, setUpdateDate] = React.useState(today)
-  const fileRef = React.useRef<HTMLInputElement>(null)
-  const dateRef = React.useRef<HTMLInputElement>(null)
+function DealActivityFeed({ deal, stage }: { deal: Deal; stage: StageValue }) {
   const stageFeed = getStageFeeds(stage)
   const dealFeed = DEAL_FEEDS[deal.id] ?? []
   const seen = new Set(stageFeed.map(e => e.message))
-  const feed = [...stageFeed, ...dealFeed.filter(e => !seen.has(e.message))]
-
-  return (
-    <div className="flex flex-col gap-0">
-      <div className="flex flex-col gap-3">
-        {/* Composer */}
-        <div className="rounded-xl border border-primary/30 bg-card p-3 flex flex-col gap-2">
-          <Textarea value={draft} onChange={e => setDraft(e.target.value)}
-            placeholder={logAsTour ? "Describe the tour…" : "Post an update…"}
-            className="resize-none text-sm min-h-[90px] border-0 bg-transparent p-0 focus-visible:ring-0 shadow-none"
-            rows={3}
-          />
-          {/* Toolbar: draft + attach + date + tour toggle + post */}
-          <div className="flex items-center gap-1.5">
-            <Button size="sm" variant="outline" className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
-              onClick={() => setDraft("Draft a deal update for Amazon.com summarizing current stage, recent activity, and next steps.")}>
-              <Zap className="h-3.5 w-3.5" />
-              Draft with VTS
-            </Button>
-            <Button size="sm" variant="outline" className="text-primary border-primary/30 hover:bg-primary/5 h-8 w-8 p-0 rounded-full"
-              onClick={() => fileRef.current?.click()}>
-              <Paperclip className="h-3.5 w-3.5" />
-              <input ref={fileRef} type="file" className="sr-only" />
-            </Button>
-            <Button size="sm" variant="outline" className="text-primary border-primary/30 hover:bg-primary/5 h-8 w-8 p-0 rounded-full"
-              onClick={() => (dateRef.current as any)?.showPicker?.()}>
-              <Calendar className="h-3.5 w-3.5" />
-              <input ref={dateRef} type="date" value={updateDate} onChange={e => setUpdateDate(e.target.value)} className="sr-only" />
-            </Button>
-            <Button size="sm" variant="outline"
-              onClick={() => setLogAsTour(v => !v)}
-              className={cn("gap-1.5 text-primary border-primary/30 hover:bg-primary/5", logAsTour && "bg-primary/10")}>
-              <MapPin className="h-3.5 w-3.5" />
-              Log tour
-            </Button>
-            <Button size="sm" disabled={!draft.trim()} className="gap-1.5 ml-auto" onClick={() => setDraft("")}>
-              <Send className="h-3.5 w-3.5" />
-              Post
-            </Button>
-          </div>
-        </div>
-
-        {feed.length === 0
-          ? <p className="text-sm text-muted-foreground py-4 text-center">No updates yet.</p>
-          : feed.map((e, i) => <UpdateCard key={i} entry={e} />)
-        }
-      </div>
-    </div>
-  )
+  const entries = [...stageFeed, ...dealFeed.filter(e => !seen.has(e.message))]
+  return <ActivityFeed entries={entries} draftPrompt="Draft a deal update for Amazon.com summarizing current stage, recent activity, and next steps." />
 }
 
 // ─── Deal Health system ───────────────────────────────────────────────────────
@@ -2543,7 +2406,7 @@ export function DealProfile({ deal, onBack: _onBack, status: statusProp, onStatu
                   </TabsList>
               </div>
               <div className={cn(rightCollapsed && "lg:hidden")}>
-                <TabsContent value="updates"><ActivityFeed deal={deal} stage={stage} /></TabsContent>
+                <TabsContent value="updates"><DealActivityFeed deal={deal} stage={stage} /></TabsContent>
                 <TabsContent value="tasks"><TasksTab stage={stage} status={status} dealId={deal.id} /></TabsContent>
                 <TabsContent value="documents"><DocumentsTab stage={stage} /></TabsContent>
                 <TabsContent value="reminders"><p className="text-sm text-muted-foreground py-8 text-center">No reminders set.</p></TabsContent>

@@ -6,6 +6,7 @@ import "leaflet.markercluster/dist/MarkerCluster.css"
 import "leaflet.markercluster/dist/MarkerCluster.Default.css"
 import "leaflet.markercluster"
 import * as ReactDOM from "react-dom/client"
+import { flushSync } from "react-dom"
 import { Crosshair, Maximize2, Minimize2, Layers } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ASSET_KPIS } from "@/App"
@@ -31,6 +32,9 @@ const TILE_STYLES = [
 
 type TileStyleKey = typeof TILE_STYLES[number]["key"]
 
+// ArcGIS canvas basemaps stop serving tiles around z16; fitting a single pin would otherwise zoom to 20.
+const FIT_MAX_ZOOM = 15
+
 function tileUrl(key: TileStyleKey) {
   return `https://server.arcgisonline.com/ArcGIS/rest/services/${key}/MapServer/tile/{z}/{y}/{x}`
 }
@@ -52,8 +56,19 @@ function makePin(occ: number, isDimmed = false) {
   return L.divIcon({ html: svg, className: "", iconSize: [28, 36], iconAnchor: [14, 36], popupAnchor: [0, -42] })
 }
 
-function makeClusterIcon(avgOcc: number, count: number) {
-  const color = occupancyColor(avgOcc)
+function makeLabelPin(label: string) {
+  const html = `<div class="flex items-end gap-1">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36" class="shrink-0">
+      <path d="M14 0C6.27 0 0 6.27 0 14c0 9.75 14 22 14 22S28 23.75 28 14C28 6.27 21.73 0 14 0z" fill="var(--color-primary)" stroke="white" stroke-width="2"/>
+      <circle cx="14" cy="14" r="6" fill="white" opacity="0.9"/>
+    </svg>
+    <span class="mb-5 whitespace-nowrap rounded-md border border-border bg-card px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-foreground shadow-sm">${label}</span>
+  </div>`
+  return L.divIcon({ html, className: "", iconSize: [28, 36], iconAnchor: [14, 36], popupAnchor: [0, -42] })
+}
+
+function makeClusterIcon(avgOcc: number, count: number, colorOverride?: string) {
+  const color = colorOverride ?? occupancyColor(avgOcc)
   const size = count >= 5 ? 52 : count >= 3 ? 46 : 40
   const r = size / 2
   const inner = r - 5
@@ -65,7 +80,7 @@ function makeClusterIcon(avgOcc: number, count: number) {
   return L.divIcon({ html: svg, className: "", iconSize: [size, size], iconAnchor: [r, r] })
 }
 
-interface Asset {
+export interface MapAsset {
   id: string
   name: string
   address: string
@@ -73,9 +88,9 @@ interface Asset {
   lng: number
 }
 
-function PopupContent({ asset, onAssetClick }: { asset: Asset; onAssetClick: (id: string) => void }) {
+function PopupContent({ asset, onAssetClick }: { asset: MapAsset; onAssetClick: (id: string) => void }) {
   return (
-    <div className="w-[400px]">
+    <div className="w-[min(400px,calc(100vw-6rem))]">
       <AssetCard asset={asset} deals={DEALS} onClick={() => onAssetClick(asset.id)} />
     </div>
   )
@@ -88,13 +103,18 @@ function FitBounds({ assets, height }: { assets: Array<{ lat: number; lng: numbe
     requestAnimationFrame(() => {
       map.invalidateSize()
       const bounds = L.latLngBounds(assets.map(a => [a.lat, a.lng]))
-      map.fitBounds(bounds, { padding: [48, 48] })
+      map.fitBounds(bounds, { padding: [48, 48], maxZoom: FIT_MAX_ZOOM })
     })
   }, [assets, map, height])
   return null
 }
 
-function ClusterLayer({ assets, onAssetClick, dimmed }: { assets: Asset[]; onAssetClick: (id: string) => void; dimmed: Set<string> }) {
+interface MarkerOptions {
+  markerLabel?: (assetId: string) => string
+  renderPopup?: (asset: MapAsset) => React.ReactNode
+}
+
+function ClusterLayer({ assets, onAssetClick, dimmed, markerLabel, renderPopup }: { assets: MapAsset[]; onAssetClick: (id: string) => void; dimmed: Set<string> } & MarkerOptions) {
   const map = useMap()
   const rootsRef = React.useRef<ReactDOM.Root[]>([])
 
@@ -110,14 +130,15 @@ function ClusterLayer({ assets, onAssetClick, dimmed }: { assets: Asset[]; onAss
         const markers = c.getAllChildMarkers()
         const occs = markers.map((m: any) => ASSET_KPIS[m._assetId]?.occupancy ?? 80)
         const avg = occs.reduce((a: number, b: number) => a + b, 0) / occs.length
-        return makeClusterIcon(avg, markers.length)
+        return makeClusterIcon(avg, markers.length, markerLabel ? "var(--color-primary)" : undefined)
       },
     })
 
     assets.forEach(asset => {
       const kpi = ASSET_KPIS[asset.id]
       const occ = kpi?.occupancy ?? 80
-      const marker = L.marker([asset.lat, asset.lng], { icon: makePin(occ, dimmed.has(asset.id)) })
+      const icon = markerLabel ? makeLabelPin(markerLabel(asset.id)) : makePin(occ, dimmed.has(asset.id))
+      const marker = L.marker([asset.lat, asset.lng], { icon })
       ;(marker as any)._assetId = asset.id
 
       marker.bindPopup(() => {
@@ -125,14 +146,16 @@ function ClusterLayer({ assets, onAssetClick, dimmed }: { assets: Asset[]; onAss
         if (document.documentElement.classList.contains("dark")) container.classList.add("dark")
         const root = ReactDOM.createRoot(container)
         rootsRef.current.push(root)
-        root.render(<PopupContent asset={asset} onAssetClick={onAssetClick} />)
+        // Render synchronously so Leaflet measures real content when centering and auto-panning the popup.
+        flushSync(() => root.render(renderPopup ? renderPopup(asset) : <PopupContent asset={asset} onAssetClick={onAssetClick} />))
         return container
       }, {
         closeButton: false,
         className: "portfolio-map-popup",
-        minWidth: 400,
+        minWidth: Math.min(400, window.innerWidth - 96),
+        maxWidth: Math.min(400, window.innerWidth - 96),
         autoPan: true,
-        autoPanPaddingTopLeft: [20, 320],
+        autoPanPaddingTopLeft: [20, renderPopup ? 20 : 320],
         autoPanPaddingBottomRight: [20, 20],
       })
 
@@ -145,7 +168,7 @@ function ClusterLayer({ assets, onAssetClick, dimmed }: { assets: Asset[]; onAss
       rootsRef.current.forEach(r => setTimeout(() => { try { r.unmount() } catch {} }, 0))
       rootsRef.current = []
     }
-  }, [assets, map, onAssetClick, dimmed])
+  }, [assets, map, onAssetClick, dimmed, markerLabel, renderPopup])
 
   return null
 }
@@ -155,7 +178,7 @@ function ClusterLayer({ assets, onAssetClick, dimmed }: { assets: Asset[]; onAss
 function MapController({ mapRef, boundsRef, assets }: {
   mapRef: React.MutableRefObject<L.Map | null>
   boundsRef: React.MutableRefObject<L.LatLngBounds | null>
-  assets: Asset[]
+  assets: MapAsset[]
 }) {
   const map = useMap()
   mapRef.current = map
@@ -228,7 +251,7 @@ function Legend() {
   )
 }
 
-function applyMapFilter(assets: Asset[], filter: string | null): { filtered: Asset[]; dimmed: Set<string> } {
+function applyMapFilter(assets: MapAsset[], filter: string | null): { filtered: MapAsset[]; dimmed: Set<string> } {
   if (!filter || filter === "reset") return { filtered: assets, dimmed: new Set() }
   const dimmed = new Set<string>()
   assets.forEach(a => {
@@ -243,15 +266,17 @@ function applyMapFilter(assets: Asset[], filter: string | null): { filtered: Ass
   return { filtered: assets, dimmed }
 }
 
-interface PortfolioMapProps {
-  assets: Asset[]
+interface PortfolioMapProps extends MarkerOptions {
+  assets: MapAsset[]
+  fixedHeight?: number
+  hideLegend?: boolean
   onAssetClick: (id: string) => void
   className?: string
   activeFilters?: Record<string, string[]>
   mapFilter?: string | null
 }
 
-export function PortfolioMap({ assets, onAssetClick, className, activeFilters, mapFilter }: PortfolioMapProps) {
+export function PortfolioMap({ assets, onAssetClick, className, activeFilters, mapFilter, fixedHeight, hideLegend, markerLabel, renderPopup }: PortfolioMapProps) {
   const wrapperRef = React.useRef<HTMLDivElement>(null)
   const mapRef = React.useRef<L.Map | null>(null)
   const boundsRef = React.useRef<L.LatLngBounds | null>(null)
@@ -263,13 +288,14 @@ export function PortfolioMap({ assets, onAssetClick, className, activeFilters, m
   React.useLayoutEffect(() => {
     function update() {
       if (isFullscreen || !wrapperRef.current) return
+      if (fixedHeight) { setHeight(fixedHeight); return }
       const top = wrapperRef.current.getBoundingClientRect().top
       setHeight(Math.max(300, window.innerHeight - top - 16))
     }
     update()
     window.addEventListener("resize", update)
     return () => window.removeEventListener("resize", update)
-  }, [isFullscreen])
+  }, [isFullscreen, fixedHeight])
 
   // Invalidate map size when fullscreen changes
   React.useEffect(() => {
@@ -278,7 +304,7 @@ export function PortfolioMap({ assets, onAssetClick, className, activeFilters, m
 
   function handleFitBounds() {
     if (!mapRef.current || !boundsRef.current) return
-    mapRef.current.fitBounds(boundsRef.current, { padding: [48, 48] })
+    mapRef.current.fitBounds(boundsRef.current, { padding: [48, 48], maxZoom: FIT_MAX_ZOOM })
   }
 
   const mapHeight = isFullscreen ? "100%" : height
@@ -327,10 +353,11 @@ export function PortfolioMap({ assets, onAssetClick, className, activeFilters, m
             url={tileUrl(tileStyle)}
             attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             maxZoom={20}
+            maxNativeZoom={16}
           />
           <MapController mapRef={mapRef} boundsRef={boundsRef} assets={assets} />
           <FitBounds assets={assets} height={height} />
-          <ClusterLayer assets={filteredAssets} onAssetClick={onAssetClick} dimmed={dimmed} />
+          <ClusterLayer assets={filteredAssets} onAssetClick={onAssetClick} dimmed={dimmed} markerLabel={markerLabel} renderPopup={renderPopup} />
         </MapContainer>
 
         <MapControls
@@ -343,7 +370,7 @@ export function PortfolioMap({ assets, onAssetClick, className, activeFilters, m
           onTileStyleChange={setTileStyle}
         />
 
-        <Legend />
+        {!hideLegend && <Legend />}
 
         {/* Asset count badge */}
         <div className="absolute bottom-3 left-3 z-[1000] h-8 flex items-center bg-card border border-border rounded-md shadow-sm px-3">

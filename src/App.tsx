@@ -37,6 +37,10 @@ import { CriticalDatesPage } from "@/components/critical-dates-page"
 import { BudgetsPage } from "@/components/budgets-page"
 import { AppraisalsPage } from "@/components/appraisals-page"
 import { CompsPage } from "@/components/comps-page"
+import { TenantsPage } from "@/components/tenants-page"
+import { TenantProfile, entityLabel } from "@/components/tenant-profile"
+import { tenantMeta } from "@/lib/tenants-data"
+import { AGGREGATE_PREFIX, entityTenants, isParentTenant, tenantFamily } from "@/lib/tenant-profile-data"
 import { PlanningPage } from "@/components/planning-page"
 import { DealTasksPage } from "@/components/deal-tasks-page"
 import { ChatPatternProvider, type ChatCommand } from "@/contexts/chat-pattern"
@@ -761,7 +765,7 @@ export default function App() {
     const page = parts[0] || "dashboard"
     const asset = parts[1] || "vts-tower"
     const params = new URLSearchParams(queryPart ?? "")
-    return { page, asset, dealId: params.get("deal"), agentId: params.get("agent"), view: params.get("view"), comp: params.get("comp"), nav: params.get("nav"), pvView: params.get("pvView"), pvSort: params.get("pvSort"), pvDisplay: params.get("pvDisplay"), ovView: params.get("ovView") }
+    return { page, asset, dealId: params.get("deal"), tenant: params.get("tenant"), agentId: params.get("agent"), view: params.get("view"), comp: params.get("comp"), nav: params.get("nav"), pvView: params.get("pvView"), pvSort: params.get("pvSort"), pvDisplay: params.get("pvDisplay"), ovView: params.get("ovView") }
   }
 
   const programmaticNav = React.useRef(false)
@@ -792,6 +796,7 @@ export default function App() {
   const [selectedSpace, setSelectedSpace] = React.useState<SpaceRef | null>(null)
   const [selectedSpaceStatus, setSelectedSpaceStatus] = React.useState<SpaceStatus>("Available")
   const [selectedLease, setSelectedLease] = React.useState<Lease | null>(null)
+  const [selectedTenant, setSelectedTenant] = React.useState<string | null>(() => parseHash().tenant)
   const [selectedLeaseStatus, setSelectedLeaseStatus] = React.useState<LeaseStatus>("Active")
   const [askVtsKey, setAskVtsKey] = React.useState(0)
   const stackingPlanRef = React.useRef<StackingPlanHandle>(null)
@@ -805,6 +810,7 @@ export default function App() {
       : `/${currentPage}/${selectedAssetId}`
     const params: string[] = []
     if (selectedDeal) params.push(`deal=${selectedDeal.id}`)
+    if (currentPage === "tenants" && selectedTenant) params.push(`tenant=${encodeURIComponent(selectedTenant)}`)
     if (currentPage === "ai" && agentView === "grid") params.push("view=grid")
     params.push(navCollapsed ? "nav=collapsed" : "nav=expanded")
     const isPortfolioPage = currentPage === "dashboard" && (selectedAssetId === "all" || PORTFOLIOS.some(p => p.id === selectedAssetId))
@@ -818,17 +824,18 @@ export default function App() {
       programmaticNav.current = true
       window.location.hash = base
     }
-  }, [currentPage, selectedAssetId, selectedDeal, agentView, navCollapsed, portfolioCardSort, portfolioMapView, portfolioView])
+  }, [currentPage, selectedAssetId, selectedDeal, selectedTenant, agentView, navCollapsed, portfolioCardSort, portfolioMapView, portfolioView])
 
   React.useEffect(() => {
     const onHashChange = () => {
       if (programmaticNav.current) { programmaticNav.current = false; return }
-      const { page, asset, dealId, agentId, comp, nav, pvView, pvSort, pvDisplay, ovView } = parseHash()
+      const { page, asset, dealId, tenant, agentId, comp, nav, pvView, pvSort, pvDisplay, ovView } = parseHash()
       if (nav === "collapsed") setNavCollapsed(true)
       else if (nav === "expanded") setNavCollapsed(false)
       setCurrentPage(page)
       if (page === "spaces") setSelectedSpace(null)
       if (page === "leases") setSelectedLease(null)
+      setSelectedTenant(page === "tenants" ? tenant : null)
       setSelectedAssetId(asset)
       setDefaultAgentId(agentId ?? undefined)
       if (pvView) portfolioViews.selectView(pvView)
@@ -1458,6 +1465,61 @@ export default function App() {
       )
     }
 
+    if (page === "tenants") {
+      if (selectedTenant) {
+        const label = entityLabel(selectedTenant)
+        const isAggregate = selectedTenant.startsWith(AGGREGATE_PREFIX)
+        const members = entityTenants(selectedTenant)
+        const logoTenant = members.find(isParentTenant) ?? members[0] ?? selectedTenant
+        const meta = tenantMeta(logoTenant)
+        const isParent = isAggregate || isParentTenant(selectedTenant)
+        const scopeLabel = isMultiAsset ? (selectedPortfolio?.name ?? "All assets") : (selectedAsset?.name ?? "All assets")
+        const scopeAssetList = isMultiAsset ? ASSETS.filter(a => allowedAssets.includes(a.name)) : ASSETS.filter(a => a.id === selectedAssetId)
+        const familyMembers = tenantFamily(logoTenant).members.filter(m => m.hasLeases).map(m => m.name)
+        return (
+          <div className="space-y-4">
+            <BuildingHeader
+              city={meta.industry}
+              name={<span><span className="font-semibold">{label}</span>{" "}<span className="text-muted-foreground font-light">| Tenant profile</span></span>}
+              address=""
+              badges={<>
+                <HeaderPill
+                  label={isParent ? "Parent company" : `Parent · ${meta.parent}`}
+                  items={familyMembers}
+                  onItemClick={i => setSelectedTenant(familyMembers[i])}
+                />
+                <HeaderPill
+                  label={scopeAssetList.length === 1 ? scopeAssetList[0].name : `${scopeAssetList.length} Assets`}
+                  items={scopeAssetList.map(a => a.name)}
+                  onItemClick={i => setSelectedAssetId(scopeAssetList[i].id)}
+                />
+              </>}
+              image={<div className="relative shrink-0 w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border border-border/30 shadow-sm"><TenantLogoImage name={logoTenant} /></div>}
+            />
+            <PageBreadcrumb crumbs={[
+              { label: "Tenants", onClick: () => setSelectedTenant(null) },
+              { label },
+            ]} />
+            <TenantProfile
+              selection={selectedTenant}
+              scopeAssets={isMultiAsset ? (selectedAssetId === "all" ? null : allowedAssets) : (selectedAsset ? [selectedAsset.name] : null)}
+              scopeLabel={scopeLabel}
+              assets={ASSETS}
+              onSelect={setSelectedTenant}
+              onDealClick={deal => { setSelectedTenant(null); setSelectedDeal(deal); setCurrentPage("deals") }}
+              onShowAllAssets={() => setSelectedAssetId("all")}
+            />
+          </div>
+        )
+      }
+      return (
+        <div className="space-y-4">
+          <BuildingHeader {...pagedHeaderProps} />
+          <TenantsPage key={selectedAssetId} assetContext={isMultiAsset ? undefined : selectedAsset?.name} allowedAssets={isMultiAsset ? allowedAssets : undefined} onTenantClick={setSelectedTenant} />
+        </div>
+      )
+    }
+
     if (PAGE_LABELS[page] && page !== "dashboard") {
       return (
         <div className="flex flex-col" style={{minHeight: 'calc(100vh - 2rem)'}}>
@@ -1627,6 +1689,7 @@ export default function App() {
           setSelectedDeal={setSelectedDeal}
           onSpacesNav={() => setSelectedSpace(null)}
           onLeasesNav={() => setSelectedLease(null)}
+          onTenantsNav={() => setSelectedTenant(null)}
           setAskVtsKey={setAskVtsKey}
           isDark={isDark}
           toggleDark={toggleDark}
@@ -1648,13 +1711,14 @@ interface AppShellProps {
   setSelectedDeal: (d: null) => void
   onSpacesNav: () => void
   onLeasesNav: () => void
+  onTenantsNav: () => void
   setAskVtsKey: (fn: (k: number) => number) => void
   isDark: boolean
   toggleDark: () => void
   renderPage: (page: string) => React.ReactNode
 }
 
-function AppShell({ navCollapsed, setNavCollapsed, selectedAssetId, setSelectedAssetId, currentPage, setCurrentPage, setSelectedDeal, onSpacesNav, onLeasesNav, setAskVtsKey, isDark, toggleDark, renderPage }: AppShellProps) {
+function AppShell({ navCollapsed, setNavCollapsed, selectedAssetId, setSelectedAssetId, currentPage, setCurrentPage, setSelectedDeal, onSpacesNav, onLeasesNav, onTenantsNav, setAskVtsKey, isDark, toggleDark, renderPage }: AppShellProps) {
   const { closeSideOver, closeSidePush, sidePushOpen } = useChatPattern()
   React.useEffect(() => {
     closeSideOver()
@@ -1674,6 +1738,7 @@ function AppShell({ navCollapsed, setNavCollapsed, selectedAssetId, setSelectedA
     setSelectedDeal(null)
     if (id === "spaces") onSpacesNav()
     if (id === "leases") onLeasesNav()
+    if (id === "tenants") onTenantsNav()
     if (id === "ask-vts") setAskVtsKey(k => k + 1)
   }
   return (

@@ -9,7 +9,7 @@ import { ASSET_KPIS, ASSET_DETAILS } from "@/App"
 import { getDealHealth } from "@/components/deal-profile"
 import type { Deal } from "@/components/deals-page"
 
-export function AssetCard({ asset, deals, onClick }: { asset: { id: string; name: string; address?: string }; deals: Deal[]; onClick: () => void }) {
+export function AssetCard({ asset, deals, onClick, body }: { asset: { id: string; name: string; address?: string }; deals: Deal[]; onClick: () => void; body?: React.ReactNode }) {
   const kpi = ASSET_KPIS[asset.id]
   const detail = ASSET_DETAILS[asset.id]
   if (!kpi) return null
@@ -36,7 +36,7 @@ export function AssetCard({ asset, deals, onClick }: { asset: { id: string; name
           <p className="text-xs text-white/60 truncate">{asset.address}</p>
         </div>
       </div>
-      <div className="px-4 py-3">
+      {body ?? <div className="px-4 py-3">
         <div className="flex items-center gap-2 mb-3">
           <div className="flex-1 h-1 rounded-full bg-border overflow-hidden">
             <div className={cn("h-full rounded-full", kpi.occupancy >= 90 ? "bg-success" : kpi.occupancy >= 75 ? "bg-primary" : "bg-warning")} style={{ width: `${kpi.occupancy}%` }} />
@@ -64,7 +64,7 @@ export function AssetCard({ asset, deals, onClick }: { asset: { id: string; name
             </div>
           </div>
         </div>
-      </div>
+      </div>}
     </div>
   )
 }

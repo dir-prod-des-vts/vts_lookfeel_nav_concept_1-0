@@ -1,0 +1,1 @@
+import{$ as e,X as t}from"./button-D--6RApi.js";import{c as n,r}from"./DialogTrigger-ECc_aHy7.js";var i=e(t(),1);function a(e){return r(e,i.useContext(n)?`drawer`:`dialog`)}export{a as t};
