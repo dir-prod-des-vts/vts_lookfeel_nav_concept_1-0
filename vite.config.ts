@@ -71,7 +71,6 @@ export default defineConfig({
         'tab-feed-showcase': path.resolve(__dirname, 'tab-feed-showcase.html'),
         'tooltip-showcase': path.resolve(__dirname, 'tooltip-showcase.html'),
         'filter-menu-showcase': path.resolve(__dirname, 'filter-menu-showcase.html'),
-        'tenant-performance': path.resolve(__dirname, 'tenant-performance.html'),
       },
     },
   },
