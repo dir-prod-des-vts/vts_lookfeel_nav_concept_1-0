@@ -439,7 +439,7 @@ export const PM_AGENTS: AgentDef[] = [
   },
   {
     id: "pm-groundskeeper",
-    name: "Groundskeeper",
+    name: "Property manager",
     tagline: "Plan and schedule preventive maintenance without PM coordination",
     description:
       "Build and maintain a rolling 90-day preventive maintenance calendar across all systems and floors. Coordinate vendor schedules, confirm availability, and create work orders in advance — so scheduled servicing happens without reactive PM involvement.",

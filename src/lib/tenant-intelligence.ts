@@ -670,7 +670,7 @@ export function tenantOperations(displayName: string, leases: Lease[], anchor: s
   const avgHoursChangePct = trend === "down" ? 12 + (h % 15) : trend === "up" ? -(8 + (h % 12)) : 0
   const recs: OpsRec[] = []
   if (top && top.trend === "up") {
-    recs.push({ action: `Order a root-cause inspection for ${top.category}, ${Math.round((top.total90d / Math.max(1, total90d)) * 100)}% of tickets in 90 days`, agent: "Groundskeeper" })
+    recs.push({ action: `Order a root-cause inspection for ${top.category}, ${Math.round((top.total90d / Math.max(1, total90d)) * 100)}% of tickets in 90 days`, agent: "Property manager" })
   }
   const slow = types.filter(t => t.slaPct < 80).sort((a, b) => a.slaPct - b.slaPct)[0]
   if (slow) recs.push({ action: `Reroute ${slow.category.toLowerCase()} work orders to a faster vendor, ${slow.slaPct}% within SLA`, agent: "Dispatch" })
