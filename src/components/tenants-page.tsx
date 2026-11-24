@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table"
 import { TenantAvatar } from "@/components/tenant-avatar"
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible"
 import { LEASES } from "@/components/leases-page"
 import {
   buildTenantRows, groupTenantRows,
@@ -103,7 +104,7 @@ function LatestUpdateCell({ row }: { row: TenantRow }) {
   function cancel() { setOpen(false); setDraft("") }
 
   if (open) return (
-    <div className="flex flex-col gap-1.5 w-[164px]">
+    <div className="flex flex-col gap-1.5 w-41">
       <Textarea
         autoFocus
         rows={2}
@@ -125,10 +126,10 @@ function LatestUpdateCell({ row }: { row: TenantRow }) {
   )
 
   return (
-    <div className="flex flex-col gap-0.5 w-[164px]">
+    <div className="flex flex-col gap-0.5 w-41">
       <div className="flex items-baseline justify-between gap-1">
         <span className="text-xs font-semibold text-foreground truncate">{u.name}</span>
-        <span className="text-[10px] text-muted-foreground shrink-0">{u.timestamp}</span>
+        <span className="text-xs text-muted-foreground shrink-0">{u.timestamp}</span>
       </div>
       <span className="text-xs text-muted-foreground line-clamp-2 leading-snug whitespace-normal">{u.message}</span>
       <Button variant="link" size="sm" className="text-xs h-auto p-0 self-start" onClick={() => setOpen(true)}>Leave an update</Button>
@@ -269,8 +270,8 @@ export function TenantsPage({ assetContext, allowedAssets, onTenantClick }: { as
         { label: "Tenants", value: String(rows.length), subtitle: `${inPlaceCount} in-place leases` },
       ]} />
 
-      <div className={cn("grid transition-all duration-300 ease-in-out", chartVisible ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
-      <div className="overflow-hidden">
+      <Collapsible open={chartVisible}>
+      <CollapsibleContent>
       <div className={cn(cardBase, "min-w-0")}>
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 mb-5">
           <div className="flex items-center gap-2">
@@ -400,8 +401,8 @@ export function TenantsPage({ assetContext, allowedAssets, onTenantClick }: { as
           </div>
         </div>
       </div>
-      </div>
-      </div>
+      </CollapsibleContent>
+      </Collapsible>
 
       <div className={cn(cardBase, "min-w-0")}>
         <h2 className="text-xl font-semibold text-foreground mb-4">All tenants</h2>

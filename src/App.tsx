@@ -38,7 +38,7 @@ import { BudgetsPage } from "@/components/budgets-page"
 import { AppraisalsPage } from "@/components/appraisals-page"
 import { CompsPage } from "@/components/comps-page"
 import { TenantsPage } from "@/components/tenants-page"
-import { TenantProfile, entityLabel } from "@/components/tenant-profile"
+import { TenantProfile, entityLabel, type TenantProfileHandle } from "@/components/tenant-profile"
 import { tenantMeta } from "@/lib/tenants-data"
 import { AGGREGATE_PREFIX, entityTenants, isParentTenant, tenantFamily } from "@/lib/tenant-profile-data"
 import { PlanningPage } from "@/components/planning-page"
@@ -800,6 +800,7 @@ export default function App() {
   const [selectedLeaseStatus, setSelectedLeaseStatus] = React.useState<LeaseStatus>("Active")
   const [askVtsKey, setAskVtsKey] = React.useState(0)
   const stackingPlanRef = React.useRef<StackingPlanHandle>(null)
+  const tenantProfileRef = React.useRef<TenantProfileHandle>(null)
   useChatPattern()
   const [isDark, setIsDark] = React.useState(() => document.documentElement.classList.contains("dark"))
 
@@ -1476,8 +1477,9 @@ export default function App() {
         const scopeLabel = isMultiAsset ? (selectedPortfolio?.name ?? "All assets") : (selectedAsset?.name ?? "All assets")
         const scopeAssetList = isMultiAsset ? ASSETS.filter(a => allowedAssets.includes(a.name)) : ASSETS.filter(a => a.id === selectedAssetId)
         const familyMembers = tenantFamily(logoTenant).members.filter(m => m.hasLeases).map(m => m.name)
+        const profileScope = isMultiAsset ? (selectedAssetId === "all" ? null : allowedAssets) : (selectedAsset ? [selectedAsset.name] : null)
         return (
-          <div className="space-y-4">
+          <div className="flex flex-1 flex-col gap-4">
             <BuildingHeader
               city={meta.industry}
               name={<span><span className="font-semibold">{label}</span>{" "}<span className="text-muted-foreground font-light">| Tenant profile</span></span>}
@@ -1501,12 +1503,15 @@ export default function App() {
               { label },
             ]} />
             <TenantProfile
+              key={`${selectedTenant}|${selectedAssetId}`}
+              ref={tenantProfileRef}
               selection={selectedTenant}
-              scopeAssets={isMultiAsset ? (selectedAssetId === "all" ? null : allowedAssets) : (selectedAsset ? [selectedAsset.name] : null)}
+              scopeAssets={profileScope}
               scopeLabel={scopeLabel}
               assets={ASSETS}
               onSelect={setSelectedTenant}
               onDealClick={deal => { setSelectedTenant(null); setSelectedDeal(deal); setCurrentPage("deals") }}
+              onOpenLease={lease => { setSelectedTenant(null); setSelectedLease(lease); setCurrentPage("leases") }}
               onShowAllAssets={() => setSelectedAssetId("all")}
             />
           </div>

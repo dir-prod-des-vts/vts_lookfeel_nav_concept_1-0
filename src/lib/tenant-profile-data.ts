@@ -13,6 +13,7 @@ export interface FamilyMember {
 export interface TenantFamily {
   parent: string
   members: FamilyMember[]
+  otherCount: number
 }
 
 export interface Contact {
@@ -59,7 +60,8 @@ export function tenantFamily(tenant: string): TenantFamily {
     if (!members.some(m => m.name === name)) members.push({ name, role: "Subsidiary", hasLeases: false })
   }
   members.sort((a, b) => (a.role === "Parent" ? -1 : b.role === "Parent" ? 1 : Number(b.hasLeases) - Number(a.hasLeases)))
-  return { parent, members }
+  const otherCount = members.filter(m => !m.hasLeases && m.role === "Subsidiary").length
+  return { parent, members: members.filter(m => m.hasLeases || m.role === "Parent"), otherCount }
 }
 
 export function entityTenants(selection: string): string[] {
@@ -96,7 +98,7 @@ export function rolloverSchedule(leases: Lease[]) {
   return [...byYear.values()].sort((a, b) => a.year.localeCompare(b.year))
 }
 
-function hash(s: string) {
+export function hash(s: string) {
   let h = 0
   for (const c of s) h = (h * 31 + c.charCodeAt(0)) >>> 0
   return h
@@ -142,12 +144,12 @@ export function tenantContacts(primaryName: string, parent: string, leases: Leas
   const assets = [...new Set(leases.map(l => l.asset))]
 
   const headOfLeasing = TENANT_PEOPLE[h % TENANT_PEOPLE.length]
-  const vp = VP_PEOPLE[(h >> 3) % VP_PEOPLE.length]
+  const vp = VP_PEOPLE[(h >>> 3) % VP_PEOPLE.length]
   const dealBroker = deals.map(d => d.contact).find(c => c?.includes(" · "))
   const brokerFirm = dealBroker
     ? BROKER_FIRMS.find(f => dealBroker.endsWith(f.firm)) ?? { firm: dealBroker.split(" · ")[1], domain: `${slug(dealBroker.split(" · ")[1])}.com` }
-    : BROKER_FIRMS[(h >> 5) % BROKER_FIRMS.length]
-  const brokerName = dealBroker ? dealBroker.split(" · ")[0] : BROKER_PEOPLE[(h >> 7) % BROKER_PEOPLE.length]
+    : BROKER_FIRMS[(h >>> 5) % BROKER_FIRMS.length]
+  const brokerName = dealBroker ? dealBroker.split(" · ")[0] : BROKER_PEOPLE[(h >>> 7) % BROKER_PEOPLE.length]
 
   const contacts: Contact[] = [
     {
@@ -164,6 +166,12 @@ export function tenantContacts(primaryName: string, parent: string, leases: Leas
       lastContact: deals[0]?.lastUpdated ?? lastLease, assets,
     },
   ]
+  const coFirm = BROKER_FIRMS.filter(f => f.firm !== brokerFirm.firm)[(h >>> 9) % (BROKER_FIRMS.length - 1)]
+  const coBroker = BROKER_PEOPLE.filter(p => p !== brokerName)[(h >>> 11) % (BROKER_PEOPLE.length - 1)]
+  contacts.push({
+    name: coBroker, initials: initialsOf(coBroker), title: h % 2 ? "Co-broker" : "Previous tenant rep", company: coFirm.firm, group: "broker",
+    email: emailFor(coBroker, coFirm.domain), phone: phoneFor(coBroker), touchpoints: 1 + (h % 4), lastContact: lastLease, assets,
+  })
 
   const internal = new Map<string, Contact>()
   for (const asset of assets) {
@@ -223,7 +231,7 @@ export function tenantFeed(displayName: string, leases: Lease[], deals: Deal[], 
   if (expiring.length) {
     const sf = expiring.reduce((a, l) => a + l.sf, 0)
     entries.push({
-      initials: "AI", name: "Deal Monitor", kind: "agent", timestamp: "Today · 9:00 AM",
+      initials: "AI", name: "Deal Monitor", kind: "agent", timestamp: "Today, 9:00 AM",
       message: `${sf.toLocaleString()} sf expires within 12 months across ${new Set(expiring.map(l => l.asset)).size} ${expiring.length === 1 ? "lease" : "leases"}. Renewal outreach recommended before the notice window closes.`,
     })
   }
@@ -276,7 +284,7 @@ export function leaseDocuments(lease: Lease): LeaseDocument[] {
   const executed = toIso(lease.executionDate)
   const commenced = toIso(lease.lcd)
   const statusFor = (i: number): DocStatus => {
-    const v = (h >> i) % 7
+    const v = (h >>> i) % 7
     return v === 0 ? "Needs review" : v === 1 ? "AI extracted" : "Expert verified"
   }
   const docs: Omit<LeaseDocument, "id">[] = [
