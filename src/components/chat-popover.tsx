@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Sparkle, ArrowUp, X, Maximize2 } from "lucide-react"
 import { SUGGESTED } from "@/components/ask-vts"
+import { useChatPattern } from "@/contexts/chat-pattern"
 import type { ChatCommand } from "@/contexts/chat-pattern"
 
 interface Message {
@@ -57,6 +58,7 @@ function generateQuickResponse(text: string): string {
 }
 
 export function ChatPopoverContent({ initialMessage, suggestions, commandSuggestions, onCommand, onClose, onOpenFullScreen }: ChatPopoverContentProps) {
+  const { pageContext } = useChatPattern()
   const [messages, setMessages] = React.useState<Message[]>([])
   const [input, setInput] = React.useState("")
   const [suggestionsVisible, setSuggestionsVisible] = React.useState(false)
@@ -148,7 +150,7 @@ export function ChatPopoverContent({ initialMessage, suggestions, commandSuggest
       {/* Empty state */}
       {messages.length === 0 && (
         <div className="flex-1 flex flex-col gap-2 px-3 py-4 overflow-y-auto">
-          <p className="text-xs font-semibold text-foreground mb-1">What do you want to tackle?</p>
+          <p className="text-xs font-semibold text-foreground mb-1">{pageContext ? `Ask about ${pageContext.label}` : "What do you want to tackle?"}</p>
           {commandSuggsRef.current.length > 0
             ? commandSuggsRef.current.map((cs) => (
                 <button key={cs.label} onClick={() => sendCommand(cs)}
@@ -156,7 +158,7 @@ export function ChatPopoverContent({ initialMessage, suggestions, commandSuggest
                   {cs.label}
                 </button>
               ))
-            : SUGGESTED.slice(0, 4).map((s) => (
+            : (pageContext?.suggestions ?? SUGGESTED.slice(0, 4)).map((s) => (
                 <button key={s.label} onClick={() => sendText(s.prompt)}
                   className="text-left text-xs px-3 py-2 rounded-md border border-primary text-primary bg-transparent hover:bg-primary/10 transition-colors leading-snug w-full">
                   {s.label}
@@ -216,7 +218,7 @@ export function ChatPopoverContent({ initialMessage, suggestions, commandSuggest
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send() } }}
-            placeholder={messages.length === 0 ? "Ask anything about your portfolio…" : "Follow up…"}
+            placeholder={messages.length === 0 ? (pageContext ? `Ask about ${pageContext.label}${pageContext.label.endsWith(".") ? "" : "…"}` : "Ask anything about your portfolio…") : "Follow up…"}
             className="resize-none text-xs border-none shadow-none bg-transparent focus-visible:ring-0 p-0 min-h-0 flex-1"
             rows={1}
           />

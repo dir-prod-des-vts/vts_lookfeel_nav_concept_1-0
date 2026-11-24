@@ -41,7 +41,7 @@ function generateResponse(text: string): string {
 }
 
 export function ChatSideOver() {
-  const { sideOverOpen, closeSideOver, pending, clearPending, openChat } = useChatPattern()
+  const { sideOverOpen, closeSideOver, pending, clearPending, openChat, pageContext } = useChatPattern()
   const [messages, setMessages] = React.useState<Message[]>([])
   const [input, setInput] = React.useState("")
   const [suggestionsVisible, setSuggestionsVisible] = React.useState(false)
@@ -170,7 +170,7 @@ export function ChatSideOver() {
         {/* Empty state */}
         {messages.length === 0 && (
           <div className="flex-1 flex flex-col items-center justify-center gap-6 px-5 pb-4">
-            <p className="text-lg font-semibold text-foreground text-center">What do you want to tackle?</p>
+            <p className="text-lg font-semibold text-foreground text-center">{pageContext ? `Ask about ${pageContext.label}` : "What do you want to tackle?"}</p>
             <div className="flex flex-col gap-2 w-full">
               {commandSuggsRef.current.length > 0
                 ? commandSuggsRef.current.map((cs) => (
@@ -179,7 +179,7 @@ export function ChatSideOver() {
                       {cs.label}
                     </button>
                   ))
-                : SUGGESTED.slice(0, 4).map((s) => (
+                : (pageContext?.suggestions ?? SUGGESTED.slice(0, 4)).map((s) => (
                     <button key={s.label} onClick={() => sendText(s.prompt)}
                       className="text-left text-xs px-3 py-2 rounded-md border border-primary text-primary bg-transparent hover:bg-primary/10 transition-colors leading-snug w-full">
                       {s.label}
@@ -239,7 +239,7 @@ export function ChatSideOver() {
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send() } }}
-            placeholder={messages.length === 0 ? "Ask anything about your portfolio…" : "Ask a follow-up…"}
+            placeholder={messages.length === 0 ? (pageContext ? `Ask about ${pageContext.label}${pageContext.label.endsWith(".") ? "" : "…"}` : "Ask anything about your portfolio…") : "Ask a follow-up…"}
             className="resize-none text-sm border-none shadow-none bg-transparent focus-visible:ring-0 p-0 min-h-0 w-full"
             rows={1}
           />

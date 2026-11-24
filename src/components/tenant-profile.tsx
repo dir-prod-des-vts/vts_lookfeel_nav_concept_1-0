@@ -105,7 +105,7 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
   { selection, scopeAssets, scopeLabel, assets, onSelect, onDealClick, onOpenLease, onShowAllAssets },
   ref,
 ) {
-  const { openChat } = useChatPattern()
+  const { openChat, setPageContext } = useChatPattern()
   const [tab, setTab] = React.useState("insights")
   const [rightTab, setRightTab] = React.useState("updates")
   const [rightCollapsed, setRightCollapsed] = React.useState(false)
@@ -165,6 +165,19 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
     [leases, deals],
   )
   const head = contacts.find(c => c.title === "Head of leasing")
+  React.useEffect(() => {
+    const first = head?.name.split(" ")[0]
+    setPageContext({
+      label,
+      suggestions: [
+        { label: "What needs attention?", prompt: `What needs my attention with ${label} right now?` },
+        { label: "Summarize the relationship", prompt: `Summarize our relationship with ${label}.` },
+        { label: "Upcoming lease dates", prompt: `What are ${label}'s upcoming lease dates and options?` },
+        { label: first ? `Draft an email to ${first}` : "Draft a check-in email", prompt: `Draft a short check-in email to ${head?.name ?? "the tenant"} at ${label}.` },
+      ],
+    })
+    return () => setPageContext(null)
+  }, [label, head, setPageContext])
 
   const openEmail = React.useCallback((draft?: Partial<EmailDraft>, actionId?: string) => {
     setEmailDraft({ to: draft?.to ?? head?.name ?? "", subject: draft?.subject ?? "", body: draft?.body ?? "" })

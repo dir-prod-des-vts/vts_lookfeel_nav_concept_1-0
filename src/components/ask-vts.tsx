@@ -379,7 +379,7 @@ export function AskVTSPage({ className, newChatKey }: { className?: string; newC
   const bottomRef = React.useRef<HTMLDivElement>(null)
   const pendingAutoRef = React.useRef<string | null>(null)
 
-  const { pending, clearPending, agentsView } = useChatPattern()
+  const { pending, clearPending, agentsView, pageContext } = useChatPattern()
 
   const active = convs.find(c => c.id === activeId) ?? convs[0]
 
@@ -638,7 +638,7 @@ export function AskVTSPage({ className, newChatKey }: { className?: string; newC
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send() } }}
-                    placeholder="Ask anything about your portfolio…"
+                    placeholder={pageContext ? `Ask about ${pageContext.label}${pageContext.label.endsWith(".") ? "" : "…"}` : "Ask anything about your portfolio…"}
                     className="w-full resize-none text-sm border-none shadow-none bg-transparent focus-visible:ring-0 p-0 min-h-10"
                     rows={1}
                   />
@@ -664,7 +664,7 @@ export function AskVTSPage({ className, newChatKey }: { className?: string; newC
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-12 justify-center">
-                  {(contextSuggestions.length > 0 ? contextSuggestions.map(s => ({ label: s, prompt: s })) : SUGGESTED).map(s => (
+                  {(contextSuggestions.length > 0 ? contextSuggestions.map(s => ({ label: s, prompt: s })) : pageContext?.suggestions ?? SUGGESTED).map(s => (
                     <Button
                       key={s.label}
                       variant="outline"
@@ -687,7 +687,7 @@ export function AskVTSPage({ className, newChatKey }: { className?: string; newC
                 <div ref={bottomRef} />
               </div>
               <div className="flex flex-wrap gap-2 pt-4 pb-1 shrink-0">
-                {(contextSuggestions.length > 0 ? contextSuggestions.map(s => ({ label: s, prompt: s })) : SUGGESTED.slice(0, 4)).map(s => (
+                {(contextSuggestions.length > 0 ? contextSuggestions.map(s => ({ label: s, prompt: s })) : pageContext?.suggestions ?? SUGGESTED.slice(0, 4)).map(s => (
                   <Button key={s.label} variant="outline" size="sm" className="shrink-0 whitespace-nowrap" onClick={() => { setInput(""); sendText(s.prompt, activeId) }}>
                     {s.label}
                   </Button>
@@ -698,7 +698,7 @@ export function AskVTSPage({ className, newChatKey }: { className?: string; newC
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send() } }}
-                  placeholder="Ask anything about your portfolio, or resume something below…"
+                  placeholder={pageContext ? `Ask about ${pageContext.label}${pageContext.label.endsWith(".") ? "" : "…"}` : "Ask anything about your portfolio, or resume something below…"}
                   className="w-full resize-none text-sm border-none shadow-none bg-transparent focus-visible:ring-0 p-0 min-h-10"
                   rows={1}
                 />

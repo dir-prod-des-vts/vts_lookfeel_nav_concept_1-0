@@ -23,7 +23,14 @@ export interface ChatContext {
   onCommand?: (cmd: unknown) => void
 }
 
+export interface PageChatContext {
+  label: string
+  suggestions: { label: string; prompt: string }[]
+}
+
 interface ChatPatternContextValue {
+  pageContext: PageChatContext | null
+  setPageContext: (ctx: PageChatContext | null) => void
   pattern: ChatPattern
   setPattern: (p: ChatPattern) => void
   pending: ChatContext | null
@@ -39,6 +46,8 @@ interface ChatPatternContextValue {
 }
 
 const ChatPatternContext = React.createContext<ChatPatternContextValue>({
+  pageContext: null,
+  setPageContext: () => {},
   pattern: "side-push",
   setPattern: () => {},
   pending: null,
@@ -69,6 +78,7 @@ export function ChatPatternProvider({ children, onOpenChat, onInsightTrigger }: 
   const [sideOverOpen, setSideOverOpen] = React.useState(false)
   const [sidePushOpen, setSidePushOpen] = React.useState(false)
   const [agentsView, setAgentsView] = React.useState<AgentsView>("ask-vts")
+  const [pageContext, setPageContext] = React.useState<PageChatContext | null>(null)
 
   const openChat = React.useCallback((ctx: ChatContext) => {
     if (ctx.transferMessages || pattern === "full-screen") {
@@ -88,7 +98,7 @@ export function ChatPatternProvider({ children, onOpenChat, onInsightTrigger }: 
   const closeSidePush = React.useCallback(() => { setSidePushOpen(false); setPending(null) }, [])
 
   return (
-    <ChatPatternContext.Provider value={{ pattern, setPattern, pending, openChat, clearPending, sideOverOpen, closeSideOver, sidePushOpen, closeSidePush, agentsView, setAgentsView, onInsightTrigger: onInsightTrigger ?? null }}>
+    <ChatPatternContext.Provider value={{ pageContext, setPageContext, pattern, setPattern, pending, openChat, clearPending, sideOverOpen, closeSideOver, sidePushOpen, closeSidePush, agentsView, setAgentsView, onInsightTrigger: onInsightTrigger ?? null }}>
       {children}
     </ChatPatternContext.Provider>
   )
