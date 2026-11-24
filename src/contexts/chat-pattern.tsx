@@ -78,7 +78,11 @@ export function ChatPatternProvider({ children, onOpenChat, onInsightTrigger }: 
   const [sideOverOpen, setSideOverOpen] = React.useState(false)
   const [sidePushOpen, setSidePushOpen] = React.useState(false)
   const [agentsView, setAgentsView] = React.useState<AgentsView>("ask-vts")
-  const [pageContext, setPageContext] = React.useState<PageChatContext | null>(null)
+  const [pageContext, setPageContextState] = React.useState<PageChatContext | null>(null)
+  // Ignore updates with the same content so a caller passing a fresh object each render can't loop.
+  const setPageContext = React.useCallback((next: PageChatContext | null) => {
+    setPageContextState(prev => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next))
+  }, [])
 
   const openChat = React.useCallback((ctx: ChatContext) => {
     if (ctx.transferMessages || pattern === "full-screen") {

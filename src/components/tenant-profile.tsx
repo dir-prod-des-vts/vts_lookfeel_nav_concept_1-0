@@ -1,4 +1,5 @@
 import * as React from "react"
+import { PanelErrorBoundary } from "@/components/panel-error-boundary"
 import { toast } from "sonner"
 import {
   Angry, ArrowRight, Frown, HeartPulse, Laugh, Meh, Smile, Building2, ChevronDown, ChevronRight, Eye, FileText, Layers, ListTodo, Mail, Map as MapIcon,
@@ -372,7 +373,7 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
             <TabsTrigger value="info">Info</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="insights">
+          <TabsContent value="insights"><PanelErrorBoundary label="Insights" resetKey={selection}>
             <div className="flex flex-col gap-4">
               <BriefCard
                 signals={signals} place={place} leases={leases}
@@ -387,26 +388,26 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
               <ChangesCard changes={changeFeed} onOpen={openChange} />
               <SignalsCard risks={allRisks} opportunities={signals.opportunities} onJump={jumpTo} />
             </div>
-          </TabsContent>
+          </PanelErrorBoundary></TabsContent>
 
-          <TabsContent value="info">
+          <TabsContent value="info"><PanelErrorBoundary label="Info" resetKey={selection}>
             <CompanyCard name={label} logo={tenants.find(t => t === family.parent) ?? tenants[0] ?? family.parent} parent={family.parent} company={company} />
-          </TabsContent>
+          </PanelErrorBoundary></TabsContent>
 
-          <TabsContent value="deals"><DealsTab deals={deals} dead={dead} where={place.where} view={dealView} onViewChange={setDealView} assets={assets} onDealClick={onDealClick} onTask={dealTask} /></TabsContent>
+          <TabsContent value="deals"><PanelErrorBoundary label="Deals" resetKey={selection}><DealsTab deals={deals} dead={dead} where={place.where} view={dealView} onViewChange={setDealView} assets={assets} onDealClick={onDealClick} onTask={dealTask} /></PanelErrorBoundary></TabsContent>
 
-          <TabsContent value="requirements"><RequirementsTab requirements={requirements} view={reqView} onViewChange={setReqView} assets={assets} where={place.where} onDealClick={onDealClick} onTask={dealTask} /></TabsContent>
+          <TabsContent value="requirements"><PanelErrorBoundary label="Requirements" resetKey={selection}><RequirementsTab requirements={requirements} view={reqView} onViewChange={setReqView} assets={assets} where={place.where} onDealClick={onDealClick} onTask={dealTask} /></PanelErrorBoundary></TabsContent>
 
-          <TabsContent value="leases">
+          <TabsContent value="leases"><PanelErrorBoundary label="Leases" resetKey={selection}>
             <LeasesTab
               insights={signals.insights} view={leaseView} onViewChange={setLeaseView} assets={assets} where={place.where}
               narrowed={place.narrowed} hasLeasesElsewhere={allEntityLeases.length > leases.length}
               onOpenLease={onOpenLease} onShowAllAssets={onShowAllAssets} onDealClick={onDealClick}
               onTask={l => openTask({ link: `${l.asset}, ${l.suite ? `Unit ${l.suite}` : l.floor}` })}
             />
-          </TabsContent>
+          </PanelErrorBoundary></TabsContent>
 
-          <TabsContent value="contacts">
+          <TabsContent value="contacts"><PanelErrorBoundary label="Contacts" resetKey={selection}>
             <ContactsTab
               contacts={contacts} tasks={tasks} lastEmailFor={lastEmailFor}
               onEmail={c => openEmail({ to: c.name })}
@@ -414,7 +415,7 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
               onOpenEmails={() => openRight("updates", "emails")}
               onOpenTasks={() => openRight("tasks")}
             />
-          </TabsContent>
+          </PanelErrorBoundary></TabsContent>
         </Tabs>
       </div>
 
@@ -443,7 +444,7 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
           </div>
 
           <div className={cn(rightCollapsed && "lg:hidden")}>
-          <TabsContent value="updates">
+          <TabsContent value="updates"><PanelErrorBoundary label="Updates" resetKey={selection}>
             <div className="flex flex-col gap-4">
               <div className="flex">
                 <ToggleGroup type="single" value={activityFilter} onValueChange={v => { if (typeof v === "string" && v) setActivityFilter(v as ActivityFilter) }} className={cn(FILTER_TAB_GROUP_CLS, "w-full")}>
@@ -461,15 +462,15 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
                 draftPrompt={`Draft a relationship update for ${label} covering their footprint ${place.where}, upcoming expirations, and recent conversations.`}
               />
             </div>
-          </TabsContent>
+          </PanelErrorBoundary></TabsContent>
 
-          <TabsContent value="tasks">
+          <TabsContent value="tasks"><PanelErrorBoundary label="Tasks" resetKey={selection}>
             <TasksTab tasks={tasks} today={today} onToggle={toggleTask} onNew={() => openTask()} />
-          </TabsContent>
+          </PanelErrorBoundary></TabsContent>
 
-          <TabsContent value="documents"><DocumentsTab leases={leases} where={place.where} onOpenLease={onOpenLease} /></TabsContent>
+          <TabsContent value="documents"><PanelErrorBoundary label="Documents" resetKey={selection}><DocumentsTab leases={leases} where={place.where} onOpenLease={onOpenLease} /></PanelErrorBoundary></TabsContent>
 
-          <TabsContent value="operations"><OperationsTab ops={ops} onAsk={message => openChat({ message })} /></TabsContent>
+          <TabsContent value="operations"><PanelErrorBoundary label="Operations" resetKey={selection}><OperationsTab ops={ops} onAsk={message => openChat({ message })} /></PanelErrorBoundary></TabsContent>
           </div>
         </Tabs>
       </div>
@@ -1914,6 +1915,15 @@ function OpsStat({ label, value, unit, sub, trend }: { label: string; value: str
   )
 }
 
+// Chart props live at module scope so their identity never changes between renders.
+const NPS_CHART_MARGIN = { top: 8, right: 16, bottom: 0, left: 0 }
+const NPS_DOT = { r: 4, fill: "var(--color-nps)" }
+const NPS_ACTIVE_DOT = { r: 5 }
+const NPS_DOMAIN: [number, number] = [-60, 80]
+const NPS_TICKS = [-50, 0, 50]
+const BAR_CHART_MARGIN = { top: 8, right: 0, bottom: 0, left: 0 }
+const BAR_RADIUS: [number, number, number, number] = [4, 4, 0, 0]
+
 const FACES = [Angry, Frown, Meh, Smile, Laugh]
 const FACE_LABELS = ["Very unhappy", "Unhappy", "Neutral", "Happy", "Very happy"]
 const FACE_TONE = [
@@ -1990,13 +2000,13 @@ function SatisfactionCard({ sat }: { sat: TenantSatisfaction }) {
       <div className="flex flex-col gap-2 border-t border-border/60 pt-3">
         <p className="text-xs text-muted-foreground">NPS by quarter</p>
         <ChartContainer config={OPS_SAT_CONFIG} className="aspect-auto h-28 w-full">
-          <LineChart data={sat.history} margin={{ top: 8, right: 16, bottom: 0, left: 0 }}>
+          <LineChart data={sat.history} margin={NPS_CHART_MARGIN}>
             <CartesianGrid vertical={false} />
             <XAxis dataKey="quarter" tickLine={false} axisLine={false} tickMargin={6} />
-            <YAxis width={28} domain={[-60, 80]} ticks={[-50, 0, 50]} tickLine={false} axisLine={false} />
+            <YAxis width={28} domain={NPS_DOMAIN} ticks={NPS_TICKS} tickLine={false} axisLine={false} />
             <ReferenceLine y={0} stroke="var(--color-border)" />
             <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
-            <Line dataKey="nps" type="monotone" stroke="var(--color-nps)" strokeWidth={2} dot={{ r: 4, fill: "var(--color-nps)" }} activeDot={{ r: 5 }} />
+            <Line dataKey="nps" type="monotone" stroke="var(--color-nps)" strokeWidth={2} dot={NPS_DOT} activeDot={NPS_ACTIVE_DOT} />
           </LineChart>
         </ChartContainer>
       </div>
@@ -2075,12 +2085,12 @@ function OperationsTab({ ops, onAsk }: { ops: TenantOperations; onAsk: (message:
           <span className="text-xs text-muted-foreground">Last 6 months</span>
         </div>
         <ChartContainer config={OPS_VOLUME_CONFIG} className="aspect-auto h-40 w-full">
-          <BarChart data={ops.monthly} margin={{ top: 8, right: 0, bottom: 0, left: 0 }}>
+          <BarChart data={ops.monthly} margin={BAR_CHART_MARGIN}>
             <CartesianGrid vertical={false} />
             <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={6} />
             <YAxis width={24} tickLine={false} axisLine={false} allowDecimals={false} />
             <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator />} />
-            <Bar dataKey="count" fill="var(--color-count)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+            <Bar dataKey="count" fill="var(--color-count)" radius={BAR_RADIUS} maxBarSize={28} />
           </BarChart>
         </ChartContainer>
       </section>
