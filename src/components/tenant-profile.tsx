@@ -102,9 +102,13 @@ interface TenantProfileProps {
 type ActivityFilter = "all" | "emails" | "meetings" | "deals" | "agents"
 
 export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfileProps>(function TenantProfile(
-  { selection, scopeAssets, scopeLabel, assets, onSelect, onDealClick, onOpenLease, onShowAllAssets },
+  { selection, scopeAssets: scopeAssetsProp, scopeLabel, assets, onSelect, onDealClick, onOpenLease, onShowAllAssets },
   ref,
 ) {
+  // Parents may pass a new array each render; key it by content so derived data stays stable.
+  const scopeKey = scopeAssetsProp ? scopeAssetsProp.join("|") : null
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const scopeAssets = React.useMemo(() => scopeAssetsProp, [scopeKey])
   const { openChat, setPageContext } = useChatPattern()
   const [tab, setTab] = React.useState("insights")
   const [rightTab, setRightTab] = React.useState("updates")
@@ -165,19 +169,20 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
     [leases, deals],
   )
   const head = contacts.find(c => c.title === "Head of leasing")
+  const headName = head?.name
   React.useEffect(() => {
-    const first = head?.name.split(" ")[0]
+    const first = headName?.split(" ")[0]
     setPageContext({
       label,
       suggestions: [
         { label: "What needs attention?", prompt: `What needs my attention with ${label} right now?` },
         { label: "Summarize the relationship", prompt: `Summarize our relationship with ${label}.` },
         { label: "Upcoming lease dates", prompt: `What are ${label}'s upcoming lease dates and options?` },
-        { label: first ? `Draft an email to ${first}` : "Draft a check-in email", prompt: `Draft a short check-in email to ${head?.name ?? "the tenant"} at ${label}.` },
+        { label: first ? `Draft an email to ${first}` : "Draft a check-in email", prompt: `Draft a short check-in email to ${headName ?? "the tenant"} at ${label}.` },
       ],
     })
     return () => setPageContext(null)
-  }, [label, head, setPageContext])
+  }, [label, headName, setPageContext])
 
   const openEmail = React.useCallback((draft?: Partial<EmailDraft>, actionId?: string) => {
     setEmailDraft({ to: draft?.to ?? head?.name ?? "", subject: draft?.subject ?? "", body: draft?.body ?? "" })
@@ -1934,7 +1939,7 @@ function SatisfactionCard({ sat }: { sat: TenantSatisfaction }) {
         <span className="text-xs text-muted-foreground">{sat.responses} responses to the {sat.surveyed} survey</span>
       </div>
 
-      <div className="rounded-xl bg-muted/40 p-3 flex items-center gap-4">
+      <div className="rounded-xl bg-muted/40 p-3 flex flex-col items-stretch gap-3 @sm:flex-row @sm:items-center @sm:gap-4">
         <div className="flex flex-col shrink-0">
           <p className="text-3xl font-semibold text-foreground tabular-nums leading-none">
             {sat.score.toFixed(1)}<span className="ml-1 text-sm font-normal text-muted-foreground">/ 5</span>
@@ -2030,15 +2035,15 @@ function OperationsTab({ ops, onAsk }: { ops: TenantOperations; onAsk: (message:
           </div>
           <Badge className="bg-primary/10 border-primary/20 text-primary"><Zap />Agent</Badge>
         </div>
-        <div className="flex flex-col gap-1.5 pl-10.5">
+        <div className="flex flex-col gap-2.5 @sm:gap-1.5 @sm:pl-10.5">
           {ops.health.recs.length === 0 && (
             <p className="text-sm text-foreground/80 leading-snug">Operations are on track. No action required at this time.</p>
           )}
           {ops.health.recs.map(r => {
             const AgentIcon = PM_AGENT_ICON[r.agent] ?? Bot
             return (
-              <div key={r.action} className="flex items-center gap-2">
-                <p className="text-sm text-foreground/80 flex-1 leading-snug">{r.action}</p>
+              <div key={r.action} className="flex flex-col items-start gap-1.5 @sm:flex-row @sm:items-center @sm:gap-2">
+                <p className="text-sm text-foreground/80 flex-1 min-w-0 leading-snug">{r.action}</p>
                 <Button
                   variant="outline" size="sm"
                   className="gap-1.5 shrink-0 h-7 text-xs text-primary border-primary/30 hover:bg-primary/5"
@@ -2055,7 +2060,7 @@ function OperationsTab({ ops, onAsk }: { ops: TenantOperations; onAsk: (message:
 
       <SatisfactionCard sat={sat} />
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 @md:grid-cols-3 gap-3">
         <OpsStat label="Open work orders" value={String(ops.openWorkOrders)} sub={`${ops.total90d} in 90 days`} />
         <OpsStat
           label="Avg resolution" value={String(ops.avgHours)} unit="hrs" sub="vs last quarter"
