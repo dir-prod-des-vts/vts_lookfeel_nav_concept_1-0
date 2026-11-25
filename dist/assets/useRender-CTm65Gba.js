@@ -1,0 +1,1 @@
+import{h as e}from"./button-ne_SmSlw.js";function t(t){return e(t.defaultTagName??`div`,t,t)}export{t};

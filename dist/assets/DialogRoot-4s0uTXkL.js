@@ -1,1 +1,0 @@
-import{$ as e,X as t}from"./button-BgekBp-W.js";import{c as n,r}from"./DialogTrigger-876kefgi.js";var i=e(t(),1);function a(e){return r(e,i.useContext(n)?`drawer`:`dialog`)}export{a as t};

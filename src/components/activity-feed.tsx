@@ -1,12 +1,12 @@
 import * as React from "react"
-import { Bot, Building2, Calendar, Frown, Mail, MapPin, Meh, Paperclip, Send, Smile, SmilePlus, Zap } from "lucide-react"
+import { Bot, Building2, Calendar, Ellipsis, Frown, Mail, MapPin, Meh, Paperclip, Send, Smile, SmilePlus, Zap } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { AGENT_ICON_MAP } from "@/components/agents-page"
 
 export type FeedSentiment = "positive" | "neutral" | "negative"
@@ -97,7 +97,6 @@ export function UpdateCard({ entry }: { entry: FeedEntry }) {
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">{entry.timestamp}</p>
           </div>
-          <span className="text-xs font-medium text-muted-foreground shrink-0">{sent ? "Sent" : "Received"}</span>
         </div>
         <div className="pl-10.5 flex flex-col gap-0.5">
           <p className="text-sm font-semibold text-foreground">{entry.email.subject}</p>
@@ -119,7 +118,6 @@ export function UpdateCard({ entry }: { entry: FeedEntry }) {
             <p className="text-sm font-semibold text-foreground leading-none">{entry.name}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{entry.timestamp}</p>
           </div>
-          <Badge className="bg-primary/10 border-primary/20 text-primary"><Zap />Agent</Badge>
         </div>
         <p className="text-sm text-foreground/80 leading-relaxed pl-10.5">{entry.message}</p>
       </div>
@@ -144,24 +142,33 @@ export function UpdateCard({ entry }: { entry: FeedEntry }) {
       </div>
       <p className="text-sm text-foreground leading-relaxed">{entry.message}</p>
       {meta && <FeedFooterMeta meta={meta} />}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 border-t border-border/50">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Button variant="ghost" size="sm" className="text-xs">Share</Button>
-          {!isSystem && (
-            <>
-              <Button variant="ghost" size="sm" className="text-xs">Edit</Button>
-              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground hover:text-destructive">Delete</Button>
-            </>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5">
-          {REACTIONS.map(r => (
-            <Button key={r} variant="ghost" size="xs" onClick={() => toggle(r)} aria-pressed={Boolean(reactions[r])} aria-label={`React ${r}`}
-              className={cn("h-7 rounded-md text-sm", reactions[r] ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted")}>
-              {r}{reactions[r] ? <span className="text-xs font-medium">{reactions[r]}</span> : null}
-            </Button>
-          ))}
-        </div>
+      <div className="flex items-center gap-1.5 pt-1 border-t border-border/50">
+        {REACTIONS.filter(r => reactions[r]).map(r => (
+          <Button key={r} variant="ghost" size="xs" onClick={() => toggle(r)} aria-pressed aria-label={`Remove ${r} reaction`}
+            className="h-7 rounded-md text-sm bg-primary/10 text-primary">
+            {r}<span className="text-xs font-medium">{reactions[r]}</span>
+          </Button>
+        ))}
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Add a reaction" className="text-muted-foreground" />}>
+            <SmilePlus className="h-4 w-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="flex w-auto min-w-0 gap-0.5 p-1">
+            {REACTIONS.map(r => (
+              <DropdownMenuItem key={r} onClick={() => toggle(r)} aria-label={`React ${r}`} className="justify-center px-2 text-base">{r}</DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label="More actions" className="ml-auto text-muted-foreground" />}>
+            <Ellipsis className="h-4 w-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-36">
+            <DropdownMenuItem>Share</DropdownMenuItem>
+            {!isSystem && <DropdownMenuItem>Edit</DropdownMenuItem>}
+            {!isSystem && <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="flex items-center gap-2">
         <Avatar size="sm">
@@ -213,7 +220,7 @@ export function ActivityFeed({ entries, draftPrompt, showLogTour = true }: {
             <Button size="sm" variant="outline" className="gap-1.5 text-primary border-primary/30 hover:bg-primary/5"
               onClick={() => setDraft(draftPrompt)}>
               <Zap className="h-3.5 w-3.5" />
-              Draft with VTS
+              Draft
             </Button>
             <Button size="sm" variant="outline" aria-label="Attach a file" className="text-primary border-primary/30 hover:bg-primary/5 h-8 w-8 p-0 rounded-full"
               onClick={() => fileRef.current?.click()}>

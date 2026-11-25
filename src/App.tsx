@@ -988,7 +988,7 @@ export default function App() {
           address: "",
           image: <MultiImage assetIds={ASSETS.map(a => a.id)} />,
           badges: <>
-            <HeaderPill label={`${ASSETS.length} Assets`} items={ASSETS.map(a => a.name)} onItemClick={i => { setSelectedAssetId(ASSETS[i].id); setCurrentPage("dashboard") }} />
+            <HeaderPill label={`${ASSETS.length} assets`} items={ASSETS.map(a => a.name)} onItemClick={i => { setSelectedAssetId(ASSETS[i].id); setCurrentPage("dashboard") }} />
             <HeaderPill label={`${allMarkets.length} Markets`} items={allMarkets} />
           </>,
         }
@@ -1002,7 +1002,7 @@ export default function App() {
           address: "",
           image: <MultiImage assetIds={selectedPortfolio.assetIds} />,
           badges: <>
-            <HeaderPill label={`${selectedPortfolio.assetIds.length} Assets`} items={portfolioAssets.map(a => a.name)} onItemClick={i => { setSelectedAssetId(portfolioAssets[i].id); setCurrentPage("dashboard") }} />
+            <HeaderPill label={`${selectedPortfolio.assetIds.length} assets`} items={portfolioAssets.map(a => a.name)} onItemClick={i => { setSelectedAssetId(portfolioAssets[i].id); setCurrentPage("dashboard") }} />
             <HeaderPill label={`${portfolioMarkets.length} Market${portfolioMarkets.length !== 1 ? "s" : ""}`} items={portfolioMarkets} />
           </>,
         }
@@ -1482,7 +1482,7 @@ export default function App() {
           <div className="flex flex-1 flex-col gap-4">
             <BuildingHeader
               city={meta.industry}
-              name={<span><span className="font-semibold">{label}</span>{" "}<span className="text-muted-foreground font-light">| Tenant profile</span></span>}
+              name={label}
               address=""
               badges={<>
                 <HeaderPill
@@ -1491,7 +1491,7 @@ export default function App() {
                   onItemClick={i => setSelectedTenant(familyMembers[i])}
                 />
                 <HeaderPill
-                  label={scopeAssetList.length === 1 ? scopeAssetList[0].name : `${scopeAssetList.length} Assets`}
+                  label={scopeAssetList.length === 1 ? scopeAssetList[0].name : `${scopeAssetList.length} assets`}
                   items={scopeAssetList.map(a => a.name)}
                   onItemClick={i => setSelectedAssetId(scopeAssetList[i].id)}
                 />

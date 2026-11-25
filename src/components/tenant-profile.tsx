@@ -4,7 +4,9 @@ import { toast } from "sonner"
 import {
   Angry, ArrowRight, Frown, HeartPulse, Laugh, Meh, Smile, Building2, ChevronDown, ChevronRight, Eye, FileText, Layers, ListTodo, Mail, Map as MapIcon,
   ArrowUpDown, CalendarClock, Wrench, CalendarDays, Handshake, History, LayoutGrid, Users, Table2, User, Phone, Plus, ShieldAlert, Sparkle, TrendingDown, TrendingUp, Minus, X, Zap, Bot,
+  Bell, ExternalLink,
 } from "lucide-react"
+import { LinkedInIcon } from "@/components/brand-icons"
 import { type ColumnDef } from "@tanstack/react-table"
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
@@ -319,7 +321,7 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
   const finance = assetFinancials(displayName, leases)
   if (finance.arrears > 0 && finance.daysPastDue > 30) opsRisks.push({ id: "fin-arrears", severity: "critical", title: "Rent in arrears", detail: `$${fmtCompact(finance.arrears)} is ${finance.daysPastDue} days past due`, due: "Finance" })
   const allRisks = [...signals.risks, ...opsRisks].sort((x, y) => (x.severity === "critical" ? 0 : x.severity === "warning" ? 1 : 2) - (y.severity === "critical" ? 0 : y.severity === "warning" ? 1 : 2))
-  const opsActions: RecommendedAction[] = ops.health.recs.slice(0, 1).map((r, i) => ({ id: `ops-act-${i}`, kind: "ask", title: r.action, reason: `${r.agent} can take this on from the operations data.`, cta: `Ask ${r.agent}`, prompt: r.action }))
+  const opsActions: RecommendedAction[] = ops.health.recs.slice(0, 1).map((r, i) => ({ id: `ops-act-${i}`, kind: "ask", title: r.title, reason: r.detail, cta: `Ask ${r.agent}`, prompt: r.action }))
   const billing = contacts.find(c => c.title === "Head of leasing") ?? contacts.find(c => c.group === "tenant")
   const financeActions: RecommendedAction[] = finance.arrears > 0 && finance.daysPastDue > 30 && billing ? [{
     id: "fin-act", kind: "email", title: `Send a balance reminder to ${billing.name.split(" ")[0]}`,
@@ -346,6 +348,47 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
   const primaryContact = contacts.find(c => c.title === "Head of leasing") ?? contacts.find(c => c.group === "tenant")
   const brokerContact = contacts.find(c => c.group === "broker")
   const touchpoints = contacts.filter(c => c.group !== "internal").reduce((a, c) => a + c.touchpoints, 0)
+  const nextTask = openTasks.slice().sort((x, y) => x.due.localeCompare(y.due))[0]
+  const knowItems = React.useMemo<KnowItem[]>(() => {
+    const items: KnowItem[] = []
+    const sf = leases.reduce((a, l) => a + l.sf, 0)
+    const rent = leases.reduce((a, l) => a + l.annualRent, 0)
+    const assetCount = new Set(leases.map(l => l.asset)).size
+    const e = signals.exposure
+    if (leases.length) items.push({
+      icon: Building2, title: "Footprint",
+      text: `${fmtCompact(sf)} sf across ${assetCount} ${assetCount === 1 ? "asset" : "assets"}, $${fmtCompact(rent)} in annual rent${e ? `, ${(e.rentShare * 100).toFixed(1)}% of ${place.share} rent` : ""}.`,
+    })
+    const critical = allRisks.filter(r => r.severity === "critical")
+    const watch = (critical.length ? critical : allRisks).slice(0, 2).map(r => r.summary ?? `${r.title}: ${r.detail}.`)
+    if (watch.length) items.push({
+      icon: ShieldAlert, title: "Watch", tone: "alert",
+      text: `${watch.join(" ")}${critical.length > 2 ? ` ${critical.length - 2} more critical ${critical.length - 2 === 1 ? "item" : "items"}.` : ""}`,
+    })
+    if (deals.length) {
+      const dealSf = deals.reduce((a, d) => a + d.sf, 0)
+      const flagged = deals.filter(d => d.status === "at-risk" || d.status === "stalled").length
+      const furthest = [...deals].sort((a, b) => DEAL_STAGES.indexOf(b.stage) - DEAL_STAGES.indexOf(a.stage))[0]
+      items.push({
+        icon: Handshake, title: "Pipeline",
+        text: `${deals.length} active ${deals.length === 1 ? "deal" : "deals"} for ${fmtCompact(dealSf)} sf, furthest in ${furthest.stage}.${flagged ? ` ${flagged} ${flagged === 1 ? "needs" : "need"} attention.` : ""}`,
+      })
+    }
+    const touch = lastTouch?.email ? `Last email ${lastTouch.date ? fmtShort(lastTouch.date) : lastTouch.timestamp}: ${lastTouch.email.subject}.` : `${touchpoints} touchpoints logged.`
+    items.push({
+      icon: Users, title: "Relationship",
+      text: `${touch}${nextTask ? ` Next: ${nextTask.title.charAt(0).toLowerCase()}${nextTask.title.slice(1)}, due ${fmtShort(nextTask.due)}.` : ""}`,
+    })
+    const sat = ops.satisfaction
+    const rising = ops.types.find(t => t.trend === "up")
+    items.push({
+      icon: Wrench, title: "Operations",
+      text: `Satisfaction is ${sat.score.toFixed(1)} of 5 and ${sat.trend === "down" ? "slipping" : sat.trend === "up" ? "improving" : "steady"}.${rising ? ` ${rising.category} tickets are rising, ${rising.total90d} in 90 days.` : ""}`,
+    })
+    const upside = signals.opportunities[0]
+    if (upside) items.push({ icon: TrendingUp, title: "Upside", text: `${upside.title}. ${upside.detail}.` })
+    return items
+  }, [leases, signals, place.share, allRisks, deals, lastTouch, touchpoints, nextTask, ops])
   const staleBefore = addDays(dataAnchor, -90)
   const attention = {
     risks: allRisks.filter(r => r.severity === "critical").length,
@@ -355,7 +398,6 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
     contacts: contacts.filter(c => c.group !== "internal" && c.lastContact < staleBefore).length,
     tasks: openTasks.filter(t => t.due < today).length,
   }
-
 
   return (
     <div className="flex flex-1 flex-col gap-4">
@@ -378,11 +420,13 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
               <BriefCard
                 signals={signals} place={place} leases={leases}
                 headline={mostUrgent?.summary ?? (mostUrgent ? `${mostUrgent.title}: ${mostUrgent.detail}.` : undefined)}
+                know={knowItems}
+                actionCount={actions.length}
                 actions={<ActionsSection actions={actions} completed={allActions.length - actions.length} onRun={runAction} onDismiss={id => setDone(prev => new Set(prev).add(id))} />}
               />
               <div className="flex flex-col gap-4">
                 <PipelineCard deals={deals} onOpen={openDeals} />
-                <RelationshipCard lastTouch={lastTouch} nextTask={openTasks.slice().sort((x, y) => x.due.localeCompare(y.due))[0]} primary={primaryContact} broker={brokerContact} touchpoints={touchpoints} onOpen={() => setTab("contacts")} />
+                <RelationshipCard lastTouch={lastTouch} nextTask={nextTask} primary={primaryContact} broker={brokerContact} touchpoints={touchpoints} onOpen={() => setTab("contacts")} />
               </div>
               <CriticalDatesCard insights={signals.insights} onJump={jumpToLease} />
               <ChangesCard changes={changeFeed} onOpen={openChange} />
@@ -402,7 +446,7 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
             <LeasesTab
               insights={signals.insights} view={leaseView} onViewChange={setLeaseView} assets={assets} where={place.where}
               narrowed={place.narrowed} hasLeasesElsewhere={allEntityLeases.length > leases.length}
-              onOpenLease={onOpenLease} onShowAllAssets={onShowAllAssets} onDealClick={onDealClick}
+              onOpenLease={onOpenLease} onShowAllAssets={onShowAllAssets}
               onTask={l => openTask({ link: `${l.asset}, ${l.suite ? `Unit ${l.suite}` : l.floor}` })}
             />
           </PanelErrorBoundary></TabsContent>
@@ -489,6 +533,7 @@ function IconAvatar({ icon: Icon, size, className }: { icon: React.ElementType; 
     </Avatar>
   )
 }
+
 
 function AlertBadge({ n, label: describe }: { n: number; label: (n: number) => string }) {
   if (!n) return null
@@ -610,7 +655,21 @@ function AgentKpi({ label, value, sub, tone }: { label: string; value: string; s
   )
 }
 
-function BriefCard({ signals, place, leases, actions, headline, className }: { signals: ReturnType<typeof tenantSignals>; place: Place; leases: Lease[]; actions?: React.ReactNode; headline?: string; className?: string }) {
+type KnowItem = { icon: React.ElementType; title: string; text: string; tone?: "alert" }
+
+const BRIEF_TOGGLE_ITEM = "h-7 px-3 text-xs rounded-md text-sidebar-foreground/70 hover:bg-sidebar-foreground/10 hover:text-sidebar-foreground"
+
+function BriefCard({ signals, place, leases, actions, headline, know = [], actionCount = 0, className }: {
+  signals: ReturnType<typeof tenantSignals>
+  place: Place
+  leases: Lease[]
+  actions?: React.ReactNode
+  headline?: string
+  know?: KnowItem[]
+  actionCount?: number
+  className?: string
+}) {
+  const [view, setView] = React.useState<"analysis" | "know">("analysis")
   const e = signals.exposure
   const sf = leases.reduce((a, l) => a + l.sf, 0)
   const rent = leases.reduce((a, l) => a + l.annualRent, 0)
@@ -620,33 +679,71 @@ function BriefCard({ signals, place, leases, actions, headline, className }: { s
     { label: "Annual rent", value: `$${fmtCompact(rent)}`, sub: `${leases.length} ${leases.length === 1 ? "lease" : "leases"}` },
   ] : []
   if (e) {
-    kpis.push({ label: e.rank > 0 && e.rank <= 10 ? `Top ${e.rank} by rent` : "Material exposure", value: `${(e.rentShare * 100).toFixed(1)}%`, sub: `of ${place.share} rent` })
-    if (e.rolling24Sf > 0) kpis.push({ label: "Rolling in 24 months", value: `${fmtCompact(e.rolling24Sf)} sf`, sub: `${Math.round(e.rolling24Share * 100)}% of their space`, tone: e.rolling24Share >= 0.25 ? "alert" : undefined })
+    kpis.push({ label: "Share of rent", value: `${(e.rentShare * 100).toFixed(1)}%`, sub: e.rank > 0 && e.rank <= 10 ? `#${e.rank} in ${place.share}` : `of ${place.share} rent` })
+    if (e.rolling24Sf > 0) kpis.push({ label: "Expiring in 24 months", value: `${fmtCompact(e.rolling24Sf)} sf`, sub: `${Math.round(e.rolling24Share * 100)}% of their space`, tone: e.rolling24Share >= 0.25 ? "alert" : undefined })
   }
   return (
     <section className={cn("rounded-xl p-4 flex flex-col gap-4 bg-sidebar-accent", className)}>
-      <div>
-        <p className="text-xs font-medium uppercase tracking-widest mb-1 text-sidebar-foreground/70">VTS agents</p>
-        <h2 className="text-xl font-semibold text-sidebar-foreground">Tenant intelligence</h2>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium uppercase tracking-widest mb-1 text-sidebar-foreground/70">VTS agents</p>
+          <h2 className="text-xl font-semibold text-sidebar-foreground">Tenant intelligence</h2>
+        </div>
+        {know.length > 0 && (
+          <ToggleGroup
+            type="single" value={view} aria-label="Tenant intelligence view"
+            onValueChange={v => { if (v === "analysis" || v === "know") setView(v) }}
+            className="rounded-lg bg-sidebar-foreground/10 p-0.5 gap-0"
+          >
+            <ToggleGroupItem value="analysis" size="sm" className={BRIEF_TOGGLE_ITEM}>Analysis</ToggleGroupItem>
+            <ToggleGroupItem value="know" size="sm" className={BRIEF_TOGGLE_ITEM}>Need to know</ToggleGroupItem>
+          </ToggleGroup>
+        )}
       </div>
 
-      {headline && (
+      {view === "know" && (
+        <>
+          <ul className="flex flex-col divide-y divide-sidebar-foreground/10">
+            {know.map(k => (
+              <li key={k.title} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
+                <k.icon className={cn("h-4 w-4 mt-0.5 shrink-0", k.tone === "alert" ? "text-destructive" : "text-sidebar-primary")} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-sidebar-foreground/60">{k.title}</p>
+                  <p className="text-sm leading-relaxed text-sidebar-foreground/90">{k.text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {actionCount > 0 && (
+            <Button
+              variant="ghost" size="sm" onClick={() => setView("analysis")}
+              className="self-start gap-1.5 px-2 text-sidebar-primary hover:bg-sidebar-foreground/10 hover:text-sidebar-primary"
+            >
+              Review {actionCount} recommended {actionCount === 1 ? "action" : "actions"}<ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          )}
+        </>
+      )}
+
+      {view === "analysis" && headline && (
         <div className="rounded-lg px-3 py-2 flex items-center gap-2 bg-sidebar-foreground/10">
           <Sparkle className="h-4 w-4 shrink-0 text-sidebar-primary" />
           <p className="text-sm leading-snug text-sidebar-foreground/80"><span className="font-medium text-sidebar-primary">Most urgent:</span> {headline}</p>
         </div>
       )}
 
-      {kpis.length > 0 && (
+      {view === "analysis" && kpis.length > 0 && (
         <div className={cn("grid grid-cols-2 gap-2", kpis.length >= 3 && "sm:grid-cols-4", kpis.length === 3 && "sm:grid-cols-3")}>
           {kpis.map(k => <AgentKpi key={k.label} {...k} />)}
         </div>
       )}
 
-      {actions}
+      {view === "analysis" && actions}
     </section>
   )
 }
+
+const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "")
 
 function CompanyCard({ name, logo, parent, company }: { name: string; logo: string; parent: string; company: ReturnType<typeof companyProfile> }) {
   const rows = [
@@ -655,7 +752,7 @@ function CompanyCard({ name, logo, parent, company }: { name: string; logo: stri
     { label: "Employees", value: company.employees },
     { label: "Founded", value: company.founded },
     { label: "Ownership", value: company.ownership },
-    { label: "Parent", value: parent },
+    ...(parent && !norm(name).includes(norm(parent)) ? [{ label: "Parent", value: parent }] : []),
   ]
   return (
     <section className={cn(subCard, "flex flex-col gap-4")}>
@@ -711,11 +808,10 @@ function PipelineCard({ deals, onOpen }: { deals: Deal[]; onOpen: () => void }) 
       <InsightCardHeader
         icon={Handshake}
         title="Deal pipeline"
-        sub={deals.length ? `${deals.length} active, ${fmtCompact(sf)} sf` : "No active deals"}
-        badge={flagged > 0 && <Badge variant="secondary">{flagged} need attention</Badge>}
+        sub={deals.length ? `${deals.length} active, ${fmtCompact(sf)} sf${flagged ? `, ${flagged} need attention` : ""}` : "No active deals"}
         action={
           <Button size="sm" variant="ghost" className="gap-1.5" onClick={onOpen} disabled={!deals.length}>
-            <span className="hidden @sm:inline">View deals</span><ArrowRight className="h-3.5 w-3.5" />
+            View deals
           </Button>
         }
       />
@@ -755,10 +851,10 @@ function RelationshipCard({ lastTouch, nextTask, primary, broker, touchpoints, o
       <InsightCardHeader
         icon={Users}
         title="Relationship"
-        sub={`${touchpoints} touchpoints with this tenant`}
+        sub={`${touchpoints} touchpoints`}
         action={
           <Button size="sm" variant="ghost" className="gap-1.5" onClick={onOpen}>
-            <span className="hidden @sm:inline">View contacts</span><ArrowRight className="h-3.5 w-3.5" />
+            View contacts
           </Button>
         }
       />
@@ -818,7 +914,6 @@ function CriticalDatesCard({ insights, onJump }: { insights: LeaseInsight[]; onJ
           <h3 className="text-base font-semibold text-foreground leading-none">Critical dates</h3>
           <p className="text-xs text-muted-foreground mt-1">{soon ? `${soon} in the next 12 months` : "Nothing in the next 12 months"}</p>
         </div>
-        <Badge variant="secondary" className="min-w-6 h-6 tabular-nums">{dates.length}</Badge>
       </div>
       {dates.length === 0 && <p className="text-sm text-muted-foreground">No upcoming lease dates.</p>}
       <ul className="flex flex-col gap-2">
@@ -873,9 +968,8 @@ function ChangesCard({ changes, onOpen }: { changes: ChangeItem[]; onOpen: (c: C
         <IconAvatar icon={History} className="bg-primary/15 text-primary" />
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-semibold text-foreground leading-none">What changed</h3>
-          <p className="text-xs text-muted-foreground mt-1">Deals, leases, emails, tasks and operations</p>
+          <p className="text-xs text-muted-foreground mt-1">{changes.length ? "Newest first" : "No recent updates"}</p>
         </div>
-        <Badge variant="secondary" className="min-w-6 h-6 tabular-nums">{changes.length}</Badge>
       </div>
       {changes.length === 0
         ? <p className="text-sm text-muted-foreground">Nothing has changed recently.</p>
@@ -892,7 +986,6 @@ function ChangesCard({ changes, onOpen }: { changes: ChangeItem[]; onOpen: (c: C
                     <span className="block text-sm text-foreground group-hover:text-primary">{c.text}</span>
                     <span className="block text-xs text-muted-foreground">{fmtShort(c.date)}</span>
                   </span>
-                  <Badge variant="secondary" className="shrink-0 bg-muted font-normal text-muted-foreground">{CHANGE_CTA[c.source]}</Badge>
                   <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground group-hover:text-foreground" />
                 </Button>
               </li>
@@ -930,6 +1023,8 @@ function SignalCard({ kind, title, empty, signals, onJump, embedded }: {
   const [all, setAll] = React.useState(false)
   const cfg = SIGNAL_KIND[kind]
   const shown = all ? signals : signals.slice(0, 5)
+  // A tag that every item shares tells the reader nothing.
+  const uniform = new Set(signals.map(s => cfg.tag(s)?.label)).size <= 1
   return (
     <section className={cn(!embedded && subCard, "flex flex-col gap-3")}>
       {!embedded && (
@@ -945,7 +1040,7 @@ function SignalCard({ kind, title, empty, signals, onJump, embedded }: {
       {signals.length === 0 && <p className="text-sm text-muted-foreground">{empty}</p>}
       <ul className="flex flex-col gap-2">
         {shown.map(s => {
-          const tag = cfg.tag(s)
+          const tag = uniform ? null : cfg.tag(s)
           const linked = Boolean(s.leaseId || s.dealId || s.target)
           return (
             <li key={s.id}>
@@ -1007,15 +1102,14 @@ function ActionsSection({ actions, completed, onRun, onDismiss }: {
   const KindIcon = (kind: RecommendedAction["kind"]) => kind === "email" ? Mail : kind === "task" ? ListTodo : Zap
   return (
     <div className="flex flex-col gap-2">
-      <h3 className="text-sm font-medium text-sidebar-foreground/90">Recommended actions</h3>
-      <div className="rounded-lg px-3 py-2 flex items-center gap-2 bg-sidebar-foreground/10">
-        <Sparkle className="h-4 w-4 shrink-0 text-sidebar-primary" />
-        <p className="text-sm leading-snug text-sidebar-foreground/70">
-          {actions.length > 0
-            ? <><span className="text-sidebar-primary font-medium">{actions.length} {actions.length === 1 ? "action" : "actions"}</span> to protect and grow this relationship{completed > 0 ? `, ${completed} done` : ""}</>
-            : <>You are caught up{completed > 0 ? `, ${completed} done` : ""}</>}
-        </p>
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-medium text-sidebar-foreground/90">Recommended actions</h3>
+        {actions.length > 0 && <Badge className="h-5 min-w-5 tabular-nums bg-sidebar-primary/20 text-sidebar-primary">{actions.length}</Badge>}
+        {completed > 0 && <span className="text-xs text-sidebar-foreground/60">{completed} done</span>}
       </div>
+      {actions.length === 0 && (
+        <p className="rounded-lg px-3 py-2 text-sm text-sidebar-foreground/70 bg-sidebar-foreground/10">You are caught up.</p>
+      )}
 
       {actions.length > 0 && (
         <ul className="flex flex-col gap-2">
@@ -1180,7 +1274,7 @@ function DealsTab({ deals, dead, where, view, onViewChange, assets, onDealClick,
           const stalled = d.status === "stalled" || d.status === "at-risk"
           return (
             <EntityCard key={d.id} id={`deal-${d.id}`} tone={stalled ? "warning" : undefined}>
-              <EntityHeader avatar={d.tenant} title={d.tenant} sub={`${dealTypeLabel(d.dealType)} at ${d.asset}${d.space ? `, ${d.space}` : ""}`} badges={<DealStatusBadge deal={d} />} />
+              <EntityHeader avatar={d.tenant} title={d.tenant} sub={`${dealTypeLabel(d.dealType)} at ${d.asset}${d.space ? `, ${d.space}` : ""}`} badges={!(d.status === "stalled" && d.stalledDays) && <DealStatusBadge deal={d} />} />
               <StageTracker stage={d.stage} />
               <StatStrip stats={[
                 { label: "Size", value: `${fmtCompact(d.sf)} sf`, hint: d.term ? `${Math.round(d.term / 12)} yr term` : "Term pending" },
@@ -1195,7 +1289,7 @@ function DealsTab({ deals, dead, where, view, onViewChange, assets, onDealClick,
               ]} />
               <CardActions>
                 <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onTask(d)}><ListTodo className="h-3.5 w-3.5" />New task</Button>
-                <Button size="sm" className="gap-1.5" onClick={() => onDealClick(d)}>Open deal<ArrowRight className="h-3.5 w-3.5" /></Button>
+                <Button size="sm" className="gap-1.5" onClick={() => onDealClick(d)}><Handshake className="h-3.5 w-3.5" />Open deal</Button>
               </CardActions>
             </EntityCard>
           )
@@ -1210,8 +1304,8 @@ function DealsTab({ deals, dead, where, view, onViewChange, assets, onDealClick,
             />
             <p className="text-sm text-muted-foreground">{d.reason}</p>
             <StatStrip stats={[
-              { label: "Size", value: `${fmtCompact(d.sf)} sf`, hint: dealTypeLabel(d.dealType) },
-              { label: "Reached", value: d.stageReached, hint: "Furthest stage" },
+              { label: "Size", value: `${fmtCompact(d.sf)} sf` },
+              { label: "Reached", value: d.stageReached },
               { label: "Lost", value: fmtShort(d.lostOn).replace(/, \d{4}$/, ""), hint: d.lostOn.slice(0, 4) },
             ]} />
           </EntityCard>
@@ -1291,15 +1385,21 @@ function RequirementCards({ requirements, onDealClick, onTask }: { requirements:
           <StatStrip stats={[
             { label: "Size", value: `${fmtCompact(r.sizeMax)} sf`, hint: `Min ${fmtCompact(r.sizeMin)} sf` },
             { label: "Target rent", value: `$${r.targetRent.toFixed(2)}`, hint: "Max per sf" },
-            { label: "Occupancy", value: r.occupancy, hint: "Move-in" },
+            { label: "Occupancy", value: r.occupancy },
           ]} />
           <div className="flex flex-wrap gap-1">
             <Badge variant="secondary">{r.floors}</Badge>
-            {r.mustHaves.map(m => <Badge key={m} variant="secondary" className="bg-muted font-normal text-muted-foreground">{m}</Badge>)}
+            {r.mustHaves.slice(0, 3).map(m => <Badge key={m} variant="secondary" className="bg-muted font-normal text-muted-foreground">{m}</Badge>)}
+            {r.mustHaves.length > 3 && (
+              <Tooltip>
+                <TooltipTrigger render={<span />}><Badge variant="secondary" className="bg-muted font-normal text-muted-foreground">+{r.mustHaves.length - 3}</Badge></TooltipTrigger>
+                <TooltipContent>{r.mustHaves.slice(3).join(", ")}</TooltipContent>
+              </Tooltip>
+            )}
           </div>
           <CardActions>
             <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onTask(r.deal)}><ListTodo className="h-3.5 w-3.5" />New task</Button>
-            <Button size="sm" className="gap-1.5" onClick={() => onDealClick(r.deal)}>Open deal<ArrowRight className="h-3.5 w-3.5" /></Button>
+            <Button size="sm" className="gap-1.5" onClick={() => onDealClick(r.deal)}><Handshake className="h-3.5 w-3.5" />Open deal</Button>
           </CardActions>
         </EntityCard>
       ))}
@@ -1374,10 +1474,9 @@ function OptionChips({ options }: { options: string[] }) {
   )
 }
 
-function LeaseCard({ insight, onOpenLease, onTask, onDealClick }: {
+function LeaseCard({ insight, onOpenLease, onTask }: {
   insight: LeaseInsight
   onOpenLease: (l: Lease) => void
-  onDealClick: (d: Deal) => void
   onTask: (l: Lease) => void
 }) {
   const l = insight.lease
@@ -1400,18 +1499,13 @@ function LeaseCard({ insight, onOpenLease, onTask, onDealClick }: {
         },
         { label: "Expires", value: new Date(`${lxdIso(l)}T00:00:00`).toLocaleDateString("en-US", { month: "short", year: "numeric" }), hint: `${l.remaining} months left`, tone: soon ? "text-destructive" : undefined, hintTone: soon ? "text-destructive" : undefined },
       ]} />
-      {(insight.options.length > 0 || insight.linkedDeal) && (
+      {insight.options.length > 0 && (
         <div className="flex flex-wrap items-center gap-1">
-          {insight.linkedDeal && (
-            <Button variant="outline" size="xs" className="gap-1 rounded-full" onClick={() => onDealClick(insight.linkedDeal!)}>
-              <Handshake className="h-3 w-3" />{dealTypeLabel(insight.linkedDeal.dealType)} in {insight.linkedDeal.stage}
-            </Button>
-          )}
           <OptionChips options={insight.options} />
         </div>
       )}
       <div className="flex flex-1 flex-col gap-4">
-        <AgentNote className="flex-1">{insight.insight}</AgentNote>
+        {insight.note && <AgentNote className="flex-1">{insight.note}</AgentNote>}
         <CardActions>
           <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onTask(l)}><ListTodo className="h-3.5 w-3.5" />New task</Button>
           <Button size="sm" className="gap-1.5" onClick={() => onOpenLease(l)}><Eye className="h-3.5 w-3.5" />View abstract</Button>
@@ -1625,7 +1719,7 @@ function AssetMap({ assets, names, where, markerFor, statsFor, rowsFor }: {
   return <PortfolioMap assets={mapAssets} onAssetClick={() => {}} fixedHeight={480} hideLegend markerLabel={markerLabel} renderPopup={renderPopup} />
 }
 
-function LeasesTab({ insights, view, onViewChange, assets, where, narrowed, hasLeasesElsewhere, onOpenLease, onShowAllAssets, onTask, onDealClick }: {
+function LeasesTab({ insights, view, onViewChange, assets, where, narrowed, hasLeasesElsewhere, onOpenLease, onShowAllAssets, onTask }: {
   insights: LeaseInsight[]
   view: ProfileView
   onViewChange: (v: ProfileView) => void
@@ -1636,7 +1730,6 @@ function LeasesTab({ insights, view, onViewChange, assets, where, narrowed, hasL
   onOpenLease: (l: Lease) => void
   onShowAllAssets: () => void
   onTask: (l: Lease) => void
-  onDealClick: (d: Deal) => void
 }) {
   const [sortBy, setSortBy] = React.useState("expiration")
   const sortedInsights = React.useMemo(() => [...insights].sort((a, b) =>
@@ -1661,7 +1754,7 @@ function LeasesTab({ insights, view, onViewChange, assets, where, narrowed, hasL
       {view === "table" && <div className="hidden @xl:block"><LeasesTable leases={leases} insights={insights} showTenant={tenantCount > 1} onOpenLease={onOpenLease} /></div>}
       {view !== "map" && (
         <div className={cn("grid grid-cols-1 @2xl:grid-cols-2 gap-3", view === "table" && "@xl:hidden")}>
-          {sortedInsights.map(i => <LeaseCard key={i.lease.id} insight={i} onOpenLease={onOpenLease} onTask={onTask} onDealClick={onDealClick} />)}
+          {sortedInsights.map(i => <LeaseCard key={i.lease.id} insight={i} onOpenLease={onOpenLease} onTask={onTask} />)}
         </div>
       )}
     </div>
@@ -1777,6 +1870,11 @@ function ContactsTab({ contacts, tasks, lastEmailFor, onEmail, onTask, onOpenEma
   )
 }
 
+// Contacts are mock data, so link to a LinkedIn people search rather than guessing a profile URL that may belong to a real person.
+function linkedInUrl(c: Contact) {
+  return `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(`${c.name} ${c.company}`)}`
+}
+
 function ContactRow({ contact }: { contact: Contact }) {
   const isInternal = contact.group === "internal"
   return (
@@ -1801,12 +1899,29 @@ function ContactRow({ contact }: { contact: Contact }) {
           <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
           <span className="whitespace-nowrap tabular-nums">{contact.phone}</span>
         </a>
+        <a
+          href={linkedInUrl(contact)} target="_blank" rel="noopener noreferrer"
+          aria-label={`${contact.name} on LinkedIn (opens in a new tab)`}
+          className={cn(buttonVariants({ variant: "link", size: "xs" }), "h-auto p-0 gap-2 self-start justify-start font-normal text-foreground hover:text-primary hover:no-underline")}
+        >
+          <LinkedInIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <span>LinkedIn</span>
+          <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" />
+        </a>
         <div className="flex items-start gap-2">
           <Building2 className="h-3.5 w-3.5 shrink-0 mt-0.5 text-muted-foreground" />
           <div className="flex flex-wrap gap-1">
-            {contact.assets.map(a => (
+            {contact.assets.slice(0, 2).map(a => (
               <Badge key={a} variant="secondary" className="rounded-md bg-muted font-normal text-muted-foreground">{a}</Badge>
             ))}
+            {contact.assets.length > 2 && (
+              <Tooltip>
+                <TooltipTrigger render={<span />}>
+                  <Badge variant="secondary" className="rounded-md bg-muted font-normal text-muted-foreground">+{contact.assets.length - 2} more</Badge>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-64">{contact.assets.slice(2).join(", ")}</TooltipContent>
+              </Tooltip>
+            )}
           </div>
         </div>
         <p className="text-muted-foreground pt-1">
@@ -1817,7 +1932,7 @@ function ContactRow({ contact }: { contact: Contact }) {
   )
 }
 
-const REMINDER_LABEL: Record<TenantTask["reminder"], string> = { none: "", "1d": "1 day reminder", "1w": "1 week reminder" }
+const REMINDER_LABEL: Record<TenantTask["reminder"], string> = { none: "", "1d": "1 day before", "1w": "1 week before" }
 
 function TasksTab({ tasks, today, onToggle, onNew }: { tasks: TenantTask[]; today: string; onToggle: (id: string) => void; onNew: () => void }) {
   const [showCompleted, setShowCompleted] = React.useState(false)
@@ -1855,7 +1970,6 @@ function TasksTab({ tasks, today, onToggle, onNew }: { tasks: TenantTask[]; toda
           <div key={s.key} className="flex flex-col gap-1">
             <div className="flex items-center gap-2 px-0.5 pb-1">
               <span className={cn("text-sm font-semibold", s.key === "overdue" ? "text-destructive" : s.current ? "text-foreground" : "text-muted-foreground")}>{s.title}</span>
-              {s.current && <Badge variant="secondary" className="h-4 px-1.5">Current</Badge>}
             </div>
             {s.items.map(t => {
               const overdue = !t.done && t.due < today
@@ -1872,13 +1986,11 @@ function TasksTab({ tasks, today, onToggle, onNew }: { tasks: TenantTask[]; toda
                     <span className={cn("block text-sm font-medium leading-snug", t.done ? "line-through text-muted-foreground" : "text-foreground")}>{t.title}</span>
                     <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                       <span className="inline-flex items-center gap-1"><User className="h-3 w-3" />{t.owner}</span>
-                      <span className={cn("inline-flex items-center gap-1", overdue && "text-destructive font-medium")}><CalendarDays className="h-3 w-3" />{overdue ? "Overdue, " : ""}{fmtShort(t.due)}</span>
+                      <span className={cn("inline-flex items-center gap-1", overdue && "text-destructive font-medium")}><CalendarDays className="h-3 w-3" />{fmtShort(t.due)}</span>
                       {t.link && <span className="inline-flex items-center gap-1"><Building2 className="h-3 w-3" />{t.link}</span>}
+                      {!t.done && t.reminder !== "none" && <span className="inline-flex items-center gap-1"><Bell className="h-3 w-3" />{REMINDER_LABEL[t.reminder]}</span>}
                     </span>
                   </Label>
-                  {!t.done && t.reminder !== "none" && (
-                    <span className="shrink-0 mt-0.5 text-xs font-medium text-muted-foreground whitespace-nowrap">{REMINDER_LABEL[t.reminder]}</span>
-                  )}
                 </div>
               )
             })}
@@ -1900,7 +2012,7 @@ function TrendChip({ trend, goodWhen, label }: { trend: OpsTrend; goodWhen: "up"
   )
 }
 
-function OpsStat({ label, value, unit, sub, trend }: { label: string; value: string; unit?: string; sub: string; trend?: React.ReactNode }) {
+function OpsStat({ label, value, unit, sub, trend }: { label: string; value: string; unit?: string; sub?: string; trend?: React.ReactNode }) {
   return (
     <div className={cn(subCard, "flex flex-col gap-1")}>
       <p className="text-xs text-muted-foreground">{label}</p>
@@ -1955,7 +2067,6 @@ function SatisfactionCard({ sat }: { sat: TenantSatisfaction }) {
             {sat.score.toFixed(1)}<span className="ml-1 text-sm font-normal text-muted-foreground">/ 5</span>
           </p>
           <p className={cn("text-sm font-medium mt-1", FACE_TONE[faceIdx].text)}>{FACE_LABELS[faceIdx]}</p>
-          <p className="text-xs text-muted-foreground">Average rating</p>
         </div>
         <div className="flex-1 min-w-0 flex flex-col gap-2" role="img" aria-label={`Average rating ${sat.score.toFixed(1)} out of 5, ${FACE_LABELS[faceIdx].toLowerCase()}`}>
           <div className="grid grid-cols-5 gap-1">
@@ -2043,7 +2154,6 @@ function OperationsTab({ ops, onAsk }: { ops: TenantOperations; onAsk: (message:
             <p className="text-sm font-semibold text-foreground leading-none">Operations health</p>
             <p className="text-xs text-muted-foreground mt-0.5">{OPS_HEALTH_LABEL[ops.health.score]}</p>
           </div>
-          <Badge className="bg-primary/10 border-primary/20 text-primary"><Zap />Agent</Badge>
         </div>
         <div className="flex flex-col gap-2.5 @sm:gap-1.5 @sm:pl-10.5">
           {ops.health.recs.length === 0 && (
@@ -2053,7 +2163,10 @@ function OperationsTab({ ops, onAsk }: { ops: TenantOperations; onAsk: (message:
             const AgentIcon = PM_AGENT_ICON[r.agent] ?? Bot
             return (
               <div key={r.action} className="flex flex-col items-start gap-1.5 @sm:flex-row @sm:items-center @sm:gap-2">
-                <p className="text-sm text-foreground/80 flex-1 min-w-0 leading-snug">{r.action}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground leading-snug">{r.title}</p>
+                  <p className="text-xs text-muted-foreground">{r.detail}</p>
+                </div>
                 <Button
                   variant="outline" size="sm"
                   className="gap-1.5 shrink-0 h-7 text-xs text-primary border-primary/30 hover:bg-primary/5"
@@ -2076,7 +2189,7 @@ function OperationsTab({ ops, onAsk }: { ops: TenantOperations; onAsk: (message:
           label="Avg resolution" value={String(ops.avgHours)} unit="hrs" sub="vs last quarter"
           trend={<TrendChip trend={ops.avgHoursChangePct > 0 ? "up" : ops.avgHoursChangePct < 0 ? "down" : "flat"} goodWhen="down" label={ops.avgHoursChangePct ? `${ops.avgHoursChangePct > 0 ? "+" : "-"}${Math.abs(ops.avgHoursChangePct)}%` : "No change"} />}
         />
-        <OpsStat label="Within SLA" value={`${ops.slaPct}%`} sub="closed on time" />
+        <OpsStat label="Within SLA" value={`${ops.slaPct}%`} />
       </div>
 
       <section className={cn(subCard, "flex flex-col gap-3")}>

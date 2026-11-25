@@ -51,6 +51,8 @@ export interface LeaseInsight {
   deposit?: { amount: number; type: "Cash deposit" | "Letter of credit"; renewal?: string; renewalMonths?: number }
   coTenancy?: string
   insight: string
+  /** Only what a lease card doesn't already show in its stats, badge and chips. Empty when nothing is left. */
+  note: string
   severity: Severity | null
 }
 
@@ -150,6 +152,11 @@ export interface TenantSatisfaction {
 }
 
 export interface OpsRec {
+  /** Short imperative, e.g. "Order an HVAC root-cause inspection". */
+  title: string
+  /** The evidence behind it, e.g. "25% of tickets in 90 days". */
+  detail: string
+  /** Full sentence used as the chat prompt. */
   action: string
   agent: string
 }
@@ -235,14 +242,17 @@ export function leaseInsight(l: Lease, deals: Deal[]): LeaseInsight {
   if (isLoc) options.push("LOC")
 
   const parts: string[] = []
+  const note: string[] = []
   let severity: Severity | null = null
   if (l.renewalStatus === "Not renewing") { parts.push("Tenant has signaled they will not renew."); severity = "critical" }
   if (terminationMonths !== undefined && terminationMonths >= 0 && terminationMonths <= 24) {
     parts.push(`Termination option ${terminationMonths <= 0 ? "is exercisable now" : `opens ${fmtMonthYear(terminationDate!)}`}.`)
+    note.push(parts[parts.length - 1])
     severity = severity ?? "warning"
   }
   if (noticeMonths !== undefined && noticeMonths >= 0 && noticeMonths <= 18) {
     parts.push(`Renewal notice due ${fmtShort(noticeDeadline!)}.`)
+    note.push(parts[parts.length - 1])
     severity = severity ?? (noticeMonths <= 6 ? "critical" : "warning")
   } else if (l.remaining <= 24) {
     parts.push(`Expires ${fmtShort(lxd)}, ${countdown(l.remaining)}.`)
@@ -254,12 +264,12 @@ export function leaseInsight(l: Lease, deals: Deal[]): LeaseInsight {
   else if (gapPct <= -5) parts.push(`Rent is ${Math.abs(gapPct)}% above market.`)
   if (options.includes("Contraction Option")) parts.push("Tenant holds a contraction right.")
   if (linkedDeal) parts.push(`Linked ${linkedDeal.dealType.toLowerCase()} in ${linkedDeal.stage}.`)
-  if (rofoMonths !== undefined && rofoMonths >= 0 && rofoMonths <= 12) parts.push(`${options.includes("ROFR") ? "ROFR" : "ROFO"} response due ${fmtShort(rofoDeadline!)}.`)
-  if (deposit.renewalMonths !== undefined && deposit.renewalMonths <= 3) parts.push(`Letter of credit renews ${fmtShort(deposit.renewal!)}.`)
+  if (rofoMonths !== undefined && rofoMonths >= 0 && rofoMonths <= 12) { parts.push(`${options.includes("ROFR") ? "ROFR" : "ROFO"} response due ${fmtShort(rofoDeadline!)}.`); note.push(parts[parts.length - 1]) }
+  if (deposit.renewalMonths !== undefined && deposit.renewalMonths <= 3) { parts.push(`Letter of credit renews ${fmtShort(deposit.renewal!)}.`); note.push(parts[parts.length - 1]) }
   if (restoration && l.remaining <= 24) parts.push("Restoration is required at move-out.")
   if (!parts.length) parts.push(`Stable. ${countdown(l.remaining).replace("in ", "")} of term remaining with no near-term obligations.`)
 
-  return { lease: l, options, marketGapPsf, noticeDeadline, noticeMonths, terminationDate, terminationMonths, linkedDeal, rofoDeadline, rofoMonths, restoration, deposit, coTenancy, insight: parts.join(" "), severity }
+  return { lease: l, options, marketGapPsf, noticeDeadline, noticeMonths, terminationDate, terminationMonths, linkedDeal, rofoDeadline, rofoMonths, restoration, deposit, coTenancy, insight: parts.join(" "), note: note.join(" "), severity }
 }
 
 const SEVERITY_ORDER: Record<Severity, number> = { critical: 0, warning: 1, info: 2 }
@@ -363,7 +373,7 @@ export function tenantSignals(args: {
   if (term) {
     const l = term.lease
     actions.push({
-      id: `a-task-${l.id}`, kind: "task", cta: "Create task",
+      id: `a-task-${l.id}`, kind: "task", cta: "New task",
       title: "Model the termination scenario",
       reason: `Option at ${leaseLabel(l)} opens ${fmtShort(term.terminationDate!)}.`,
       taskTitle: `Model termination scenario for ${leaseLabel(l)}`,
@@ -375,7 +385,7 @@ export function tenantSignals(args: {
   if (below) {
     const l = below.lease
     actions.push({
-      id: `a-ask-${l.id}`, kind: "ask", cta: "Draft with VTS",
+      id: `a-ask-${l.id}`, kind: "ask", cta: "Draft",
       title: "Draft a renewal proposal at market",
       reason: `${leaseLabel(l)} is $${below.marketGapPsf.toFixed(2)}/sf below market.`,
       prompt: `Draft a renewal proposal for ${l.tenant} at ${l.asset}, ${l.suite ? `Unit ${l.suite}` : l.floor}. Current base rent is $${l.baseRent.toFixed(2)}/sf against a market rent of $${l.marketRentPsf.toFixed(2)}/sf. Lease expires ${fmtShort(toIso(l.lxd))}.`,
@@ -387,7 +397,7 @@ export function tenantSignals(args: {
     actions.push({
       id: `a-broker-${stalled.id}`, kind: "email", cta: "Email",
       title: `Follow up with ${firstName(broker.name)} on the stalled deal`,
-      reason: `${dealTypeLabel(stalled.dealType)} at ${stalled.asset} has not moved in ${stalled.stalledDays ?? "several"} days.`,
+      reason: stalled.stalledDays ? `${dealTypeLabel(stalled.dealType)} at ${stalled.asset} has stalled for ${stalled.stalledDays} days.` : `${dealTypeLabel(stalled.dealType)} at ${stalled.asset} is at risk.`,
       contactName: broker.name,
       subject: `Next steps on ${stalled.asset}`,
       body: `Hi ${firstName(broker.name)},\n\nChecking in on the ${stalled.dealType.toLowerCase()} for ${stalled.sf.toLocaleString()} sf at ${stalled.asset}. What do you need from us to keep this moving?\n\nBest,`,
@@ -397,7 +407,7 @@ export function tenantSignals(args: {
   if (expansion && actions.length < 4) {
     const l = expansion.lease
     actions.push({
-      id: `a-exp-${l.id}`, kind: "task", cta: "Create task",
+      id: `a-exp-${l.id}`, kind: "task", cta: "New task",
       title: "Pitch expansion space",
       reason: `Tenant holds an expansion option at ${leaseLabel(l)}.`,
       taskTitle: `Identify expansion space for ${l.tenant} at ${l.asset}`,
@@ -669,13 +679,14 @@ export function tenantOperations(displayName: string, leases: Lease[], anchor: s
   const expiry = next ? fmtMonthYear(addMonths(asOf(next), next.remaining)) : null
   const avgHoursChangePct = trend === "down" ? 12 + (h % 15) : trend === "up" ? -(8 + (h % 12)) : 0
   const recs: OpsRec[] = []
+  const rec = (title: string, detail: string, agent: string) => recs.push({ title, detail, action: `${title}. ${detail}.`, agent })
   if (top && top.trend === "up") {
-    recs.push({ action: `Order a root-cause inspection for ${top.category}, ${Math.round((top.total90d / Math.max(1, total90d)) * 100)}% of tickets in 90 days`, agent: "Property manager" })
+    rec(`Order ${/^[AEIOU]/.test(top.category) ? "an" : "a"} ${top.category} root-cause inspection`, `${Math.round((top.total90d / Math.max(1, total90d)) * 100)}% of tickets in 90 days`, "Property manager")
   }
   const slow = types.filter(t => t.slaPct < 80).sort((a, b) => a.slaPct - b.slaPct)[0]
-  if (slow) recs.push({ action: `Reroute ${slow.category.toLowerCase()} work orders to a faster vendor, ${slow.slaPct}% within SLA`, agent: "Dispatch" })
-  if (trend === "down") recs.push({ action: `Send a satisfaction pulse survey${expiry ? ` ahead of the ${expiry} expiration` : ""}`, agent: "Aria" })
-  if (avgHoursChangePct > 0) recs.push({ action: `Triage open tickets to bring resolution time back under ${avgHours - Math.round(avgHours * avgHoursChangePct / 100)} hrs`, agent: "Triage" })
+  if (slow) rec(`Move ${slow.category.toLowerCase()} work orders to a faster vendor`, `${slow.slaPct}% closed within SLA`, "Dispatch")
+  if (trend === "down") rec("Send a satisfaction pulse survey", expiry ? `Ahead of the ${expiry} expiration` : "Satisfaction is slipping", "Aria")
+  if (avgHoursChangePct > 0) rec("Triage open tickets", `Bring resolution back under ${avgHours - Math.round(avgHours * avgHoursChangePct / 100)} hrs`, "Triage")
   const healthScore: OpsHealth["score"] = trend === "down" && next && next.remaining <= 36 ? "at-risk" : recs.length ? "caution" : "on-track"
 
   return {
