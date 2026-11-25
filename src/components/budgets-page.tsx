@@ -1,4 +1,5 @@
 import * as React from "react"
+import { type BudgetInputs } from "@/lib/budget-profile-data"
 import { cn, cardBase } from "@/lib/utils"
 import { KpiBar } from "@/components/kpi-bar"
 import { Button } from "@/components/ui/button"
@@ -42,6 +43,8 @@ export interface Budget {
   nerSizeYr: number
   dateEntered: string
   archived: boolean
+  /** Set on budgets created with the add budget form, so the profile shows what was entered. */
+  inputs?: BudgetInputs
 }
 
 type SortKey = keyof Pick<Budget, "label" | "asset" | "budgetYear" | "floor" | "space" | "size" | "startDate" | "term" | "baseRent" | "esca" | "ti" | "freeRent" | "nerSizeYr" | "dateEntered">
@@ -232,7 +235,16 @@ const FILTER_DEFS = [
 
 const PAGE_SIZE = 15
 
-export function BudgetsPage({ assetFilter }: { assetFilter?: string[] }) {
+export function BudgetsPage({ assetFilter, onBudgetClick, onAddBudget, extraBudgets = [], overrides }: {
+  assetFilter?: string[]
+  onBudgetClick?: (b: Budget) => void
+  onAddBudget?: () => void
+  /** Budgets added this session, shown first. */
+  extraBudgets?: Budget[]
+  /** Edited versions of list budgets, by id. */
+  overrides?: Record<string, Budget>
+}) {
+  const allBudgets = React.useMemo(() => [...extraBudgets, ...BUDGETS.map(b => overrides?.[b.id] ?? b)], [extraBudgets, overrides])
   const { sortKey, sortDir, handleSort: _handleSort } = useSortState<SortKey>("label")
   const [search, setSearch] = React.useState("")
   const [viewFilter, setViewFilter] = React.useState<ViewFilter>("active")
@@ -259,7 +271,7 @@ export function BudgetsPage({ assetFilter }: { assetFilter?: string[] }) {
     .filter((c): c is ColDef => !!c && (c.id === "actions" || visible.has(c.id)))
 
   const filtered = React.useMemo(() => {
-    let r = assetFilter?.length ? BUDGETS.filter(b => assetFilter.includes(b.asset)) : [...BUDGETS]
+    let r = assetFilter?.length ? allBudgets.filter(b => assetFilter.includes(b.asset)) : [...allBudgets]
     if (viewFilter === "active")   r = r.filter(b => !b.archived)
     if (viewFilter === "archived") r = r.filter(b => b.archived)
     if (search) {
@@ -282,7 +294,7 @@ export function BudgetsPage({ assetFilter }: { assetFilter?: string[] }) {
       return sortDir === "asc" ? cmp : -cmp
     })
     return r
-  }, [assetFilter, search, viewFilter, activeFilters, sortKey, sortDir])
+  }, [allBudgets, assetFilter, search, viewFilter, activeFilters, sortKey, sortDir])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -402,7 +414,7 @@ export function BudgetsPage({ assetFilter }: { assetFilter?: string[] }) {
               <DropdownMenuItem className="gap-2 text-sm"><FileSpreadsheet className="h-3.5 w-3.5" />Download as Excel</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button size="sm" className="h-8 gap-1.5 text-sm font-medium">
+          <Button size="sm" className="h-8 gap-1.5 text-sm font-medium" onClick={onAddBudget}>
             <Plus className="h-3.5 w-3.5" />Add budget
           </Button>
         </div>
@@ -477,13 +489,18 @@ export function BudgetsPage({ assetFilter }: { assetFilter?: string[] }) {
               {paginated.map((b, i) => (
                 <TableRow
                   key={b.id}
+                  tabIndex={onBudgetClick ? 0 : undefined}
+                  aria-label={onBudgetClick ? `Open ${b.label} for ${b.asset}, ${b.floor}` : undefined}
+                  onClick={() => onBudgetClick?.(b)}
+                  onKeyDown={e => { if (e.key === "Enter") onBudgetClick?.(b) }}
                   className={cn(
                     "transition-colors hover:bg-muted/40",
+                    onBudgetClick && "cursor-pointer focus-visible:bg-muted/40 focus-visible:outline-none",
                     i > 0 ? "border-t border-border/40" : "border-0",
                     selected.has(b.id) && "bg-primary/5"
                   )}
                 >
-                  <td className="py-3 pr-2 w-8">
+                  <td className="py-3 pr-2 w-8" onClick={e => e.stopPropagation()}>
                     <Checkbox checked={selected.has(b.id)} onCheckedChange={() => toggleRow(b.id)} className="h-3.5 w-3.5" />
                   </td>
                   {orderedCols.map(col => renderCell(col, b))}

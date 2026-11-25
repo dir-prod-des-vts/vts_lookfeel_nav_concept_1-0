@@ -542,7 +542,7 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
   )
 })
 
-function IconAvatar({ icon: Icon, size, className }: { icon: React.ElementType; size?: "sm" | "default"; className?: string }) {
+export function IconAvatar({ icon: Icon, size, className }: { icon: React.ElementType; size?: "sm" | "default"; className?: string }) {
   return (
     <Avatar size={size}>
       <AvatarFallback className={className}><Icon className={size === "sm" ? "h-3.5 w-3.5" : "h-4 w-4"} /></AvatarFallback>
@@ -661,7 +661,7 @@ function FamilyStrip({ family, selection, scopeLeases, place, onSelect, onShowAl
 }
 
 
-function AgentKpi({ label, value, sub, tone }: { label: string; value: string; sub: string; tone?: "alert" }) {
+export function AgentKpi({ label, value, sub, tone }: { label: string; value: string; sub: string; tone?: "alert" }) {
   return (
     <div className="rounded-lg border border-primary/25 bg-primary/15 p-3 flex flex-col gap-1 min-w-0">
       <p className="text-xs text-sidebar-foreground/60 truncate">{label}</p>
@@ -910,7 +910,7 @@ function CompanyCard({ name, logo, parent, company }: { name: string; logo: stri
 
 const PIPELINE_STAGES = ["Inquiry", "Touring", "Proposal", "LOI", "Legal", "Lease Out"]
 
-function InsightCardHeader({ icon, title, sub, badge, action }: {
+export function InsightCardHeader({ icon, title, sub, badge, action }: {
   icon: React.ElementType
   title: string
   sub: string
@@ -1553,7 +1553,7 @@ function RequirementCards({ requirements, onDealClick, onTask }: { requirements:
   )
 }
 
-function EntityCard({ id, tone, children }: { id?: string; tone?: "warning"; children: React.ReactNode }) {
+export function EntityCard({ id, tone, children }: { id?: string; tone?: "warning"; children: React.ReactNode }) {
   return (
     <article id={id} className={cn("h-full scroll-mt-4 rounded-xl border bg-card p-4 flex flex-col gap-4", tone === "warning" ? "border-warning/50" : "border-border")}>
       {children}
@@ -1574,9 +1574,9 @@ function EntityHeader({ avatar, title, sub, badges }: { avatar: string; title: s
   )
 }
 
-interface EntityStat { label: string; value: React.ReactNode; hint?: React.ReactNode; tone?: string; hintTone?: string }
+export interface EntityStat { label: string; value: React.ReactNode; hint?: React.ReactNode; tone?: string; hintTone?: string }
 
-function StatStrip({ stats }: { stats: EntityStat[] }) {
+export function StatStrip({ stats }: { stats: EntityStat[] }) {
   return (
     <dl className="grid grid-cols-3 gap-3 rounded-lg bg-muted/40 p-3">
       {stats.map(st => (
@@ -1590,7 +1590,7 @@ function StatStrip({ stats }: { stats: EntityStat[] }) {
   )
 }
 
-function AgentNote({ children, className }: { children: React.ReactNode; className?: string }) {
+export function AgentNote({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <div className={cn("flex items-center gap-2.5 rounded-lg bg-sidebar-accent px-3 py-2.5", className)}>
       <Sparkle className="h-4 w-4 shrink-0 text-sidebar-primary" />

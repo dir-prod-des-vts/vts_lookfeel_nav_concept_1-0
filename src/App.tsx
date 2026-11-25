@@ -34,7 +34,18 @@ import { DealStewardPage } from "@/components/deal-steward-page"
 import { AmPipelineEmailPage, BrokerActionEmailPage, TenantFollowupEmailPage, LawyerLeaseEmailPage, OwnerUpdateEmailPage } from "@/components/deal-steward-emails"
 import { OptionsRightsPage } from "@/components/options-rights-page"
 import { CriticalDatesPage } from "@/components/critical-dates-page"
-import { BudgetsPage } from "@/components/budgets-page"
+import { BudgetsPage, BUDGETS, type Budget } from "@/components/budgets-page"
+import { BudgetProfile } from "@/components/budget-profile"
+import { BudgetFormPage } from "@/components/budget-form-page"
+import { assetFullName } from "@/lib/budget-profile-data"
+
+/** Spaces with budgets on file, by full building name, for the add budget spaces picker. */
+const BUDGET_SPACES: Record<string, string[]> = BUDGETS.reduce<Record<string, string[]>>((acc, b) => {
+  const key = assetFullName(b.asset)
+  const label = `${b.floor}, Suite ${b.space}`
+  acc[key] = acc[key]?.includes(label) ? acc[key] : [...(acc[key] ?? []), label]
+  return acc
+}, {})
 import { AppraisalsPage } from "@/components/appraisals-page"
 import { CompsPage } from "@/components/comps-page"
 import { TenantsPage } from "@/components/tenants-page"
@@ -79,14 +90,14 @@ function AgentsViewAwareNav(props: React.ComponentProps<typeof AppNav>) {
   return <AppNav {...props} hideAgentsPage={agentsView === "ask-vts"} />
 }
 
-function SidePushMain({ children, navCollapsed }: { children: React.ReactNode; navCollapsed: boolean }) {
+function SidePushMain({ children, navCollapsed, fullPage }: { children: React.ReactNode; navCollapsed: boolean; fullPage?: boolean }) {
   const { sidePushOpen } = useChatPattern()
   return (
     <main
       className={cn(
         "transition-all duration-300 ease-in-out pr-4 pb-4 flex-1 flex flex-col overflow-y-auto overflow-x-clip",
-        "pt-[72px] pl-4",
-        navCollapsed ? "md:pt-4 md:pl-[104px]" : "md:pt-4 md:pl-[264px]"
+        fullPage ? "pt-4 pl-4 md:px-6" : "pt-[72px] pl-4",
+        !fullPage && (navCollapsed ? "md:pt-4 md:pl-[104px]" : "md:pt-4 md:pl-[264px]")
       )}
       style={sidePushOpen ? { paddingRight: SIDE_PUSH_WIDTH + 16 } : undefined}
     >
@@ -765,7 +776,7 @@ export default function App() {
     const page = parts[0] || "dashboard"
     const asset = parts[1] || "vts-tower"
     const params = new URLSearchParams(queryPart ?? "")
-    return { page, asset, dealId: params.get("deal"), tenant: params.get("tenant"), agentId: params.get("agent"), view: params.get("view"), comp: params.get("comp"), nav: params.get("nav"), pvView: params.get("pvView"), pvSort: params.get("pvSort"), pvDisplay: params.get("pvDisplay"), ovView: params.get("ovView") }
+    return { page, asset, dealId: params.get("deal"), tenant: params.get("tenant"), budget: params.get("budget"), edit: params.get("edit"), agentId: params.get("agent"), view: params.get("view"), comp: params.get("comp"), nav: params.get("nav"), pvView: params.get("pvView"), pvSort: params.get("pvSort"), pvDisplay: params.get("pvDisplay"), ovView: params.get("ovView") }
   }
 
   const programmaticNav = React.useRef(false)
@@ -797,6 +808,15 @@ export default function App() {
   const [selectedSpaceStatus, setSelectedSpaceStatus] = React.useState<SpaceStatus>("Available")
   const [selectedLease, setSelectedLease] = React.useState<Lease | null>(null)
   const [selectedTenant, setSelectedTenant] = React.useState<string | null>(() => parseHash().tenant)
+  const [selectedBudget, setSelectedBudget] = React.useState<Budget | null>(() => BUDGETS.find(b => b.id === parseHash().budget) ?? null)
+  const [addingBudget, setAddingBudget] = React.useState(() => parseHash().budget === "new")
+  const [editingBudget, setEditingBudget] = React.useState(() => Boolean(parseHash().budget) && parseHash().edit === "1")
+  const [sessionBudgets, setSessionBudgets] = React.useState<Budget[]>([])
+  const [budgetOverrides, setBudgetOverrides] = React.useState<Record<string, Budget>>({})
+  const findBudget = (id: string | null) => (id ? sessionBudgets.find(b => b.id === id) ?? budgetOverrides[id] ?? BUDGETS.find(b => b.id === id) ?? null : null)
+  const findBudgetRef = React.useRef(findBudget)
+  findBudgetRef.current = findBudget
+  React.useEffect(() => { if (currentPage !== "budgets") { setSelectedBudget(null); setAddingBudget(false); setEditingBudget(false) } }, [currentPage])
   const [selectedLeaseStatus, setSelectedLeaseStatus] = React.useState<LeaseStatus>("Active")
   const [askVtsKey, setAskVtsKey] = React.useState(0)
   const stackingPlanRef = React.useRef<StackingPlanHandle>(null)
@@ -812,6 +832,8 @@ export default function App() {
     const params: string[] = []
     if (selectedDeal) params.push(`deal=${selectedDeal.id}`)
     if (currentPage === "tenants" && selectedTenant) params.push(`tenant=${encodeURIComponent(selectedTenant)}`)
+    if (currentPage === "budgets" && addingBudget) params.push("budget=new")
+    else if (currentPage === "budgets" && selectedBudget) params.push(`budget=${selectedBudget.id}`, ...(editingBudget ? ["edit=1"] : []))
     if (currentPage === "ai" && agentView === "grid") params.push("view=grid")
     params.push(navCollapsed ? "nav=collapsed" : "nav=expanded")
     const isPortfolioPage = currentPage === "dashboard" && (selectedAssetId === "all" || PORTFOLIOS.some(p => p.id === selectedAssetId))
@@ -825,18 +847,21 @@ export default function App() {
       programmaticNav.current = true
       window.location.hash = base
     }
-  }, [currentPage, selectedAssetId, selectedDeal, selectedTenant, agentView, navCollapsed, portfolioCardSort, portfolioMapView, portfolioView])
+  }, [currentPage, selectedAssetId, selectedDeal, selectedTenant, selectedBudget, addingBudget, editingBudget, agentView, navCollapsed, portfolioCardSort, portfolioMapView, portfolioView])
 
   React.useEffect(() => {
     const onHashChange = () => {
       if (programmaticNav.current) { programmaticNav.current = false; return }
-      const { page, asset, dealId, tenant, agentId, comp, nav, pvView, pvSort, pvDisplay, ovView } = parseHash()
+      const { page, asset, dealId, tenant, budget, edit, agentId, comp, nav, pvView, pvSort, pvDisplay, ovView } = parseHash()
       if (nav === "collapsed") setNavCollapsed(true)
       else if (nav === "expanded") setNavCollapsed(false)
       setCurrentPage(page)
       if (page === "spaces") setSelectedSpace(null)
       if (page === "leases") setSelectedLease(null)
       setSelectedTenant(page === "tenants" ? tenant : null)
+      setSelectedBudget(page === "budgets" ? findBudgetRef.current(budget) : null)
+      setAddingBudget(page === "budgets" && budget === "new")
+      setEditingBudget(page === "budgets" && Boolean(budget) && budget !== "new" && edit === "1")
       setSelectedAssetId(asset)
       setDefaultAgentId(agentId ?? undefined)
       if (pvView) portfolioViews.selectView(pvView)
@@ -1441,11 +1466,72 @@ export default function App() {
         </div>
       )
     }
+    if (page === "budgets" && addingBudget) {
+      return (
+        <BudgetFormPage
+          assets={ASSETS.map(a => a.name)}
+          spacesByAsset={BUDGET_SPACES}
+          defaultAsset={selectedAsset?.name}
+          onClose={() => setAddingBudget(false)}
+          onSave={b => {
+            setSessionBudgets(prev => [b, ...prev])
+            setAddingBudget(false)
+            setSelectedBudget(b)
+            toast.success("Budget added", { description: `${b.label} at ${assetFullName(b.asset)}.` })
+          }}
+        />
+      )
+    }
+    if (page === "budgets" && selectedBudget && editingBudget) {
+      return (
+        <BudgetFormPage
+          key={selectedBudget.id}
+          budget={selectedBudget}
+          assets={ASSETS.map(a => a.name)}
+          spacesByAsset={BUDGET_SPACES}
+          onClose={() => setEditingBudget(false)}
+          onSave={b => {
+            if (sessionBudgets.some(x => x.id === b.id)) setSessionBudgets(prev => prev.map(x => (x.id === b.id ? b : x)))
+            else setBudgetOverrides(prev => ({ ...prev, [b.id]: b }))
+            setSelectedBudget(b)
+            setEditingBudget(false)
+            toast.success("Budget updated", { description: `${b.label} at ${assetFullName(b.asset)}.` })
+          }}
+        />
+      )
+    }
+    if (page === "budgets" && selectedBudget) {
+      const b = selectedBudget
+      return (
+        <div className="flex flex-1 flex-col gap-4">
+          <BuildingHeader
+            city="Budget"
+            name={b.label}
+            address=""
+            badges={<>
+              <HeaderPill label={assetFullName(b.asset)} items={[assetFullName(b.asset)]} onItemClick={() => { const a = ASSETS.find(x => x.name === assetFullName(b.asset)); if (a) { setSelectedAssetId(a.id); setCurrentPage("dashboard") } }} />
+            </>}
+          />
+          <div className="flex items-center justify-between gap-3">
+            <PageBreadcrumb crumbs={[
+              { label: "Budgets", onClick: () => setSelectedBudget(null) },
+              { label: `${b.label}, ${b.floor}` },
+            ]} />
+            <Button size="sm" className="h-8 gap-1.5 text-sm font-medium shrink-0" onClick={() => setEditingBudget(true)}><Pencil className="h-3.5 w-3.5" />Edit budget</Button>
+          </div>
+          <BudgetProfile
+            key={`${b.id}-${b.nerSizeYr}-${b.label}`}
+            budget={b}
+            onDealClick={deal => { setSelectedBudget(null); setSelectedDeal(deal); setCurrentPage("deals") }}
+          />
+        </div>
+      )
+    }
     if (page === "budgets") {
       return (
         <div className="space-y-4">
           <BuildingHeader {...pagedHeaderProps} />
-          <BudgetsPage assetFilter={assetFilter} />
+          <BudgetsPage assetFilter={assetFilter} onBudgetClick={setSelectedBudget} onAddBudget={() => setAddingBudget(true)} extraBudgets={sessionBudgets} overrides={budgetOverrides} />
         </div>
       )
     }
@@ -1695,6 +1781,8 @@ export default function App() {
           onSpacesNav={() => setSelectedSpace(null)}
           onLeasesNav={() => setSelectedLease(null)}
           onTenantsNav={() => setSelectedTenant(null)}
+          onBudgetsNav={() => { setSelectedBudget(null); setAddingBudget(false); setEditingBudget(false) }}
+          hideNav={currentPage === "budgets" && (addingBudget || (editingBudget && Boolean(selectedBudget)))}
           setAskVtsKey={setAskVtsKey}
           isDark={isDark}
           toggleDark={toggleDark}
@@ -1717,13 +1805,16 @@ interface AppShellProps {
   onSpacesNav: () => void
   onLeasesNav: () => void
   onTenantsNav: () => void
+  onBudgetsNav: () => void
+  /** Full-page flows like the add budget form render without the side navigation. */
+  hideNav?: boolean
   setAskVtsKey: (fn: (k: number) => number) => void
   isDark: boolean
   toggleDark: () => void
   renderPage: (page: string) => React.ReactNode
 }
 
-function AppShell({ navCollapsed, setNavCollapsed, selectedAssetId, setSelectedAssetId, currentPage, setCurrentPage, setSelectedDeal, onSpacesNav, onLeasesNav, onTenantsNav, setAskVtsKey, isDark, toggleDark, renderPage }: AppShellProps) {
+function AppShell({ navCollapsed, setNavCollapsed, selectedAssetId, setSelectedAssetId, currentPage, setCurrentPage, setSelectedDeal, onSpacesNav, onLeasesNav, onTenantsNav, onBudgetsNav, hideNav, setAskVtsKey, isDark, toggleDark, renderPage }: AppShellProps) {
   const { closeSideOver, closeSidePush, sidePushOpen } = useChatPattern()
   React.useEffect(() => {
     closeSideOver()
@@ -1744,29 +1835,32 @@ function AppShell({ navCollapsed, setNavCollapsed, selectedAssetId, setSelectedA
     if (id === "spaces") onSpacesNav()
     if (id === "leases") onLeasesNav()
     if (id === "tenants") onTenantsNav()
+    if (id === "budgets") onBudgetsNav()
     if (id === "ask-vts") setAskVtsKey(k => k + 1)
   }
   return (
     <div className="h-screen flex flex-col overflow-hidden">
-      <AgentsViewAwareNav
-        collapsed={navCollapsed}
-        onCollapsedChange={setNavCollapsed}
-        assets={ASSETS}
-        portfolios={PORTFOLIOS}
-        selectedAssetId={selectedAssetId}
-        onAssetChange={id => {
-          const newIsPortfolioOrAll = id === "all" || PORTFOLIOS.some(p => p.id === id)
-          if (newIsPortfolioOrAll && currentPage === "stacking") {
-            setCurrentPage("dashboard")
-          }
-          setSelectedAssetId(id)
-        }}
-        isDark={isDark}
-        onLogoClick={toggleDark}
-        onNavItemClick={handleNavItemClick}
-        activePage={currentPage}
-      />
-      <SidePushMain navCollapsed={navCollapsed}>
+      {!hideNav && (
+        <AgentsViewAwareNav
+          collapsed={navCollapsed}
+          onCollapsedChange={setNavCollapsed}
+          assets={ASSETS}
+          portfolios={PORTFOLIOS}
+          selectedAssetId={selectedAssetId}
+          onAssetChange={id => {
+            const newIsPortfolioOrAll = id === "all" || PORTFOLIOS.some(p => p.id === id)
+            if (newIsPortfolioOrAll && currentPage === "stacking") {
+              setCurrentPage("dashboard")
+            }
+            setSelectedAssetId(id)
+          }}
+          isDark={isDark}
+          onLogoClick={toggleDark}
+          onNavItemClick={handleNavItemClick}
+          activePage={currentPage}
+        />
+      )}
+      <SidePushMain navCollapsed={navCollapsed} fullPage={hideNav}>
         {renderPage(currentPage)}
       </SidePushMain>
       <ChatSideOver />
