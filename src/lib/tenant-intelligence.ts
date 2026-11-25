@@ -767,3 +767,105 @@ export function assetFinancials(displayName: string, leases: Lease[]): AssetFina
     budgetVariancePct: ((h >>> 4) % 9) - 3,
   }
 }
+
+export interface StockQuote {
+  exchange: string
+  symbol: string
+  price: number
+  change: number
+  changePct: number
+  low: number
+  high: number
+  asOf: string
+  history: { date: string; close: number }[]
+  /** First trading day of each month in the series, for axis ticks. */
+  monthTicks: string[]
+}
+
+/** Sample 90-day price series for a public company, read from its ownership string, e.g. "Public (NASDAQ: AMZN)". */
+export function stockQuote(ownership: string, anchor: string): StockQuote | null {
+  const m = ownership.match(/\(([A-Z]+):\s*([A-Z.]+)\)/)
+  if (!m) return null
+  const [, exchange, symbol] = m
+  const end = new Date(`${anchor}T00:00:00`)
+  const rand = seededRandom(hash(symbol))
+  let close = 40 + (hash(symbol) % 360)
+  const history: { date: string; close: number }[] = []
+  for (let i = 89; i >= 0; i--) {
+    const d = new Date(end.getFullYear(), end.getMonth(), end.getDate() - i)
+    const step = (rand() - 0.49) * 0.04
+    close = Math.max(5, close * (1 + step))
+    history.push({ date: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`, close: Math.round(close * 100) / 100 })
+  }
+  const last = history[history.length - 1].close
+  const prev = history[history.length - 2].close
+  const closes = history.map(p => p.close)
+  return {
+    exchange, symbol, price: last,
+    change: Math.round((last - prev) * 100) / 100,
+    changePct: Math.round(((last - prev) / prev) * 1000) / 10,
+    low: Math.min(...closes), high: Math.max(...closes),
+    asOf: history[history.length - 1].date,
+    history,
+    monthTicks: history.filter((p, i) => i > 0 && p.date.slice(0, 7) !== history[i - 1].date.slice(0, 7)).map(p => p.date),
+  }
+}
+
+export interface NewsStory {
+  title: string
+  source: string
+  site: string
+  url: string
+  published: string
+}
+
+export interface NewsFeed {
+  stories: NewsStory[]
+  /** True when no real snapshot exists for this tenant and the stories are placeholders. */
+  sample: boolean
+  /** True while the snapshot is still loading. */
+  loading: boolean
+}
+
+/** Real headlines about this tenant when the snapshot has them, otherwise ten clearly labeled sample headlines. */
+export function tenantNews(name: string, industry: string, nowIso: string, snapshot: Record<string, NewsStory[]> | null): NewsFeed {
+  if (!snapshot) return { stories: [], sample: false, loading: true }
+  const real = snapshot[normalize(name)]
+  if (real?.length) return { stories: real, sample: false, loading: false }
+  const search = `https://news.google.com/search?q=${encodeURIComponent(name)}`
+  const titles = [
+    `${name} reports quarterly results`,
+    `${name} updates its return-to-office policy`,
+    `${name} plans to grow headcount next year`,
+    `${industry} tenants rethink their office footprints`,
+    `${name} opens a new regional office`,
+    `${name} names a new head of real estate`,
+    `${name} expands its partnership program`,
+    `Analysts weigh ${name}'s growth outlook`,
+    `${name} invests in new technology`,
+    `${name} commits to new sustainability targets`,
+  ]
+  const sources = ["Business news", "Trade press", "Local business journal", "Company press release"]
+  const now = new Date(nowIso).getTime()
+  const h = hash(name)
+  return {
+    sample: true,
+    loading: false,
+    stories: titles.map((title, i) => ({
+      title, source: sources[(h + i) % sources.length], site: "", url: search,
+      published: new Date(now - (2 + i * 7 + ((h >>> i) % 5)) * 3600_000).toISOString(),
+    })),
+  }
+}
+
+/** Small deterministic PRNG (mulberry32) so sample series look natural but never change between renders. */
+function seededRandom(seed: number) {
+  let a = seed >>> 0
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0
+    let t = a
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}

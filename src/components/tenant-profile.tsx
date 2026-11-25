@@ -4,9 +4,10 @@ import { toast } from "sonner"
 import {
   Angry, ArrowRight, Frown, HeartPulse, Laugh, Meh, Smile, Building2, ChevronDown, ChevronRight, Eye, FileText, Layers, ListTodo, Mail, Map as MapIcon,
   ArrowUpDown, CalendarClock, Wrench, CalendarDays, Handshake, History, LayoutGrid, Users, Table2, User, Phone, Plus, ShieldAlert, Sparkle, TrendingDown, TrendingUp, Minus, X, Zap, Bot,
-  Bell, ExternalLink,
+  Bell, ExternalLink, ChartLine, Newspaper,
 } from "lucide-react"
 import { LinkedInIcon } from "@/components/brand-icons"
+import { AgentBtn } from "@/components/agent-btn"
 import { type ColumnDef } from "@tanstack/react-table"
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ReferenceLine, XAxis, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart"
@@ -40,7 +41,7 @@ import {
   tenantContacts, tenantFamily, tenantFeed, type Contact, type DocStatus, type TenantFamily,
 } from "@/lib/tenant-profile-data"
 import {
-  assetFinancials, companyProfile, dealTypeLabel, deadDeals, emailHistory, leaseUnit, seedTasks, tenantOperations, tenantRequirements, tenantSignals,
+  assetFinancials, companyProfile, dealTypeLabel, stockQuote, tenantNews, type NewsFeed, type NewsStory, type StockQuote, deadDeals, emailHistory, leaseUnit, seedTasks, tenantOperations, tenantRequirements, tenantSignals,
   type LeaseInsight, type OpsTrend, type RecommendedAction, type Sentiment, type TenantSatisfaction, type Signal, type TenantOperations, type TenantRequirement, type TenantTask,
 } from "@/lib/tenant-intelligence"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -154,6 +155,17 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
     () => [...leases.map(l => toIso(l.lastUpdate)), ...deals.map(d => d.lastUpdated)].sort().at(-1) ?? "2026-08-30",
     [leases, deals],
   )
+  const quote = React.useMemo(() => stockQuote(company.ownership, dataAnchor), [company.ownership, dataAnchor])
+  // News is about whoever is selected: the parent for the combined family view, otherwise that tenant.
+  const newsSubject = cleanTenantName(selection.startsWith(AGGREGATE_PREFIX) ? family.parent : (tenants[0] ?? family.parent))
+  const [newsSnapshot, setNewsSnapshot] = React.useState<Record<string, NewsStory[]> | null>(null)
+  React.useEffect(() => {
+    if (tab !== "info" || newsSnapshot) return
+    let live = true
+    import("@/lib/tenant-news").then(m => { if (live) setNewsSnapshot(m.NEWS_SNAPSHOT) })
+    return () => { live = false }
+  }, [tab, newsSnapshot])
+  const news = React.useMemo(() => tenantNews(newsSubject, company.industry, new Date().toISOString(), newsSnapshot), [newsSubject, company.industry, newsSnapshot])
   const dead = React.useMemo(() => deadDeals(tenants, scopeAssets, dataAnchor), [tenants, scopeAssets, dataAnchor])
   const requirements = React.useMemo(() => tenantRequirements(deals), [deals])
   const baseFeed = React.useMemo(() => tenantFeed(displayName, leases, deals, contacts), [displayName, leases, deals, contacts])
@@ -435,7 +447,11 @@ export const TenantProfile = React.forwardRef<TenantProfileHandle, TenantProfile
           </PanelErrorBoundary></TabsContent>
 
           <TabsContent value="info"><PanelErrorBoundary label="Info" resetKey={selection}>
-            <CompanyCard name={label} logo={tenants.find(t => t === family.parent) ?? tenants[0] ?? family.parent} parent={family.parent} company={company} />
+            <div className="flex flex-col gap-4">
+              <CompanyCard name={label} logo={tenants.find(t => t === family.parent) ?? tenants[0] ?? family.parent} parent={family.parent} company={company} />
+              {quote && <StockCard quote={quote} />}
+              <NewsCard name={newsSubject} feed={news} />
+            </div>
           </PanelErrorBoundary></TabsContent>
 
           <TabsContent value="deals"><PanelErrorBoundary label="Deals" resetKey={selection}><DealsTab deals={deals} dead={dead} where={place.where} view={dealView} onViewChange={setDealView} assets={assets} onDealClick={onDealClick} onTask={dealTask} /></PanelErrorBoundary></TabsContent>
@@ -744,6 +760,122 @@ function BriefCard({ signals, place, leases, actions, headline, know = [], actio
 }
 
 const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "")
+
+const STOCK_CONFIG = { close: { label: "Close", color: "var(--chart-1)" } } satisfies ChartConfig
+const STOCK_MARGIN = { top: 8, right: 8, bottom: 0, left: 0 }
+const STOCK_DOMAIN: [string, string] = ["auto", "auto"]
+const stockMonthTick = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString("en-US", { month: "short" })
+const stockPriceTick = (v: number) => `$${Math.round(v)}`
+const fmtPrice = (n: number) => `$${n.toFixed(2)}`
+const stockTooltipLabel = (_: unknown, payload: readonly { payload?: { date?: string } }[]) => (payload[0]?.payload?.date ? fmtShort(payload[0].payload.date) : "")
+
+function StockCard({ quote }: { quote: StockQuote }) {
+  const up = quote.change >= 0
+  const tone = up ? "text-success" : "text-destructive"
+  return (
+    <section className={cn(subCard, "flex flex-col gap-4")}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <IconAvatar icon={ChartLine} className="bg-primary/15 text-primary" />
+          <div>
+            <h3 className="text-base font-semibold text-foreground leading-none">{quote.exchange}: {quote.symbol}</h3>
+            <p className="text-xs text-muted-foreground mt-1">Sample price data, last 90 days</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-2xl font-semibold text-foreground tabular-nums leading-none">{fmtPrice(quote.price)}</p>
+          <p className={cn("text-xs font-medium tabular-nums mt-1", tone)}>
+            {up ? "+" : "-"}{Math.abs(quote.change).toFixed(2)} ({up ? "+" : "-"}{Math.abs(quote.changePct).toFixed(1)}%) today
+          </p>
+        </div>
+      </div>
+      <ChartContainer config={STOCK_CONFIG} className="aspect-auto h-40 w-full">
+        <LineChart data={quote.history} margin={STOCK_MARGIN}>
+          <CartesianGrid vertical={false} />
+          <XAxis dataKey="date" ticks={quote.monthTicks} tickFormatter={stockMonthTick} tickLine={false} axisLine={false} tickMargin={6} />
+          <YAxis domain={STOCK_DOMAIN} tickFormatter={stockPriceTick} width={40} tickLine={false} axisLine={false} tickCount={4} />
+          <ChartTooltip cursor={false} content={<ChartTooltipContent hideIndicator labelFormatter={stockTooltipLabel} />} />
+          <Line dataKey="close" type="monotone" stroke="var(--color-close)" strokeWidth={2} dot={false} />
+        </LineChart>
+      </ChartContainer>
+      <dl className="grid grid-cols-3 gap-4">
+        <div>
+          <dt className="text-xs text-muted-foreground">90-day low</dt>
+          <dd className="text-sm font-medium text-foreground tabular-nums">{fmtPrice(quote.low)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">90-day high</dt>
+          <dd className="text-sm font-medium text-foreground tabular-nums">{fmtPrice(quote.high)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">As of</dt>
+          <dd className="text-sm font-medium text-foreground">{fmtShort(quote.asOf)}</dd>
+        </div>
+      </dl>
+    </section>
+  )
+}
+
+/** "Cloudflare (WTC)" reads as "Cloudflare" in copy. */
+function cleanTenantName(name: string) {
+  return name.replace(/\s*\(.*?\)\s*/g, " ").trim()
+}
+
+function timeAgo(iso: string) {
+  const ms = Date.now() - new Date(iso).getTime()
+  const hours = Math.floor(ms / 3600_000)
+  if (hours < 1) return "Just now"
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return "Yesterday"
+  if (days < 7) return `${days} days ago`
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+}
+
+function faviconFor(site: string) {
+  try { return `https://www.google.com/s2/favicons?domain=${new URL(site).hostname}&sz=32` } catch { return "" }
+}
+
+function NewsCard({ name, feed }: { name: string; feed: NewsFeed }) {
+  const searchUrl = `https://news.google.com/search?q=${encodeURIComponent(name)}`
+  return (
+    <section className={cn(subCard, "flex flex-col gap-3")}>
+      <div className="flex items-center gap-2.5">
+        <IconAvatar icon={Newspaper} className="bg-primary/15 text-primary" />
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-semibold text-foreground leading-none">News</h3>
+          <p className="text-xs text-muted-foreground mt-1">{feed.loading ? "Loading stories" : feed.sample ? `No recent coverage found, sample headlines about ${name}` : `Recent stories about ${name} from Google News`}</p>
+        </div>
+        <a href={searchUrl} target="_blank" rel="noopener noreferrer" aria-label={`More news about ${name} on Google News (opens in a new tab)`} className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "gap-1.5")}>
+          More news<ExternalLink className="h-3.5 w-3.5" />
+        </a>
+      </div>
+      <ul className="flex flex-col divide-y divide-border/60">
+        {feed.stories.map(n => {
+          const icon = n.site ? faviconFor(n.site) : ""
+          return (
+            <li key={n.url + n.title} className="flex items-start gap-3 py-3 first:pt-1 last:pb-0">
+              <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+                <span className="flex items-center gap-2 text-xs font-medium text-foreground">
+                  {icon ? <img src={icon} alt="" className="size-4 shrink-0 rounded-sm" /> : <Newspaper className="size-4 shrink-0 text-muted-foreground" />}
+                  {n.source}
+                </span>
+                <a
+                  href={n.url} target="_blank" rel="noopener noreferrer"
+                  className="text-base font-medium leading-snug text-foreground hover:text-primary hover:underline underline-offset-2"
+                >
+                  {n.title}
+                </a>
+                <span className="text-xs text-muted-foreground">{timeAgo(n.published)}</span>
+              </div>
+              <AgentBtn entity="Story" label={`What does this story mean for our relationship with ${name}? "${n.title}"`} className="shrink-0" />
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
 
 function CompanyCard({ name, logo, parent, company }: { name: string; logo: string; parent: string; company: ReturnType<typeof companyProfile> }) {
   const rows = [
@@ -1168,14 +1300,6 @@ function DealStatusBadge({ deal }: { deal: Deal }) {
   return null
 }
 
-function OpenDealIcon({ deal, onDealClick }: { deal: Deal; onDealClick: (d: Deal) => void }) {
-  return (
-    <Button variant="ghost" size="icon-sm" aria-label={`Open ${deal.tenant} deal at ${deal.asset}`} className="text-muted-foreground hover:text-foreground" onClick={() => onDealClick(deal)}>
-      <ArrowRight className="h-3.5 w-3.5" />
-    </Button>
-  )
-}
-
 type DealRow = { deal: Deal; dead?: undefined } | { deal?: undefined; dead: ReturnType<typeof deadDeals>[number] }
 
 function DealsTable({ deals, dead, onDealClick }: { deals: Deal[]; dead: ReturnType<typeof deadDeals>; onDealClick: (d: Deal) => void }) {
@@ -1238,11 +1362,22 @@ function DealsTable({ deals, dead, onDealClick }: { deals: Deal[]; dead: ReturnT
       },
     },
     {
-      id: "open", header: () => <span className="sr-only">Open</span>, enableSorting: false,
-      cell: ({ row }) => row.original.deal ? <OpenDealIcon deal={row.original.deal} onDealClick={onDealClick} /> : null,
+      id: "ask", header: () => <span className="sr-only">Ask VTS</span>, enableSorting: false,
+      cell: ({ row }) => {
+        const r = row.original
+        const d = r.deal ?? r.dead!
+        const status = r.deal ? `${r.deal.stage}${r.deal.status === "stalled" || r.deal.status === "at-risk" ? `, ${r.deal.status === "stalled" ? "stalled" : "at risk"}` : ""}` : `dead, ${r.dead!.reason.toLowerCase()}`
+        return <div className="flex justify-end"><AgentBtn entity="Deal" label={`${d.tenant}, ${dealTypeLabel(d.dealType).toLowerCase()} at ${d.asset}, ${fmtCompact(d.sf)} sf, ${status}`} /></div>
+      },
     },
-  ], [onDealClick])
-  return <DataTable columns={columns} data={rows} initialSorting={[{ id: "stage", desc: true }]} enablePagination={rows.length > 10} {...TABLE_PROPS} />
+  ], [])
+  return (
+    <DataTable
+      columns={columns} data={rows} initialSorting={[{ id: "stage", desc: true }]} enablePagination={rows.length > 10} {...TABLE_PROPS}
+      onRowClick={r => r.deal && onDealClick(r.deal)} isRowClickable={r => Boolean(r.deal)}
+      getRowLabel={r => `Open ${r.deal?.tenant} deal at ${r.deal?.asset}`}
+    />
+  )
 }
 
 function DealsTab({ deals, dead, where, view, onViewChange, assets, onDealClick, onTask }: {
@@ -1340,9 +1475,20 @@ function RequirementsTable({ requirements, onDealClick }: { requirements: Tenant
       ),
     },
     { id: "stage", accessorFn: r => DEAL_STAGES.indexOf(r.deal.stage), header: colHeader<TenantRequirement>("Stage"), cell: ({ row }) => <Badge variant="secondary">{row.original.deal.stage}</Badge> },
-    { id: "open", header: () => <span className="sr-only">Open</span>, enableSorting: false, cell: ({ row }) => <OpenDealIcon deal={row.original.deal} onDealClick={onDealClick} /> },
-  ], [onDealClick])
-  return <DataTable columns={columns} data={requirements} initialSorting={[{ id: "size", desc: true }]} enablePagination={requirements.length > 10} {...TABLE_PROPS} />
+    {
+      id: "ask", header: () => <span className="sr-only">Ask VTS</span>, enableSorting: false,
+      cell: ({ row }) => {
+        const r = row.original
+        return <div className="flex justify-end"><AgentBtn entity="Requirement" label={`${r.deal.tenant}, ${fmtCompact(r.sizeMin)} to ${fmtCompact(r.sizeMax)} sf requirement matched to ${r.deal.asset}, ${r.deal.stage}, move-in ${r.occupancy}`} /></div>
+      },
+    },
+  ], [])
+  return (
+    <DataTable
+      columns={columns} data={requirements} initialSorting={[{ id: "size", desc: true }]} enablePagination={requirements.length > 10} {...TABLE_PROPS}
+      onRowClick={r => onDealClick(r.deal)} getRowLabel={r => `Open ${r.deal.tenant} deal at ${r.deal.asset}`}
+    />
+  )
 }
 
 function RequirementsTab({ requirements, view, onViewChange, assets, where, onDealClick, onTask }: {
@@ -1651,28 +1797,20 @@ function LeasesTable({ leases, insights, showTenant, onOpenLease }: { leases: Le
         : <span className="text-muted-foreground">None</span>,
     },
     {
-      id: "open", header: () => <span className="sr-only">Actions</span>, enableSorting: false,
+      id: "ask", header: () => <span className="sr-only">Ask VTS</span>, enableSorting: false,
       cell: ({ row }) => {
-        const text = insightFor.get(row.original.id)
-        return (
-          <div className="flex items-center justify-end gap-0.5">
-            {text && (
-              <Tooltip>
-                <TooltipTrigger render={<Button variant="ghost" size="icon-sm" aria-label={`Insight: ${text}`} className="text-primary" />}>
-                  <Sparkle className="h-3.5 w-3.5" />
-                </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-xs text-xs">{text}</TooltipContent>
-              </Tooltip>
-            )}
-            <Button variant="ghost" size="icon-sm" aria-label={`Open abstract for ${row.original.asset} ${leaseUnit(row.original)}`} className="text-muted-foreground hover:text-foreground" onClick={() => onOpenLease(row.original)}>
-              <Eye className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        )
+        const l = row.original
+        const text = insightFor.get(l.id)
+        return <div className="flex justify-end"><AgentBtn entity="Lease" label={`${l.tenant}, ${l.asset}, ${leaseUnit(l)}, ${l.sf.toLocaleString()} sf at $${l.baseRent.toFixed(2)}/sf${text ? `. ${text}` : ""}`} /></div>
       },
     },
-  ], [showTenant, onOpenLease, insightFor, dealFor])
-  return <DataTable columns={columns} data={leases} initialSorting={[{ id: "expiration", desc: false }]} enablePagination={leases.length > 10} {...TABLE_PROPS} />
+  ], [showTenant, insightFor, dealFor])
+  return (
+    <DataTable
+      columns={columns} data={leases} initialSorting={[{ id: "expiration", desc: false }]} enablePagination={leases.length > 10} {...TABLE_PROPS}
+      onRowClick={onOpenLease} getRowLabel={l => `Open abstract for ${l.asset}, ${leaseUnit(l)}`}
+    />
+  )
 }
 
 function AssetMap({ assets, names, where, markerFor, statsFor, rowsFor }: {

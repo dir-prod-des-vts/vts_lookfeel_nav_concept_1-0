@@ -83,6 +83,9 @@ export function DataTable<TData>({
   pageSize: initialPageSize = 10,
   pageSizeOptions = [10, 20, 30, 50],
   onRowSelectionChange,
+  onRowClick,
+  isRowClickable,
+  getRowLabel,
   getRowCanExpand,
   renderSubComponent,
   emptyMessage,
@@ -263,14 +266,25 @@ export function DataTable<TData>({
 
   // Row render helpers for pinning
   function renderRows(rows: Row<TData>[], extraClass?: string) {
-    return rows.map((row, i) => (
+    return rows.map((row, i) => {
+      const clickable = Boolean(onRowClick) && (isRowClickable?.(row.original) ?? true)
+      const open = (e: React.SyntheticEvent) => {
+        if ((e.target as HTMLElement).closest("button, a, input, [role=checkbox], [role=menuitem]")) return
+        onRowClick?.(row.original)
+      }
+      return (
       <React.Fragment key={row.id}>
         <TableRow
           data-state={row.getIsSelected() ? "selected" : undefined}
+          tabIndex={clickable ? 0 : undefined}
+          aria-label={clickable ? getRowLabel?.(row.original) : undefined}
+          onClick={clickable ? open : undefined}
+          onKeyDown={clickable ? e => { if (e.key === "Enter") open(e) } : undefined}
           className={cn(
             "transition-colors",
             i > 0 || extraClass ? "border-t border-border/40" : "border-0",
             row.getIsSelected() && "bg-primary/5",
+            clickable && "cursor-pointer hover:bg-muted/40 focus-visible:bg-muted/40 focus-visible:outline-none",
             extraClass,
           )}
         >
@@ -376,7 +390,8 @@ export function DataTable<TData>({
           </TableRow>
         )}
       </React.Fragment>
-    ))
+      )
+    })
   }
 
   const rightPinnedTotalSize = React.useMemo(() => {

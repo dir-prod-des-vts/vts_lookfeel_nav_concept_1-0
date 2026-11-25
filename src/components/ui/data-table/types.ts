@@ -35,6 +35,12 @@ export interface DataTableProps<TData> {
   pageSizeOptions?: number[]
   // Callbacks
   onRowSelectionChange?: (rows: Row<TData>[]) => void
+  /** Makes rows open something on click or Enter. Clicks on buttons and links inside the row are ignored. */
+  onRowClick?: (row: TData) => void
+  /** Limits which rows are clickable when onRowClick is set. Defaults to all rows. */
+  isRowClickable?: (row: TData) => boolean
+  /** Accessible name for a clickable row, e.g. "Open Amazon deal at Willis Tower". */
+  getRowLabel?: (row: TData) => string
   // Expansion
   getRowCanExpand?: (row: Row<TData>) => boolean
   renderSubComponent?: (props: { row: Row<TData> }) => React.ReactNode
