@@ -253,10 +253,7 @@ export function BudgetFormPage({ budget, assets, spacesByAsset, defaultAsset, on
           <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Budgets</p>
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-medium text-foreground leading-tight">{editing ? `Edit ${budget!.label}` : "Add budget"}</h1>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Button onClick={save} disabled={!ready}>{editing ? "Save changes" : "Save"}</Button>
-          <Button variant="ghost" size="icon" aria-label="Close and go back" onClick={onClose}><X /></Button>
-        </div>
+        <Button variant="ghost" size="icon" className="shrink-0" aria-label="Close and go back" onClick={onClose}><X /></Button>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:flex-1">
@@ -438,6 +435,15 @@ export function BudgetFormPage({ budget, assets, spacesByAsset, defaultAsset, on
           <MetricsCard missing={missing} result={result} term={term} area={area} discountRate={discountRate} />
           <NetCashFlowCard result={result} area={area} />
         </div>
+      </div>
+
+      {/* Always-visible actions. Spans the page edge to edge, flush with the bottom of the scroll area. */}
+      <div className="sticky -bottom-4 z-10 -mx-4 -mb-4 md:-mx-6 flex items-center gap-3 border-t border-border bg-card px-4 py-3 md:px-6">
+        <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground" aria-live="polite">
+          {ready ? "" : `Still needed: ${missing.join(", ").toLowerCase()}.`}
+        </p>
+        <Button variant="outline" size="lg" className="shrink-0" onClick={onClose}>Cancel</Button>
+        <Button size="lg" className="shrink-0" onClick={save} disabled={!ready}>Save</Button>
       </div>
     </div>
   )
